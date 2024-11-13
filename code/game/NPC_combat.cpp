@@ -1827,7 +1827,11 @@ gentity_t *NPC_CheckEnemy( qboolean findNew, qboolean tooFarOk, qboolean setEnem
 
 	if ( NPC->enemy )
 	{
-		if ( !NPC->enemy->inuse )//|| NPC->enemy == NPC )//wtf?  NPCs should never get mad at themselves!
+		//If we're targeting a neutral character (e.g. player during artus_detention officer escort) - don't
+		if (NPC->enemy->client && NPC->enemy->client->playerTeam == TEAM_NEUTRAL)
+		{
+			G_ClearEnemy(NPC);
+		} else if ( !NPC->enemy->inuse )//|| NPC->enemy == NPC )//wtf?  NPCs should never get mad at themselves!
 		{
 			if ( setEnemy )
 			{
