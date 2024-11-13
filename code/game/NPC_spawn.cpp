@@ -231,6 +231,7 @@ void NPC_SetMiscDefaultData(gentity_t* ent)
 			ent->NPC->scriptFlags |= SCF_IGNORE_ALERTS;
 			ent->client->noclip = qtrue;//hang
 		}
+		break;
 	case CLASS_GONK:
 		// I guess we generically make them player usable
 		ent->svFlags |= SVF_PLAYER_USABLE;
