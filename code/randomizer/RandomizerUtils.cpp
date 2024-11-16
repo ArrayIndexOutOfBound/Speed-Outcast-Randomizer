@@ -110,6 +110,7 @@ void initialiseNameMap() {
 	teamsByName["NPC_Droid_R2D2"] = TEAM_PLAYER;
 	teamsByName["NPC_Droid_R5D2"] = TEAM_PLAYER;
 	teamsByName["NPC_Droid_Protocol"] = TEAM_PLAYER;
+	teamsByName["NPC_Galak_Mech"] = TEAM_ENEMY;
 }
 
 void initialiseMapByClass() {
@@ -149,6 +150,8 @@ void initialiseMapByClass() {
 	teamsByClass[CLASS_R5D2] = TEAM_PLAYER;
 	teamsByClass[CLASS_PROTOCOL] = TEAM_PLAYER;
 	teamsByClass[CLASS_SWAMPTROOPER] = TEAM_ENEMY;
+	teamsByClass[CLASS_GALAKMECH] = TEAM_ENEMY;
+	teamsByClass[CLASS_NONE] = TEAM_PLAYER;
 }
 
 team_t RandomizerUtils::GetClassTeamByClassname(char *npcClassname)

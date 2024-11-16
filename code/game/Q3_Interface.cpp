@@ -6631,6 +6631,10 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 			else
 			{
 				Q3_DebugPrint( WL_ERROR, "Q3_SetAnimUpper: %s does not have anim %s!\n", ent->targetname, (char *)data );
+				//Lil bodge here to handle missing anims (e.g. R2D2 as cinematic officer 3 on Kejim base end cutscene, tries to animate him to use consoles)
+				int instantTimer = 0;
+				PM_SetTorsoAnimTimer(ent, &instantTimer, 0);
+				both++;
 			}
 			if ( Q3_SetAnimLower( entID, (char *) data ) )
 			{
@@ -6640,6 +6644,10 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 			else
 			{
 				Q3_DebugPrint( WL_ERROR, "Q3_SetAnimLower: %s does not have anim %s!\n", ent->targetname, (char *)data );
+				//Lil bodge here to handle missing anims (e.g. R2D2 as cinematic officer 3 on Kejim base end cutscene, tries to animate him to use consoles)
+				int instantTimer = 0;
+				PM_SetTorsoAnimTimer(ent, &instantTimer, 0);
+				both++;
 			}
 			if ( both >= 2 )
 			{

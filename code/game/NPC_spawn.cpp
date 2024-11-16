@@ -374,9 +374,195 @@ void NPC_SetMiscDefaultData(gentity_t* ent)
 NPC_WeaponsForTeam
 -------------------------
 */
+int NPC_WeaponsForTeamRandomizer(team_t team, int spawnflags, const char* NPC_type)
+{
+	//*** not sure how to handle this, should I pass in class instead of team and go from there? - dmv
+	//Amber - damn this dmv person was onto things
+
+	//TODO: Game has these exceptions built in for when certain NPCs are neutral - how to handle? Preserved for now
+	if (team == TEAM_NEUTRAL)
+	{
+		if (Q_stricmp("mark1", NPC_type) == 0)
+		{
+			return WP_NONE;
+		}
+		if (Q_stricmp("mark2", NPC_type) == 0)
+		{
+			return WP_NONE;
+		}
+		if (Q_strncmp("ugnaught", NPC_type, 8) == 0)
+		{
+			return WP_NONE;
+		}
+		if (Q_stricmp("bartender", NPC_type) == 0)
+		{
+			return WP_NONE;
+		}
+		if (Q_stricmp("morgankatarn", NPC_type) == 0)
+		{
+			return WP_NONE;
+		}
+	}
+
+	//All Saber Wielders
+	if (Q_stricmp("tavion", NPC_type) == 0 ||
+		Q_strncmp("reborn", NPC_type, 6) == 0 ||
+		Q_stricmp("desann", NPC_type) == 0 ||
+		Q_strncmp("shadowtrooper", NPC_type, 13) == 0 ||
+		Q_strncmp("jedi", NPC_type, 4) == 0 ||
+		Q_stricmp("luke", NPC_type) == 0)
+		return (1 << WP_SABER);
+
+	/*
+	* Okay decision time here. If we ever spawn a non-neutral NPC with no weapon, it will try to set up a saber for them and the game will crash.
+	* For now, commented out all blocks here with WP_NONE so they fall into the default blaster block. We can have it just not try to set up
+	* a weapon for NPCs with weapon none if we want to give up being shot at by ugnaughts, droids etc. We could also assign random weapons
+	* (personally I wanna see someone get shotgunned down by C3PO)
+	*/
+	if (Q_strncmp("stofficer", NPC_type, 9) == 0)
+	{
+		return (1 << WP_FLECHETTE);
+	}
+	if (Q_stricmp("stcommander", NPC_type) == 0)
+	{
+		return (1 << WP_REPEATER);
+	}
+	if (Q_stricmp("swamptrooper", NPC_type) == 0)
+	{
+		return (1 << WP_FLECHETTE);
+	}
+	if (Q_stricmp("swamptrooper2", NPC_type) == 0)
+	{
+		return (1 << WP_REPEATER);
+	}
+	if (Q_stricmp("rockettrooper", NPC_type) == 0)
+	{
+		return (1 << WP_ROCKET_LAUNCHER);
+	}
+	if (Q_strncmp("shadowtrooper", NPC_type, 13) == 0)
+	{
+		return (1 << WP_SABER);//|( 1 << WP_RAPID_CONCUSSION)?
+	}
+	if (Q_stricmp("imperial", NPC_type) == 0)
+	{
+		return (1 << WP_BLASTER_PISTOL);
+	}
+	if (Q_strncmp("impworker", NPC_type, 9) == 0)
+	{
+		return (1 << WP_BLASTER_PISTOL);
+	}
+	if (Q_stricmp("stormpilot", NPC_type) == 0)
+	{
+		return (1 << WP_BLASTER_PISTOL);
+	}
+	if (Q_stricmp("galak", NPC_type) == 0)
+	{
+		return (1 << WP_BLASTER);
+	}
+	if (Q_stricmp("galak_mech", NPC_type) == 0)
+	{
+		return (1 << WP_REPEATER);
+	}
+	//if (Q_strncmp("ugnaught", NPC_type, 8) == 0)
+	//{
+	//	return WP_NONE;
+	//}
+	if (Q_stricmp("granshooter", NPC_type) == 0)
+	{
+		return (1 << WP_BLASTER);
+	}
+	if (Q_stricmp("granboxer", NPC_type) == 0)
+	{
+		return (1 << WP_MELEE);
+	}
+	if (Q_strncmp("gran", NPC_type, 4) == 0)
+	{
+		return ((1 << WP_THERMAL) | (1 << WP_MELEE));
+	}
+	if (Q_stricmp("rodian", NPC_type) == 0)
+	{
+		return (1 << WP_DISRUPTOR);
+	}
+	if (Q_stricmp("rodian2", NPC_type) == 0)
+	{
+		return (1 << WP_BLASTER);
+	}
+	if ((Q_stricmp("interrogator", NPC_type) == 0) || (Q_stricmp("sentry", NPC_type) == 0) || (Q_strncmp("protocol", NPC_type, 8) == 0))
+	{
+		return WP_NONE;
+	}
+	if (Q_strncmp("weequay", NPC_type, 7) == 0)
+	{
+		return (1 << WP_BOWCASTER);//|( 1 << WP_STAFF )(FIXME: new weap?)
+	}
+	if (Q_stricmp("impofficer", NPC_type) == 0)
+	{
+		return (1 << WP_BLASTER);
+	}
+	if (Q_stricmp("impcommander", NPC_type) == 0)
+	{
+		return (1 << WP_BLASTER);
+	}
+	if ((Q_stricmp("probe", NPC_type) == 0) || (Q_stricmp("seeker", NPC_type) == 0))
+	{
+		return (1 << WP_BOT_LASER);
+	}
+	if (Q_stricmp("remote", NPC_type) == 0)
+	{
+		return (1 << WP_BOT_LASER);
+	}
+	if (Q_stricmp("trandoshan", NPC_type) == 0)
+	{
+		return (1 << WP_REPEATER);
+	}
+	if (Q_stricmp("atst", NPC_type) == 0)
+	{
+		return ((1 << WP_ATST_MAIN) | (1 << WP_ATST_SIDE));
+	}
+	if (Q_stricmp("mark1", NPC_type) == 0)
+	{
+		return (1 << WP_BOT_LASER);
+	}
+	if (Q_stricmp("mark2", NPC_type) == 0)
+	{
+		return (1 << WP_BOT_LASER);
+	}
+	if (Q_stricmp("minemonster", NPC_type) == 0)
+	{
+		return ((1 << WP_MELEE));
+	}
+	if (Q_stricmp("howler", NPC_type) == 0)
+	{
+		return ((1 << WP_MELEE));
+	}
+	if (Q_strncmp("prisoner", NPC_type, 8) == 0)
+	{
+		return WP_NONE;
+	}
+	if (Q_strncmp("bespincop", NPC_type, 9) == 0)
+	{
+		return (1 << WP_BLASTER_PISTOL);
+	}
+	if (Q_stricmp("MonMothma", NPC_type) == 0)
+	{
+		return WP_NONE;
+	}
+	if (spawnflags & SFB_RIFLEMAN)
+		return (1 << WP_REPEATER);
+
+	if (spawnflags & SFB_PHASER)
+		return (1 << WP_BLASTER_PISTOL);
+
+	//Still default to blaster if we're not explicitly set (Stormtroopers, rebels)
+	return (1 << WP_BLASTER); //We might be giving droids (R2, R4, Protocol) blasters here, should we keep?
+}
 
 int NPC_WeaponsForTeam( team_t team, int spawnflags, const char *NPC_type )
 {
+	if (cg_enableRandomizer.integer)
+	{
+		return NPC_WeaponsForTeamRandomizer(team, spawnflags, NPC_type);
+	}
 	//*** not sure how to handle this, should I pass in class instead of team and go from there? - dmv
 	switch(team)
 	{
