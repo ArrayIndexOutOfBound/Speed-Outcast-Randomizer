@@ -170,14 +170,9 @@ touchFunc_t NPC_TouchFunc( gentity_t *ent )
 	return touchF_NPC_Touch;
 }
 
-/*
--------------------------
-NPC_SetMiscDefaultData
--------------------------
-*/
-
-extern void G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *weaponModel );
-void NPC_SetMiscDefaultData(gentity_t* ent)
+extern void G_CreateG2AttachedWeaponModel(gentity_t* ent, const char* weaponModel);
+//Easier to break this into another function as I refactored a bit to maek it cleaner
+void NPC_SetMiscDefaultDataRandomizer(gentity_t* ent)
 {
 	if (ent->spawnflags & SFB_CINEMATIC)
 	{//if a cinematic guy, default us to wait bState
@@ -194,7 +189,7 @@ void NPC_SetMiscDefaultData(gentity_t* ent)
 		ent->client->enemyTeam = TEAM_FREE;
 	}
 	//***I'm not sure whether I should leave this as a TEAM_ switch, I think NPC_class may be more appropriate - dmv
-	//Amber - whoever dvm is they're right, this should be based on class
+	//Amber - whoever dmv is they're right, this should be based on class
 	switch (ent->client->NPC_class) {
 	case CLASS_SEEKER:
 		ent->NPC->defaultBehavior = BS_DEFAULT;
@@ -369,6 +364,223 @@ void NPC_SetMiscDefaultData(gentity_t* ent)
 		}
 	}
 }
+
+/*
+-------------------------
+NPC_SetMiscDefaultData
+-------------------------
+*/
+
+void NPC_SetMiscDefaultData(gentity_t* ent)
+{
+	if (cg_enableRandomizer.integer)
+	{
+		NPC_SetMiscDefaultDataRandomizer(ent);
+		return;
+	}
+
+	if (ent->spawnflags & SFB_CINEMATIC)
+	{//if a cinematic guy, default us to wait bState
+		ent->NPC->behaviorState = BS_CINEMATIC;
+	}
+	//***I'm not sure whether I should leave this as a TEAM_ switch, I think NPC_class may be more appropriate - dmv
+	switch (ent->client->playerTeam)
+	{
+	case TEAM_PLAYER:
+		//ent->flags |= FL_NO_KNOCKBACK;
+		if (ent->client->NPC_class == CLASS_SEEKER)
+		{
+			ent->NPC->defaultBehavior = BS_DEFAULT;
+			ent->client->ps.gravity = 0;
+			ent->svFlags |= SVF_CUSTOM_GRAVITY;
+			ent->NPC->stats.moveType = MT_FLYSWIM;
+			ent->count = 30; // SEEKER shot ammo count
+			return;
+		}
+		else if (ent->client->NPC_class == CLASS_JEDI || ent->client->NPC_class == CLASS_LUKE)
+		{//good jedi
+			ent->client->ps.saberActive = qfalse;
+			ent->client->ps.saberLength = 0;
+			WP_SaberInitBladeData(ent);
+			G_CreateG2AttachedWeaponModel(ent, ent->client->ps.saberModel);
+			ent->client->enemyTeam = TEAM_ENEMY;
+			WP_InitForcePowers(ent);
+			Jedi_ClearTimers(ent);
+			if (ent->spawnflags & JSF_AMBUSH)
+			{//ambusher
+				ent->NPC->scriptFlags |= SCF_IGNORE_ALERTS;
+				ent->client->noclip = qtrue;//hang
+			}
+		}
+		else
+		{
+			if (ent->client->ps.weapon != WP_NONE)
+			{
+				G_CreateG2AttachedWeaponModel(ent, weaponData[ent->client->ps.weapon].weaponMdl);
+			}
+			switch (ent->client->ps.weapon)
+			{
+			case WP_BRYAR_PISTOL://FIXME: new weapon: imp blaster pistol
+			case WP_BLASTER_PISTOL:
+			case WP_DISRUPTOR:
+			case WP_BOWCASTER:
+			case WP_REPEATER:
+			case WP_DEMP2:
+			case WP_FLECHETTE:
+			case WP_ROCKET_LAUNCHER:
+			default:
+				break;
+			case WP_THERMAL:
+			case WP_BLASTER:
+				//FIXME: health in NPCs.cfg, and not all blaster users are stormtroopers
+				//ent->health = 25;
+				//FIXME: not necc. a ST
+				ST_ClearTimers(ent);
+				if (ent->NPC->rank >= RANK_LT || ent->client->ps.weapon == WP_THERMAL)
+				{//officers, grenade-throwers use alt-fire
+					//ent->health = 50;
+					ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+				}
+				break;
+			}
+		}
+		if (ent->client->NPC_class == CLASS_KYLE || (ent->spawnflags & SFB_CINEMATIC))
+		{
+			ent->NPC->defaultBehavior = BS_CINEMATIC;
+		}
+		else
+		{
+			ent->NPC->defaultBehavior = BS_FOLLOW_LEADER;
+			ent->client->leader = &g_entities[0];
+		}
+		break;
+
+	case TEAM_NEUTRAL:
+
+		if (Q_stricmp(ent->NPC_type, "gonk") == 0)
+		{
+			// I guess we generically make them player usable
+			ent->svFlags |= SVF_PLAYER_USABLE;
+
+			// Not even sure if we want to give different levels of batteries?  ...Or even that these are the values we'd want to use.
+			switch (g_spskill->integer)
+			{
+			case 0:	//	EASY
+				ent->client->ps.batteryCharge = MAX_BATTERIES * 0.8f;
+				break;
+			case 1:	//	MEDIUM
+				ent->client->ps.batteryCharge = MAX_BATTERIES * 0.75f;
+				break;
+			default:
+			case 2:	//	HARD
+				ent->client->ps.batteryCharge = MAX_BATTERIES * 0.5f;
+				break;
+			}
+		}
+		break;
+
+	case TEAM_ENEMY:
+	{
+		ent->NPC->defaultBehavior = BS_DEFAULT;
+		if (ent->client->NPC_class == CLASS_SHADOWTROOPER)
+		{//FIXME: a spawnflag?
+			Jedi_Cloak(ent);
+		}
+		if (ent->client->NPC_class == CLASS_TAVION ||
+			ent->client->NPC_class == CLASS_REBORN ||
+			ent->client->NPC_class == CLASS_DESANN ||
+			ent->client->NPC_class == CLASS_SHADOWTROOPER)
+		{
+			ent->client->ps.saberActive = qfalse;
+			ent->client->ps.saberLength = 0;
+			WP_SaberInitBladeData(ent);
+			G_CreateG2AttachedWeaponModel(ent, ent->client->ps.saberModel);
+			WP_InitForcePowers(ent);
+			ent->client->enemyTeam = TEAM_PLAYER;
+			Jedi_ClearTimers(ent);
+			if (ent->spawnflags & JSF_AMBUSH)
+			{//ambusher
+				ent->NPC->scriptFlags |= SCF_IGNORE_ALERTS;
+				ent->client->noclip = qtrue;//hang
+			}
+		}
+		else if (ent->client->NPC_class == CLASS_PROBE || ent->client->NPC_class == CLASS_REMOTE ||
+			ent->client->NPC_class == CLASS_INTERROGATOR || ent->client->NPC_class == CLASS_SENTRY)
+		{
+			ent->NPC->defaultBehavior = BS_DEFAULT;
+			ent->client->ps.gravity = 0;
+			ent->svFlags |= SVF_CUSTOM_GRAVITY;
+			ent->NPC->stats.moveType = MT_FLYSWIM;
+		}
+		else
+		{
+			G_CreateG2AttachedWeaponModel(ent, weaponData[ent->client->ps.weapon].weaponMdl);
+			switch (ent->client->ps.weapon)
+			{
+			case WP_BRYAR_PISTOL:
+				break;
+			case WP_BLASTER_PISTOL:
+				break;
+			case WP_DISRUPTOR:
+				//Sniper
+				ent->NPC->scriptFlags |= SCF_ALT_FIRE;//FIXME: use primary fire sometimes?  Up close?  Different class of NPC?
+				break;
+			case WP_BOWCASTER:
+				break;
+			case WP_REPEATER:
+				//machine-gunner
+				break;
+			case WP_DEMP2:
+				break;
+			case WP_FLECHETTE:
+				//shotgunner
+				if (!Q_stricmp("stofficeralt", ent->NPC_type))
+				{
+					ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+				}
+				break;
+			case WP_ROCKET_LAUNCHER:
+				break;
+			case WP_THERMAL:
+				//Gran, use main, bouncy fire
+//					ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+				break;
+			case WP_MELEE:
+				break;
+			default:
+			case WP_BLASTER:
+				//FIXME: health in NPCs.cfg, and not all blaster users are stormtroopers
+				//FIXME: not necc. a ST
+				ST_ClearTimers(ent);
+				if (ent->NPC->rank >= RANK_COMMANDER)
+				{//commanders use alt-fire
+					ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+				}
+				if (!Q_stricmp("rodian2", ent->NPC_type))
+				{
+					ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+				}
+				break;
+			}
+			if (!Q_stricmp("galak_mech", ent->NPC_type))
+			{//starts with armor
+				NPC_GalakMech_Init(ent);
+			}
+		}
+	}
+	break;
+
+	default:
+		break;
+	}
+
+
+	if (ent->client->NPC_class == CLASS_ATST || ent->client->NPC_class == CLASS_MARK1) // chris/steve/kevin requested that the mark1 be shielded also
+	{
+		ent->flags |= (FL_SHIELDED | FL_NO_KNOCKBACK);
+	}
+}
+
 /*
 -------------------------
 NPC_WeaponsForTeam
@@ -2802,7 +3014,10 @@ Remote Droid - the floating round droid used by Obi Wan to train Luke about the 
 void SP_NPC_Droid_Remote( gentity_t *self)
 {
 	self->NPC_type = "remote";
-	self->team = "TEAM_ENEMY";
+	if (cg_enableRandomizer.integer)
+	{
+		self->team = "TEAM_ENEMY";
+	}
 
 	SP_NPC_spawner( self );
 
@@ -2823,14 +3038,14 @@ void SP_NPC_Droid_Seeker( gentity_t *self)
 	//Just spawn the other kind if it should be an enemy
 	if (cg_enableRandomizer.integer && RandomizerUtils::GetClassTeamByClassname(self->classname) == TEAM_ENEMY) {
 		SP_NPC_Droid_Remote(self);
+		return;
 	}
-	else {
-		self->NPC_type = "seeker";
 
-		SP_NPC_spawner(self);
+	self->NPC_type = "seeker";
 
-		NPC_Seeker_Precache();
-	}
+	SP_NPC_spawner(self);
+
+	NPC_Seeker_Precache();
 }
 
 /*QUAKED NPC_Droid_Sentry (1 0 0) (-24 -24 -24) (24 24 40) x x x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
@@ -3189,7 +3404,7 @@ void SP_NPC_Spawn_Random(gentity_t* self)
 		SP_NPC_MonMothma(self);
 		PopulateNPCTab(rng);
 		break;
-	case 5: // Desann and Tavion are too hard to handle, I will keep them out for now
+	case 5: // Desann and Tavion are too hard to handle, but they should behave now
 		SP_NPC_Tavion(self);
 		PopulateNPCTab(rng);
 		//SP_NPC_Spawn_Random(self);
@@ -3202,7 +3417,7 @@ void SP_NPC_Spawn_Random(gentity_t* self)
 		SP_NPC_Galak(self);
 		PopulateNPCTab(rng);
 		break;
-	case 8: // Desann and Tavion are too hard to handle, I will keep them out for now
+	case 8: // Desann and Tavion are too hard to handle, but they should behave now
 		SP_NPC_Desann(self);
 		PopulateNPCTab(rng);
 		//SP_NPC_Spawn_Random(self);
@@ -3378,7 +3593,6 @@ void SP_NPC_Spawn_Random(gentity_t* self)
 	case 48: // Spawning this droid on kejim_base is making the game crash ????
 		SP_NPC_Droid_R5D2(self);
 		PopulateNPCTab(rng);
-		//SP_NPC_Spawn_Random(self);
 		break;
 	case 49:
 		SP_NPC_Droid_Protocol(self);

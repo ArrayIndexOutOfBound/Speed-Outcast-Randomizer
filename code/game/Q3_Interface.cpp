@@ -39,6 +39,7 @@ extern void InitMoverTrData( gentity_t *ent );
 extern qboolean SpotWouldTelefrag2( gentity_t *mover, vec3_t dest );
 extern cvar_t *g_sex;
 extern cvar_t *g_timescale;
+extern vmCvar_t cg_enableRandomizer;
 extern void G_SetEnemy( gentity_t *self, gentity_t *enemy );
 //extern void FX_BorgTeleport( vec3_t org );
 static void Q3_SetWeapon (int entID, const char *wp_name);
@@ -6631,10 +6632,13 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 			else
 			{
 				Q3_DebugPrint( WL_ERROR, "Q3_SetAnimUpper: %s does not have anim %s!\n", ent->targetname, (char *)data );
-				//Lil bodge here to handle missing anims (e.g. R2D2 as cinematic officer 3 on Kejim base end cutscene, tries to animate him to use consoles)
-				int instantTimer = 0;
-				PM_SetTorsoAnimTimer(ent, &instantTimer, 0);
-				both++;
+				if (cg_enableRandomizer.integer)
+				{
+					//Lil bodge here to handle missing anims (e.g. R2D2 as cinematic officer 3 on Kejim base end cutscene, tries to animate him to use consoles)
+					int instantTimer = 0;
+					PM_SetTorsoAnimTimer(ent, &instantTimer, 0);
+					both++;
+				}
 			}
 			if ( Q3_SetAnimLower( entID, (char *) data ) )
 			{
@@ -6644,10 +6648,13 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 			else
 			{
 				Q3_DebugPrint( WL_ERROR, "Q3_SetAnimLower: %s does not have anim %s!\n", ent->targetname, (char *)data );
-				//Lil bodge here to handle missing anims (e.g. R2D2 as cinematic officer 3 on Kejim base end cutscene, tries to animate him to use consoles)
-				int instantTimer = 0;
-				PM_SetTorsoAnimTimer(ent, &instantTimer, 0);
-				both++;
+				if (cg_enableRandomizer.integer)
+				{
+					//Lil bodge here to handle missing anims (e.g. R2D2 as cinematic officer 3 on Kejim base end cutscene, tries to animate him to use consoles)
+					int instantTimer = 0;
+					PM_SetTorsoAnimTimer(ent, &instantTimer, 0);
+					both++;
+				}
 			}
 			if ( both >= 2 )
 			{

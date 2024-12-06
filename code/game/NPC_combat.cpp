@@ -18,6 +18,7 @@ extern int NAV_FindClosestWaypointForPoint( vec3_t point );
 extern int NAV_GetNearestNode( gentity_t *self, int lastNode );
 extern void G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *weaponModel );
 extern qboolean PM_DroidMelee( int npc_class );
+extern vmCvar_t	cg_enableRandomizer;
 
 extern	CNavigator	navigator;
 
@@ -1828,7 +1829,7 @@ gentity_t *NPC_CheckEnemy( qboolean findNew, qboolean tooFarOk, qboolean setEnem
 	if ( NPC->enemy )
 	{
 		//If we're targeting a neutral character (e.g. player during artus_detention officer escort) - don't
-		if (NPC->enemy->client && NPC->enemy->client->playerTeam == TEAM_NEUTRAL)
+		if (cg_enableRandomizer.integer && NPC->enemy->client && NPC->enemy->client->playerTeam == TEAM_NEUTRAL)
 		{
 			G_ClearEnemy(NPC);
 		} else if ( !NPC->enemy->inuse )//|| NPC->enemy == NPC )//wtf?  NPCs should never get mad at themselves!
