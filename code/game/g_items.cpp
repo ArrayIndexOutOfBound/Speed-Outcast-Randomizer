@@ -873,6 +873,7 @@ void FinishSpawningItem( gentity_t *ent ) {
 					}
 				}
 				// else, we rolled a >=1, we keep the saber/holocron
+				
 				if (itemNew->giType == IT_HOLOCRON) ent->count = 0;
 				updateItemMinsMaxs(itemNew);
 			}
