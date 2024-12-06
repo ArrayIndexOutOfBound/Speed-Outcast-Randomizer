@@ -111,6 +111,7 @@ void initialiseNameMap() {
 	teamsByName["NPC_Droid_R5D2"] = TEAM_PLAYER;
 	teamsByName["NPC_Droid_Protocol"] = TEAM_PLAYER;
 	teamsByName["NPC_Galak_Mech"] = TEAM_ENEMY;
+	teamsByName["NPC_SwampTrooper"] = TEAM_ENEMY;
 }
 
 void initialiseMapByClass() {
