@@ -379,17 +379,17 @@ void NPC_SetMiscDefaultData(gentity_t* ent)
 		return;
 	}
 
-	if (ent->spawnflags & SFB_CINEMATIC)
+	if ( ent->spawnflags & SFB_CINEMATIC )
 	{//if a cinematic guy, default us to wait bState
 		ent->NPC->behaviorState = BS_CINEMATIC;
 	}
 	//***I'm not sure whether I should leave this as a TEAM_ switch, I think NPC_class may be more appropriate - dmv
-	switch (ent->client->playerTeam)
+	switch(ent->client->playerTeam)
 	{
 	case TEAM_PLAYER:
 		//ent->flags |= FL_NO_KNOCKBACK;
-		if (ent->client->NPC_class == CLASS_SEEKER)
-		{
+		if ( ent->client->NPC_class == CLASS_SEEKER )
+		{		
 			ent->NPC->defaultBehavior = BS_DEFAULT;
 			ent->client->ps.gravity = 0;
 			ent->svFlags |= SVF_CUSTOM_GRAVITY;
@@ -397,16 +397,16 @@ void NPC_SetMiscDefaultData(gentity_t* ent)
 			ent->count = 30; // SEEKER shot ammo count
 			return;
 		}
-		else if (ent->client->NPC_class == CLASS_JEDI || ent->client->NPC_class == CLASS_LUKE)
+		else if ( ent->client->NPC_class == CLASS_JEDI || ent->client->NPC_class == CLASS_LUKE )
 		{//good jedi
 			ent->client->ps.saberActive = qfalse;
 			ent->client->ps.saberLength = 0;
-			WP_SaberInitBladeData(ent);
-			G_CreateG2AttachedWeaponModel(ent, ent->client->ps.saberModel);
+			WP_SaberInitBladeData( ent );
+			G_CreateG2AttachedWeaponModel( ent, ent->client->ps.saberModel );
 			ent->client->enemyTeam = TEAM_ENEMY;
-			WP_InitForcePowers(ent);
-			Jedi_ClearTimers(ent);
-			if (ent->spawnflags & JSF_AMBUSH)
+			WP_InitForcePowers( ent );
+			Jedi_ClearTimers( ent );
+			if ( ent->spawnflags & JSF_AMBUSH )
 			{//ambusher
 				ent->NPC->scriptFlags |= SCF_IGNORE_ALERTS;
 				ent->client->noclip = qtrue;//hang
@@ -416,9 +416,9 @@ void NPC_SetMiscDefaultData(gentity_t* ent)
 		{
 			if (ent->client->ps.weapon != WP_NONE)
 			{
-				G_CreateG2AttachedWeaponModel(ent, weaponData[ent->client->ps.weapon].weaponMdl);
+				G_CreateG2AttachedWeaponModel( ent, weaponData[ent->client->ps.weapon].weaponMdl );
 			}
-			switch (ent->client->ps.weapon)
+			switch ( ent->client->ps.weapon )
 			{
 			case WP_BRYAR_PISTOL://FIXME: new weapon: imp blaster pistol
 			case WP_BLASTER_PISTOL:
@@ -435,8 +435,8 @@ void NPC_SetMiscDefaultData(gentity_t* ent)
 				//FIXME: health in NPCs.cfg, and not all blaster users are stormtroopers
 				//ent->health = 25;
 				//FIXME: not necc. a ST
-				ST_ClearTimers(ent);
-				if (ent->NPC->rank >= RANK_LT || ent->client->ps.weapon == WP_THERMAL)
+				ST_ClearTimers( ent );
+				if ( ent->NPC->rank >= RANK_LT || ent->client->ps.weapon == WP_THERMAL )
 				{//officers, grenade-throwers use alt-fire
 					//ent->health = 50;
 					ent->NPC->scriptFlags |= SCF_ALT_FIRE;
@@ -444,7 +444,7 @@ void NPC_SetMiscDefaultData(gentity_t* ent)
 				break;
 			}
 		}
-		if (ent->client->NPC_class == CLASS_KYLE || (ent->spawnflags & SFB_CINEMATIC))
+		if ( ent->client->NPC_class == CLASS_KYLE || (ent->spawnflags & SFB_CINEMATIC) )
 		{
 			ent->NPC->defaultBehavior = BS_CINEMATIC;
 		}
@@ -455,25 +455,25 @@ void NPC_SetMiscDefaultData(gentity_t* ent)
 		}
 		break;
 
-	case TEAM_NEUTRAL:
+	case TEAM_NEUTRAL: 
 
-		if (Q_stricmp(ent->NPC_type, "gonk") == 0)
+		if ( Q_stricmp(ent->NPC_type, "gonk") == 0 )
 		{
 			// I guess we generically make them player usable
 			ent->svFlags |= SVF_PLAYER_USABLE;
 
 			// Not even sure if we want to give different levels of batteries?  ...Or even that these are the values we'd want to use.
-			switch (g_spskill->integer)
+			switch ( g_spskill->integer )
 			{
 			case 0:	//	EASY
-				ent->client->ps.batteryCharge = MAX_BATTERIES * 0.8f;
+				ent->client->ps.batteryCharge = MAX_BATTERIES * 0.8f; 
 				break;
 			case 1:	//	MEDIUM
-				ent->client->ps.batteryCharge = MAX_BATTERIES * 0.75f;
+				ent->client->ps.batteryCharge = MAX_BATTERIES * 0.75f; 
 				break;
-			default:
+			default :
 			case 2:	//	HARD
-				ent->client->ps.batteryCharge = MAX_BATTERIES * 0.5f;
+				ent->client->ps.batteryCharge = MAX_BATTERIES * 0.5f; 
 				break;
 			}
 		}
@@ -699,7 +699,7 @@ int NPC_WeaponsForTeamRandomizer(team_t team, int spawnflags, const char* NPC_ty
 	{
 		return (1 << WP_BLASTER);
 	}
-	if ((Q_stricmp("interrogator", NPC_type) == 0) || (Q_stricmp("sentry", NPC_type) == 0) || (Q_strncmp("protocol", NPC_type, 8) == 0))
+	if ((Q_stricmp("interrogator", NPC_type) == 0) || (Q_stricmp("sentry", NPC_type) == 0))
 	{
 		return WP_NONE;
 	}
@@ -747,18 +747,18 @@ int NPC_WeaponsForTeamRandomizer(team_t team, int spawnflags, const char* NPC_ty
 	{
 		return ((1 << WP_MELEE));
 	}
-	if (Q_strncmp("prisoner", NPC_type, 8) == 0)
-	{
-		return WP_NONE;
-	}
+	//if (Q_strncmp("prisoner", NPC_type, 8) == 0)
+	//{
+	//	return WP_NONE;
+	//}
 	if (Q_strncmp("bespincop", NPC_type, 9) == 0)
 	{
 		return (1 << WP_BLASTER_PISTOL);
 	}
-	if (Q_stricmp("MonMothma", NPC_type) == 0)
-	{
-		return WP_NONE;
-	}
+	//if (Q_stricmp("MonMothma", NPC_type) == 0)
+	//{
+	//	return WP_NONE;
+	//}
 	if (spawnflags & SFB_RIFLEMAN)
 		return (1 << WP_REPEATER);
 
