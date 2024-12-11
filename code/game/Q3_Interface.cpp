@@ -3342,7 +3342,8 @@ static void Q3_SetWeapon (int entID, const char *wp_name)
 	if(wp == WP_NONE)
 	{//no weapon
 		self->client->ps.weapon = WP_NONE;
-		if ( self->weaponModel >= 0 )
+		//For some reason we're trying to remove weapons that don't exist
+		if ( self->weaponModel >= 0 && self->ghoul2.size()>0 && self->weaponModel)
 		{
 			gi.G2API_RemoveGhoul2Model( self->ghoul2, self->weaponModel );
 			self->weaponModel = -1;

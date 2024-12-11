@@ -171,7 +171,7 @@ touchFunc_t NPC_TouchFunc( gentity_t *ent )
 }
 
 extern void G_CreateG2AttachedWeaponModel(gentity_t* ent, const char* weaponModel);
-//Easier to break this into another function as I refactored a bit to maek it cleaner
+//Easier to break this into another function as I refactored a bit to make it cleaner
 void NPC_SetMiscDefaultDataRandomizer(gentity_t* ent)
 {
 	if (ent->spawnflags & SFB_CINEMATIC)
@@ -457,7 +457,7 @@ void NPC_SetMiscDefaultData(gentity_t* ent)
 
 	case TEAM_NEUTRAL: 
 
-		if ( Q_stricmp(ent->NPC_type, "gonk") == 0 )
+		if ( Q_stricmp( ent->NPC_type, "gonk" ) == 0 ) 
 		{
 			// I guess we generically make them player usable
 			ent->svFlags |= SVF_PLAYER_USABLE;
@@ -759,6 +759,9 @@ int NPC_WeaponsForTeamRandomizer(team_t team, int spawnflags, const char* NPC_ty
 	//{
 	//	return WP_NONE;
 	//}
+	if (!Q_stricmp("protocol", NPC_type)) {
+		return 1 << WP_STUN_BATON;
+	}
 	if (spawnflags & SFB_RIFLEMAN)
 		return (1 << WP_REPEATER);
 
@@ -3382,7 +3385,7 @@ void SP_NPC_Spawn_Random(gentity_t* self)
 		rng = rand() % 50;
 	}
 
-	switch (rng)
+ 	switch (rng)
 	{
 	case 0:
 		SP_NPC_Kyle(self);
