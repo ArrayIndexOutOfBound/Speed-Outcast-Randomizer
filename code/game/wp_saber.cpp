@@ -273,12 +273,21 @@ void G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *psWeaponModel )
 		return;
 	}
 	// give us a sabre model
-	ent->weaponModel = gi.G2API_InitGhoul2Model(ent->ghoul2, weaponModel, G_ModelIndex( weaponModel ), NULL, NULL, 0, 0);
+	// As long as it exists that is
+	if (!cg_enableRandomizer.integer || weaponModel) {
+		ent->weaponModel = gi.G2API_InitGhoul2Model(ent->ghoul2, weaponModel, G_ModelIndex(weaponModel), NULL, NULL, 0, 0);
+	}
 	if ( ent->weaponModel != -1 )
 	{
-		// attach it to the hand
-		gi.G2API_AttachG2Model(&ent->ghoul2[ent->weaponModel], &ent->ghoul2[ent->playerModel], 
-					ent->handRBolt, ent->playerModel);
+		if (cg_enableRandomizer.integer && ent->handRBolt < 0) {
+			gi.G2API_AttachG2Model(&ent->ghoul2[ent->weaponModel], &ent->ghoul2[ent->playerModel],
+				1, ent->playerModel);
+		}
+		else {
+			// attach it to the hand
+			gi.G2API_AttachG2Model(&ent->ghoul2[ent->weaponModel], &ent->ghoul2[ent->playerModel],
+				ent->handRBolt, ent->playerModel);
+		}
 		// set up a bolt on the end so we can get where the sabre muzzle is - we can assume this is always bolt 0
 		gi.G2API_AddBolt(&ent->ghoul2[ent->weaponModel], "*flash");
 	  	//gi.G2API_SetLodBias( &ent->ghoul2[ent->weaponModel], 0 );

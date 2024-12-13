@@ -1829,6 +1829,7 @@ gentity_t *NPC_CheckEnemy( qboolean findNew, qboolean tooFarOk, qboolean setEnem
 	if ( NPC->enemy )
 	{
 		//If we're targeting a neutral character (e.g. player during artus_detention officer escort) - don't
+		//Amber TODO: We still get aggro'd to here, annoying
 		if (cg_enableRandomizer.integer && NPC->enemy->client && NPC->enemy->client->playerTeam == TEAM_NEUTRAL)
 		{
 			G_ClearEnemy(NPC);
