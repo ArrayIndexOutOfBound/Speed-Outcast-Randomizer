@@ -3768,7 +3768,7 @@ void SP_NPC_Ugnaught_Random(gentity_t* self) // Ugnaught should spawn as Ugnaugh
 	if (cg_enableRandomizer.integer)
 	{
 		CheckIfMapChanged();
-		SP_NPC_Ugnaught(self);
+		SP_NPC_Spawn_Random(self);
 	}
 	else SP_NPC_Ugnaught(self);
 }
@@ -4038,7 +4038,7 @@ void SP_NPC_Droid_R2D2_Random(gentity_t* self) // R2D2 should spawn as self
 	if (cg_enableRandomizer.integer)
 	{
 		CheckIfMapChanged();
-		SP_NPC_Droid_R2D2(self);
+		SP_NPC_Spawn_Random(self);
 	}
 	else SP_NPC_Droid_R2D2(self);
 }
@@ -4047,7 +4047,7 @@ void SP_NPC_Droid_R5D2_Random(gentity_t* self) // R5D2 should spawn as self
 	if (cg_enableRandomizer.integer)
 	{
 		CheckIfMapChanged();
-		SP_NPC_Droid_R5D2(self);
+		SP_NPC_Spawn_Random(self);
 	}
 	else SP_NPC_Droid_R5D2(self);
 }
@@ -4056,7 +4056,7 @@ void SP_NPC_Droid_Protocol_Random(gentity_t* self)
 	if (cg_enableRandomizer.integer)
 	{
 		CheckIfMapChanged();
-		SP_NPC_Droid_Protocol(self);
+		SP_NPC_Spawn_Random(self);
 	}
 	else SP_NPC_Droid_Protocol(self);
 }

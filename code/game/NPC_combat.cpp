@@ -354,6 +354,10 @@ void G_SetEnemy( gentity_t *self, gentity_t *enemy )
 #ifdef _DEBUG
 	if ( self->s.number )
 	{
+		//Debug convenience, this doesn't change anything in FinalBuild but prevents popups when debugging
+		if (cg_enableRandomizer.integer && enemy == self) {
+			return;
+		}
 		assert( enemy != self );
 	}
 #endif// _DEBUG
