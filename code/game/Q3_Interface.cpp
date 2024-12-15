@@ -6630,6 +6630,10 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 				Q3_TaskIDSet( ent, TID_ANIM_UPPER, taskID );
 				both++;
 			}
+			else
+			{
+				Q3_DebugPrint(WL_ERROR, "Q3_SetAnimUpper: %s does not have anim %s!\n", ent->targetname, (char*)data);
+			}
 			if ( Q3_SetAnimLower( entID, (char *) data ) )
 			{
 				Q3_TaskIDSet( ent, TID_ANIM_LOWER, taskID );
@@ -6638,14 +6642,6 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 			else
 			{
 				Q3_DebugPrint( WL_ERROR, "Q3_SetAnimLower: %s does not have anim %s!\n", ent->targetname, (char *)data );
-				if (cg_enableRandomizer.integer)
-				{
-					//Lil bodge here to handle missing anims (e.g. R2D2 as cinematic officer 3 on Kejim base end cutscene, tries to animate him to use consoles)
-					//int instantTimer = 1;
-					//Q3_TaskIDSet(ent, TID_ANIM_LOWER, taskID);
-					//PM_SetLegsAnimTimer(ent, &instantTimer, 0);
-					//both++;
-				}
 			}
 			if (both == 0 && cg_enableRandomizer.integer) {
 				int instantTimer = 1;
