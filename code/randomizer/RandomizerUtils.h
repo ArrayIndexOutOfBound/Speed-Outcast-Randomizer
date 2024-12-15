@@ -11,5 +11,8 @@ class RandomizerUtils
 		static void RegenerateSeed();
 		static team_t GetClassTeamByClassname(char *npcType);
 		static team_t GetClassTeamByClass(class_t npcClass);
+		static int GetLastAnim(int entId);
+		static void SetLastAnim(int entId, int animId);
+
 };
 

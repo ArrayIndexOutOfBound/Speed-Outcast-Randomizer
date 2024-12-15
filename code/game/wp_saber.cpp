@@ -280,8 +280,17 @@ void G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *psWeaponModel )
 	if ( ent->weaponModel != -1 )
 	{
 		if (cg_enableRandomizer.integer && ent->handRBolt < 0) {
-			gi.G2API_AttachG2Model(&ent->ghoul2[ent->weaponModel], &ent->ghoul2[ent->playerModel],
-				1, ent->playerModel);
+			// Only try to add the weapon if we have a slot to attach it to, otherwise return
+			if ( ent->playerModel
+				&& &ent->ghoul2[ent->playerModel].mBltlist
+				&& &ent->ghoul2[ent->playerModel].mBltlist[1]
+				&& &ent->ghoul2[ent->playerModel].mBltlist[1].boneNumber) {
+				gi.G2API_AttachG2Model(&ent->ghoul2[ent->weaponModel], &ent->ghoul2[ent->playerModel],
+					1, ent->playerModel);
+			}
+			else {
+				return;
+			}
 		}
 		else {
 			// attach it to the hand

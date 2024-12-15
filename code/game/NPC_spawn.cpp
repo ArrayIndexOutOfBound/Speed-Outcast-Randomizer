@@ -1689,7 +1689,12 @@ void NPC_Spawn_Go( gentity_t *ent )
 	//		newent->svFlags |= SVF_NOPUSH;
 		}
 		else if (cg_enableRandomizer.integer) {
-			newent->client->playerTeam = RandomizerUtils::GetClassTeamByClassname(ent->classname);
+			if (!Q_stricmp("protocol_imp", ent->NPC_type)) {
+				//Imperial protocol droids share a class with C3PO but should be enemy team
+				newent->client->playerTeam = TEAM_ENEMY;
+			} else {
+				newent->client->playerTeam = RandomizerUtils::GetClassTeamByClassname(ent->classname);
+			}
 		}
 	}
 //=====================================================================
@@ -3017,10 +3022,6 @@ Remote Droid - the floating round droid used by Obi Wan to train Luke about the 
 void SP_NPC_Droid_Remote( gentity_t *self)
 {
 	self->NPC_type = "remote";
-	if (cg_enableRandomizer.integer)
-	{
-		self->team = "TEAM_ENEMY";
-	}
 
 	SP_NPC_spawner( self );
 

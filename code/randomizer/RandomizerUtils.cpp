@@ -20,6 +20,8 @@ extern game_import_t	gi;
 
 static std::map<string, team_t> teamsByName;
 static std::map<class_t, team_t> teamsByClass;
+//Used to track the last run anims per entity - prevents cutscene softlocks from running the same anim back to back
+static std::map<int, int> lastAnims;
 
 static void AddCharArrayToInt(string seedString, int* value)
 {
@@ -173,6 +175,19 @@ team_t RandomizerUtils::GetClassTeamByClass(class_t npcClass)
 	return !valFromMap ? TEAM_FREE : valFromMap;
 }
 
+int RandomizerUtils::GetLastAnim(int entId)
+{
+	if (lastAnims[entId]) {
+		return lastAnims[entId];
+	}
+	return -1;
+}
+
+void RandomizerUtils::SetLastAnim(int entId, int animId)
+{
+	lastAnims[entId] = animId;
+}
+
 void RandomizerInfoCommandCatcher(int page)
 {
 	// List of colors
@@ -233,5 +248,4 @@ void RandomizerInfoCommandCatcher(int page)
 	default:
 		return;
 	}
-
 }
