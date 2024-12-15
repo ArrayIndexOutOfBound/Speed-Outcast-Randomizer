@@ -2064,7 +2064,6 @@ static void FS_SetRestrictions( void ) {
 	// if fs_restrict is set, don't even look for the id file,
 	// which allows the demo release to be tested even if
 	// the full game is present
-	return;
 	if ( !fs_restrict->integer ) {
 		// look for the full game id
 		FS_ReadFile( "productid.txt", (void **)&productId );
@@ -2103,14 +2102,14 @@ static void FS_SetRestrictions( void ) {
 	FS_Startup( DEMOGAME );
 
 	// make sure that the pak file has the header checksum we expect
-	//for ( path = fs_searchpaths ; path ; path = path->next ) {
-	//	if ( path->pack ) {
-	//		// a tiny attempt to keep the checksum from being scannable from the exe
-	//		if ( (path->pack->checksum ^ 0x84268436u) != (DEMO_PAK_CHECKSUM ^ 0x84268436u) ) {
-	//			Com_Error( ERR_FATAL, "Corrupted pk3: %u", path->pack->checksum );
-	//		}
-	//	}
-	//}
+	for ( path = fs_searchpaths ; path ; path = path->next ) {
+		if ( path->pack ) {
+			// a tiny attempt to keep the checksum from being scannable from the exe
+			if ( (path->pack->checksum ^ 0x84268436u) != (DEMO_PAK_CHECKSUM ^ 0x84268436u) ) {
+				Com_Error( ERR_FATAL, "Corrupted pk3: %u", path->pack->checksum );
+			}
+		}
+	}
 }
 
 
