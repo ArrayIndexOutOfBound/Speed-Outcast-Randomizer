@@ -3656,12 +3656,13 @@ void SP_NPC_MonMothma_Random(gentity_t* self) // MonMothma should always spawn a
 	}
 	else SP_NPC_MonMothma(self);
 }
-void SP_NPC_Tavion_Random(gentity_t* self) // Tavion should always spawn as Tavion
+void SP_NPC_Tavion_Random(gentity_t* self) // Tavion should always spawn as Tavion (cutscene breaks otherwise)
 {
 	if (cg_enableRandomizer.integer)
 	{
 		CheckIfMapChanged();
 		SP_NPC_Spawn_Random(self);
+		//SP_NPC_Tavion(self);
 	}
 	else SP_NPC_Tavion(self);
 }

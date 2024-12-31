@@ -2191,6 +2191,10 @@ static void PM_CrashLandDamage( int damage )
 	{
 		if ( pm->gent->NPC && pm->gent->NPC->aiFlags & NPCAI_DIE_ON_IMPACT )
 		{
+			if (cg_enableRandomizer.integer && !strcmp(pm->gent->targetname, "cinematic23_tavion"))
+			{
+				return; // Please don't die MR NPC replacing Tavion
+			}
 			damage = 1000;
 		}
 		else

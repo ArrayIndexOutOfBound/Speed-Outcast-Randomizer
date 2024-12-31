@@ -4920,16 +4920,10 @@ void WP_SaberStartMissileBlockCheck( gentity_t *self, usercmd_t *ucmd  )
 
 	//I am one of the end guys on ns_starpad and have to be killed with a turret, so if I block the game is softlocked
 	if (cg_enableRandomizer.integer && !Q_stricmp(level.mapname, "ns_starpad")
-		&& self->targetname && !Q_strncmp(self->targetname, "end_thug", 8)) {
-		return;
-	}
-	//I am one of the end guys on ns_starpad and have to be killed with a turret, so if I block the game is softlocked
-	if (cg_enableRandomizer.integer && !Q_stricmp(level.mapname, "ns_starpad")
-		&& self->targetname && !Q_strncmp(self->targetname, "reelo_thug", 10)) {
-		return;
-	}
-	//I am one of the end guys on ns_starpad and have to be killed with a turret, so if I block the game is softlocked
-	if (cg_enableRandomizer.integer && !Q_stricmp(level.mapname, "ns_starpad")
+		&& self->targetname && !Q_strncmp(self->targetname, "end_thug", 8)
+		|| cg_enableRandomizer.integer && !Q_stricmp(level.mapname, "ns_starpad")
+		&& self->targetname && !Q_strncmp(self->targetname, "reelo_thug", 10)
+		|| cg_enableRandomizer.integer && !Q_stricmp(level.mapname, "ns_starpad")
 		&& self->targetname && !Q_strncmp(self->targetname, "bea", 3)) {
 		return;
 	}
