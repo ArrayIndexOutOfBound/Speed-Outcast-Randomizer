@@ -3824,7 +3824,11 @@ void SP_NPC_Imperial_Random(gentity_t* self)
 	if (cg_enableRandomizer.integer)
 	{
 		CheckIfMapChanged();
-		SP_NPC_Spawn_Random(self);
+		//SP_NPC_Spawn_Random(self);
+		if (strcmp(lastKnownMap, "artus_detention") == 0) // The warden that we have hostage, will make him an humanoid later, it's for the end of 2024
+		{
+			if (!strcmp(self->targetname,"warden") || !strcmp(self->NPC_targetname, "warden")) SP_NPC_Imperial(self);
+		}
 	}
 	else SP_NPC_Imperial(self);
 }
