@@ -4028,10 +4028,13 @@ void SP_NPC_Imperial_Random(gentity_t* self)
 		CheckIfMapChanged();
 		if (strcmp(lastKnownMap, "artus_detention") == 0) // The warden that we have hostage
 		{
-			if (!strcmp(self->targetname, "warden") || !strcmp(self->NPC_targetname, "warden"))
+			if (self->targetname)
 			{
-				SP_NPC_Spawn_Random_Humanoid(self);
-				return;
+				if (!strcmp(self->targetname, "warden"))
+				{
+					SP_NPC_Spawn_Random_Humanoid(self);
+					return;
+				}
 			}
 		}
 		if (strcmp(lastKnownMap, "cairn_assembly") == 0) // The officer we have to mindtrick
