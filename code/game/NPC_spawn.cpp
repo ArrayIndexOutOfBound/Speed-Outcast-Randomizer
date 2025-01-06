@@ -3609,7 +3609,103 @@ void SP_NPC_Spawn_Random(gentity_t* self)
 	}
 }
 
-// If the Randomizer is disabled, just a bit of process time is added at every check, but at least it should be comptable with the standard SpeedOutcast
+// Used for Lando, Jan, and other NPCs that have to be humanoid due to their size (door in artus_detention is too small for Desann for example)
+void SP_NPC_Spawn_Random_Humanoid(gentity_t* self)
+{
+	int numberOfHumanoid = 25;
+	int rng = rand() % numberOfHumanoid;
+
+	// Amber found a way to have any kind of NPC.
+	if (tabSize == 50)
+	{
+		for (int i = 0; i < tabSize; i++) tabLockedInNPC[i] = i;
+	}
+
+	switch (rng)
+	{
+	case 0:
+		SP_NPC_Lando(self);
+		break;
+	case 1:
+		SP_NPC_Jan(self);
+		break;
+	case 2:
+		SP_NPC_Luke(self);
+		break;
+	case 3:
+		SP_NPC_MonMothma(self);
+		break;
+	case 4:
+		SP_NPC_Tavion(self);
+		break;
+	case 5:
+		SP_NPC_Reelo(self);
+		break;
+	case 6:
+		SP_NPC_Bartender(self);
+		break;
+	case 7:
+		SP_NPC_MorganKatarn(self);
+		break;
+	case 8:
+		SP_NPC_Jedi(self);
+		break;
+	case 9:
+		SP_NPC_Prisoner(self);
+		break;
+	case 10:
+		SP_NPC_Rebel(self);
+		break;
+	case 11:
+		SP_NPC_Stormtrooper(self);
+		break;
+	case 12:
+		SP_NPC_StormtrooperOfficer(self);
+		break;
+	case 13:
+		SP_NPC_Tie_Pilot(self);
+		break;
+	case 14:
+		SP_NPC_Ugnaught(self);
+		break;
+	case 15:
+		SP_NPC_Gran(self);
+		break;
+	case 16:
+		SP_NPC_Rodian(self);
+		break;
+	case 17:
+		SP_NPC_Weequay(self);
+		break;
+	case 18:
+		SP_NPC_Trandoshan(self);
+		break;
+	case 19:
+		SP_NPC_SwampTrooper(self);
+		break;
+	case 20:
+		SP_NPC_Imperial(self);
+		break;
+	case 21:
+		SP_NPC_ImpWorker(self);
+		break;
+	case 22:
+		SP_NPC_BespinCop(self);
+		break;
+	case 23:
+		SP_NPC_Reborn(self);
+		break;
+	case 24:
+		SP_NPC_ShadowTrooper(self);
+		break;
+	default: // Secours
+		SP_NPC_Stormtrooper(self);
+		//SP_NPC_Spawn_Random(self);
+		break;
+	}
+}
+
+// If the Randomizer is disabled, just a bit of process time is added at every check, but at least it should be comptable with the standard SpeedOutcast since time is paused during load
 void SP_NPC_Kyle_Random(gentity_t* self) // Kyle should always spawn as Kyle
 {
 	if (cg_enableRandomizer.integer)
@@ -3625,7 +3721,8 @@ void SP_NPC_Lando_Random(gentity_t* self) // Lando should always spawn as Lando
 	{
 		CheckIfMapChanged();
 		//SP_NPC_Spawn_Random(self);
-		SP_NPC_Lando(self);
+		//SP_NPC_Lando(self);
+		SP_NPC_Spawn_Random_Humanoid(self);
 	}
 	else SP_NPC_Lando(self);
 }
@@ -3634,7 +3731,8 @@ void SP_NPC_Jan_Random(gentity_t* self) // Jan should always spawn as Jan
 	if (cg_enableRandomizer.integer)
 	{
 		CheckIfMapChanged();
-		SP_NPC_Spawn_Random(self);
+		//SP_NPC_Spawn_Random(self);
+		SP_NPC_Spawn_Random_Humanoid(self);
 	}
 	else SP_NPC_Jan(self);
 }
@@ -3643,7 +3741,8 @@ void SP_NPC_Luke_Random(gentity_t* self) // Luke should always spawn as Luke
 	if (cg_enableRandomizer.integer)
 	{
 		CheckIfMapChanged();
-		SP_NPC_Spawn_Random(self);
+		//SP_NPC_Spawn_Random(self);
+		SP_NPC_Spawn_Random_Humanoid(self);
 	}
 	else SP_NPC_Luke(self);
 }
@@ -3652,11 +3751,12 @@ void SP_NPC_MonMothma_Random(gentity_t* self) // MonMothma should always spawn a
 	if (cg_enableRandomizer.integer)
 	{
 		CheckIfMapChanged();
-		SP_NPC_Spawn_Random(self);
+		//SP_NPC_Spawn_Random(self);
+		SP_NPC_Spawn_Random_Humanoid(self);
 	}
 	else SP_NPC_MonMothma(self);
 }
-void SP_NPC_Tavion_Random(gentity_t* self) // Tavion should always spawn as Tavion (cutscene breaks otherwise)
+void SP_NPC_Tavion_Random(gentity_t* self) // Tavion should always spawn as Tavion
 {
 	if (cg_enableRandomizer.integer)
 	{
@@ -3671,7 +3771,8 @@ void SP_NPC_Reelo_Random(gentity_t* self) // Reelo should always spawn as Reelo
 	if (cg_enableRandomizer.integer)
 	{
 		CheckIfMapChanged();
-		SP_NPC_Spawn_Random(self);
+		//SP_NPC_Spawn_Random(self);
+		SP_NPC_Spawn_Random_Humanoid(self);
 	}
 	else SP_NPC_Reelo(self);
 }
@@ -3689,7 +3790,8 @@ void SP_NPC_Desann_Random(gentity_t* self) // Desann should always spawn as Desa
 	if (cg_enableRandomizer.integer)
 	{
 		CheckIfMapChanged();
-		SP_NPC_Spawn_Random(self);
+		//SP_NPC_Spawn_Random(self);
+		SP_NPC_Spawn_Random_Humanoid(self); // As a droid, the cutscene before the final 'fight' might be infinite
 	}
 	else SP_NPC_Desann(self);
 }
@@ -3743,6 +3845,23 @@ void SP_NPC_Stormtrooper_Random(gentity_t* self)
 	if (cg_enableRandomizer.integer)
 	{
 		CheckIfMapChanged();
+		// In case of "normal" gameplay ie not doing the turret skip, you need to be able to kill them (and not get stuck in doors)
+		if (strcmp(lastKnownMap, "artus_topside") == 0)
+		{
+			if (self->behaviorSet[0]) // Check for NULL
+			{
+				if (strcmp(self->behaviorSet[0], "artus_topside/shoot_prisoners") == 0)
+				{
+					SP_NPC_Spawn_Random_Humanoid(self);
+					return;
+				}
+				if (strcmp(self->behaviorSet[0], "artus_topside/shoot_prisoners_crouch") == 0)
+				{
+					SP_NPC_Spawn_Random_Humanoid(self);
+					return;
+				}
+			}
+		}
 		SP_NPC_Spawn_Random(self);
 	}
 	else SP_NPC_Stormtrooper(self);
@@ -3770,7 +3889,9 @@ void SP_NPC_Ugnaught_Random(gentity_t* self) // Ugnaught should spawn as Ugnaugh
 	if (cg_enableRandomizer.integer)
 	{
 		CheckIfMapChanged();
-		SP_NPC_Spawn_Random(self);
+		//SP_NPC_Spawn_Random(self);
+		// For size, they may not hit triggers otherwise
+		SP_NPC_Spawn_Random_Humanoid(self);
 	}
 	else SP_NPC_Ugnaught(self);
 }
@@ -3779,6 +3900,29 @@ void SP_NPC_Gran_Random(gentity_t* self) // Who is that ? It's the TD guys
 	if (cg_enableRandomizer.integer)
 	{
 		CheckIfMapChanged();
+		if (strcmp(lastKnownMap, "ns_starpad") == 0)
+		{
+			if (!strcmp(self->targetname, "back_squad1")
+				|| !strcmp(self->targetname, "back_squad2")
+				|| !strcmp(self->targetname, "back_squad3")
+				|| !strcmp(self->targetname, "back_squad4")
+				|| !strcmp(self->targetname, "front_squad1")
+				|| !strcmp(self->targetname, "front_squad2")
+				|| !strcmp(self->targetname, "front_squad3")
+				|| !strcmp(self->targetname, "front_squad4")
+				|| !strcmp(self->NPC_targetname, "back_squad1")
+				|| !strcmp(self->NPC_targetname, "back_squad2")
+				|| !strcmp(self->NPC_targetname, "back_squad3")
+				|| !strcmp(self->NPC_targetname, "back_squad4")
+				|| !strcmp(self->NPC_targetname, "front_squad1")
+				|| !strcmp(self->NPC_targetname, "front_squad2")
+				|| !strcmp(self->NPC_targetname, "front_squad3")
+				|| !strcmp(self->NPC_targetname, "front_squad4"))
+			{
+				SP_NPC_Spawn_Random_Humanoid(self);
+				return;
+			}
+		}
 		SP_NPC_Spawn_Random(self);
 	}
 	else SP_NPC_Gran(self);
@@ -3788,6 +3932,35 @@ void SP_NPC_Rodian_Random(gentity_t* self)
 	if (cg_enableRandomizer.integer)
 	{
 		CheckIfMapChanged();
+		if (strcmp(lastKnownMap, "ns_starpad") == 0)
+		{
+			if (!strcmp(self->targetname, "back_squad1")
+				|| !strcmp(self->targetname, "back_squad2")
+				|| !strcmp(self->targetname, "back_squad3")
+				|| !strcmp(self->targetname, "back_squad4")
+				|| !strcmp(self->targetname, "front_squad1")
+				|| !strcmp(self->targetname, "front_squad2")
+				|| !strcmp(self->targetname, "front_squad3")
+				|| !strcmp(self->targetname, "front_squad4")
+				|| !strcmp(self->NPC_targetname, "back_squad1")
+				|| !strcmp(self->NPC_targetname, "back_squad2")
+				|| !strcmp(self->NPC_targetname, "back_squad3")
+				|| !strcmp(self->NPC_targetname, "back_squad4")
+				|| !strcmp(self->NPC_targetname, "front_squad1")
+				|| !strcmp(self->NPC_targetname, "front_squad2")
+				|| !strcmp(self->NPC_targetname, "front_squad3")
+				|| !strcmp(self->NPC_targetname, "front_squad4")
+				|| !strcmp(self->targetname, "reelo_thug")
+				|| !strcmp(self->targetname, "end_thug")
+				|| !strcmp(self->targetname, "bea")
+				|| !strcmp(self->NPC_targetname, "reelo_thug")
+				|| !strcmp(self->NPC_targetname, "end_thug")
+				|| !strcmp(self->NPC_targetname, "bea"))
+			{
+				SP_NPC_Spawn_Random_Humanoid(self);
+				return;
+			}
+		}
 		SP_NPC_Spawn_Random(self);
 	}
 	else SP_NPC_Rodian(self);
@@ -3797,6 +3970,35 @@ void SP_NPC_Weequay_Random(gentity_t* self)
 	if (cg_enableRandomizer.integer)
 	{
 		CheckIfMapChanged();
+		if (strcmp(lastKnownMap, "ns_starpad") == 0)
+		{
+			if (!strcmp(self->targetname, "back_squad1")
+				|| !strcmp(self->targetname, "back_squad2")
+				|| !strcmp(self->targetname, "back_squad3")
+				|| !strcmp(self->targetname, "back_squad4")
+				|| !strcmp(self->targetname, "front_squad1")
+				|| !strcmp(self->targetname, "front_squad2")
+				|| !strcmp(self->targetname, "front_squad3")
+				|| !strcmp(self->targetname, "front_squad4")
+				|| !strcmp(self->NPC_targetname, "back_squad1")
+				|| !strcmp(self->NPC_targetname, "back_squad2")
+				|| !strcmp(self->NPC_targetname, "back_squad3")
+				|| !strcmp(self->NPC_targetname, "back_squad4")
+				|| !strcmp(self->NPC_targetname, "front_squad1")
+				|| !strcmp(self->NPC_targetname, "front_squad2")
+				|| !strcmp(self->NPC_targetname, "front_squad3")
+				|| !strcmp(self->NPC_targetname, "front_squad4")
+				|| !strcmp(self->targetname, "reelo_thug")
+				|| !strcmp(self->targetname, "end_thug")
+				|| !strcmp(self->targetname, "bea")
+				|| !strcmp(self->NPC_targetname, "reelo_thug")
+				|| !strcmp(self->NPC_targetname, "end_thug")
+				|| !strcmp(self->NPC_targetname, "bea"))
+			{
+				SP_NPC_Spawn_Random_Humanoid(self);
+				return;
+			}
+		}
 		SP_NPC_Spawn_Random(self);
 	}
 	else SP_NPC_Weequay(self);
@@ -3824,11 +4026,34 @@ void SP_NPC_Imperial_Random(gentity_t* self)
 	if (cg_enableRandomizer.integer)
 	{
 		CheckIfMapChanged();
-		//SP_NPC_Spawn_Random(self);
-		if (strcmp(lastKnownMap, "artus_detention") == 0) // The warden that we have hostage, will make him an humanoid later, it's for the end of 2024
+		if (strcmp(lastKnownMap, "artus_detention") == 0) // The warden that we have hostage
 		{
-			if (!strcmp(self->targetname,"warden") || !strcmp(self->NPC_targetname, "warden")) SP_NPC_Imperial(self);
+			if (!strcmp(self->targetname, "warden") || !strcmp(self->NPC_targetname, "warden"))
+			{
+				SP_NPC_Spawn_Random_Humanoid(self);
+				return;
+			}
 		}
+		if (strcmp(lastKnownMap, "cairn_assembly") == 0) // The officer we have to mindtrick
+		{
+			if (self->behaviorSet[0]) // Check for NULL
+			{
+				if (strcmp(self->behaviorSet[0], "cairn_assembly/silent_stand") == 0)
+				{
+					SP_NPC_Spawn_Random_Humanoid(self);
+					return;
+				}
+			}
+		}
+		if (strcmp(lastKnownMap, "doom_detention") == 0) // The jailer of Jan
+		{
+			if (!strcmp(self->targetname, "jailer") || !strcmp(self->NPC_targetname, "jailer"))
+			{
+				SP_NPC_Spawn_Random_Humanoid(self);
+				return;
+			}
+		}
+		SP_NPC_Spawn_Random(self);
 	}
 	else SP_NPC_Imperial(self);
 }
@@ -4067,11 +4292,6 @@ void SP_NPC_Droid_Protocol_Random(gentity_t* self)
 	}
 	else SP_NPC_Droid_Protocol(self);
 }
-
-
-
-
-
 
 
 
