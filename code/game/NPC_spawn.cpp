@@ -3902,25 +3902,23 @@ void SP_NPC_Gran_Random(gentity_t* self) // Who is that ? It's the TD guys
 		CheckIfMapChanged();
 		if (strcmp(lastKnownMap, "ns_starpad") == 0)
 		{
-			if (!strcmp(self->targetname, "back_squad1")
-				|| !strcmp(self->targetname, "back_squad2")
-				|| !strcmp(self->targetname, "back_squad3")
-				|| !strcmp(self->targetname, "back_squad4")
-				|| !strcmp(self->targetname, "front_squad1")
-				|| !strcmp(self->targetname, "front_squad2")
-				|| !strcmp(self->targetname, "front_squad3")
-				|| !strcmp(self->targetname, "front_squad4")
-				|| !strcmp(self->NPC_targetname, "back_squad1")
-				|| !strcmp(self->NPC_targetname, "back_squad2")
-				|| !strcmp(self->NPC_targetname, "back_squad3")
-				|| !strcmp(self->NPC_targetname, "back_squad4")
-				|| !strcmp(self->NPC_targetname, "front_squad1")
-				|| !strcmp(self->NPC_targetname, "front_squad2")
-				|| !strcmp(self->NPC_targetname, "front_squad3")
-				|| !strcmp(self->NPC_targetname, "front_squad4"))
+			if (self->targetname)
 			{
-				SP_NPC_Spawn_Random_Humanoid(self);
-				return;
+				if (!strcmp(self->targetname, "back_squad1")
+					|| !strcmp(self->targetname, "back_squad2")
+					|| !strcmp(self->targetname, "back_squad3")
+					|| !strcmp(self->targetname, "back_squad4")
+					|| !strcmp(self->targetname, "front_squad1")
+					|| !strcmp(self->targetname, "front_squad2")
+					|| !strcmp(self->targetname, "front_squad3")
+					|| !strcmp(self->targetname, "front_squad4")
+					|| !strcmp(self->targetname, "reelo_thug")
+					|| !strcmp(self->targetname, "end_thug")
+					|| !strcmp(self->targetname, "bea"))
+				{
+					SP_NPC_Spawn_Random_Humanoid(self);
+					return;
+				}
 			}
 		}
 		SP_NPC_Spawn_Random(self);
@@ -3934,31 +3932,23 @@ void SP_NPC_Rodian_Random(gentity_t* self)
 		CheckIfMapChanged();
 		if (strcmp(lastKnownMap, "ns_starpad") == 0)
 		{
-			if (!strcmp(self->targetname, "back_squad1")
-				|| !strcmp(self->targetname, "back_squad2")
-				|| !strcmp(self->targetname, "back_squad3")
-				|| !strcmp(self->targetname, "back_squad4")
-				|| !strcmp(self->targetname, "front_squad1")
-				|| !strcmp(self->targetname, "front_squad2")
-				|| !strcmp(self->targetname, "front_squad3")
-				|| !strcmp(self->targetname, "front_squad4")
-				|| !strcmp(self->NPC_targetname, "back_squad1")
-				|| !strcmp(self->NPC_targetname, "back_squad2")
-				|| !strcmp(self->NPC_targetname, "back_squad3")
-				|| !strcmp(self->NPC_targetname, "back_squad4")
-				|| !strcmp(self->NPC_targetname, "front_squad1")
-				|| !strcmp(self->NPC_targetname, "front_squad2")
-				|| !strcmp(self->NPC_targetname, "front_squad3")
-				|| !strcmp(self->NPC_targetname, "front_squad4")
-				|| !strcmp(self->targetname, "reelo_thug")
-				|| !strcmp(self->targetname, "end_thug")
-				|| !strcmp(self->targetname, "bea")
-				|| !strcmp(self->NPC_targetname, "reelo_thug")
-				|| !strcmp(self->NPC_targetname, "end_thug")
-				|| !strcmp(self->NPC_targetname, "bea"))
+			if (self->targetname)
 			{
-				SP_NPC_Spawn_Random_Humanoid(self);
-				return;
+				if (!strcmp(self->targetname, "back_squad1")
+					|| !strcmp(self->targetname, "back_squad2")
+					|| !strcmp(self->targetname, "back_squad3")
+					|| !strcmp(self->targetname, "back_squad4")
+					|| !strcmp(self->targetname, "front_squad1")
+					|| !strcmp(self->targetname, "front_squad2")
+					|| !strcmp(self->targetname, "front_squad3")
+					|| !strcmp(self->targetname, "front_squad4")
+					|| !strcmp(self->targetname, "reelo_thug")
+					|| !strcmp(self->targetname, "end_thug")
+					|| !strcmp(self->targetname, "bea"))
+				{
+					SP_NPC_Spawn_Random_Humanoid(self);
+					return;
+				}
 			}
 		}
 		SP_NPC_Spawn_Random(self);
@@ -3972,31 +3962,23 @@ void SP_NPC_Weequay_Random(gentity_t* self)
 		CheckIfMapChanged();
 		if (strcmp(lastKnownMap, "ns_starpad") == 0)
 		{
-			if (!strcmp(self->targetname, "back_squad1")
-				|| !strcmp(self->targetname, "back_squad2")
-				|| !strcmp(self->targetname, "back_squad3")
-				|| !strcmp(self->targetname, "back_squad4")
-				|| !strcmp(self->targetname, "front_squad1")
-				|| !strcmp(self->targetname, "front_squad2")
-				|| !strcmp(self->targetname, "front_squad3")
-				|| !strcmp(self->targetname, "front_squad4")
-				|| !strcmp(self->NPC_targetname, "back_squad1")
-				|| !strcmp(self->NPC_targetname, "back_squad2")
-				|| !strcmp(self->NPC_targetname, "back_squad3")
-				|| !strcmp(self->NPC_targetname, "back_squad4")
-				|| !strcmp(self->NPC_targetname, "front_squad1")
-				|| !strcmp(self->NPC_targetname, "front_squad2")
-				|| !strcmp(self->NPC_targetname, "front_squad3")
-				|| !strcmp(self->NPC_targetname, "front_squad4")
-				|| !strcmp(self->targetname, "reelo_thug")
-				|| !strcmp(self->targetname, "end_thug")
-				|| !strcmp(self->targetname, "bea")
-				|| !strcmp(self->NPC_targetname, "reelo_thug")
-				|| !strcmp(self->NPC_targetname, "end_thug")
-				|| !strcmp(self->NPC_targetname, "bea"))
+			if (self->targetname)
 			{
-				SP_NPC_Spawn_Random_Humanoid(self);
-				return;
+				if (!strcmp(self->targetname, "back_squad1")
+					|| !strcmp(self->targetname, "back_squad2")
+					|| !strcmp(self->targetname, "back_squad3")
+					|| !strcmp(self->targetname, "back_squad4")
+					|| !strcmp(self->targetname, "front_squad1")
+					|| !strcmp(self->targetname, "front_squad2")
+					|| !strcmp(self->targetname, "front_squad3")
+					|| !strcmp(self->targetname, "front_squad4")
+					|| !strcmp(self->targetname, "reelo_thug")
+					|| !strcmp(self->targetname, "end_thug")
+					|| !strcmp(self->targetname, "bea"))
+				{
+					SP_NPC_Spawn_Random_Humanoid(self);
+					return;
+				}
 			}
 		}
 		SP_NPC_Spawn_Random(self);
@@ -4050,10 +4032,13 @@ void SP_NPC_Imperial_Random(gentity_t* self)
 		}
 		if (strcmp(lastKnownMap, "doom_detention") == 0) // The jailer of Jan
 		{
-			if (!strcmp(self->targetname, "jailer") || !strcmp(self->NPC_targetname, "jailer"))
+			if (self->targetname)
 			{
-				SP_NPC_Spawn_Random_Humanoid(self);
-				return;
+				if (!strcmp(self->targetname, "jailer"))
+				{
+					SP_NPC_Spawn_Random_Humanoid(self);
+					return;
+				}
 			}
 		}
 		SP_NPC_Spawn_Random(self);
