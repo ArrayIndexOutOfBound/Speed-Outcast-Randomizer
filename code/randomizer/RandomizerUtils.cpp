@@ -99,7 +99,8 @@ void initialiseNameMap() {
 	teamsByName["NPC_BespinCop"] = TEAM_PLAYER;
 	teamsByName["NPC_Reborn"] = TEAM_ENEMY;
 	teamsByName["NPC_ShadowTrooper"] = TEAM_ENEMY;
-	teamsByName["NPC_MineMonster"] = TEAM_NEUTRAL;
+	//teamsByName["NPC_MineMonster"] = TEAM_NEUTRAL;
+	teamsByName["NPC_MineMonster"] = TEAM_ENEMY;
 	teamsByName["NPC_Droid_Interrogator"] = TEAM_ENEMY;
 	teamsByName["NPC_Droid_Probe"] = TEAM_ENEMY;
 	teamsByName["NPC_Droid_Seeker"] = TEAM_PLAYER;
@@ -139,7 +140,8 @@ void initialiseMapByClass() {
 	teamsByClass[CLASS_BESPIN_COP] = TEAM_PLAYER;
 	teamsByClass[CLASS_REBORN] = TEAM_ENEMY;
 	teamsByClass[CLASS_SHADOWTROOPER] = TEAM_ENEMY;
-	teamsByClass[CLASS_MINEMONSTER] = TEAM_NEUTRAL;
+	//teamsByClass[CLASS_MINEMONSTER] = TEAM_NEUTRAL;
+	teamsByClass[CLASS_MINEMONSTER] = TEAM_ENEMY;
 	teamsByClass[CLASS_INTERROGATOR] = TEAM_ENEMY;
 	teamsByClass[CLASS_PROBE] = TEAM_ENEMY;
 	teamsByClass[CLASS_SEEKER] = TEAM_PLAYER;

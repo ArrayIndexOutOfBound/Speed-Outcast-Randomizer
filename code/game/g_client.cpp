@@ -1605,7 +1605,9 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 		// Posto : Hey, we can randomize our first weapon !
 		if (cg_enableRandomizer.integer)
 		{
-			client->ps.stats[STAT_WEAPONS] |= (1 << (weapon_t)(GetRandomizedWeapon()));
+			// Inconsistent seed with that
+			// client->ps.stats[STAT_WEAPONS] |= (1 << (weapon_t)(GetRandomizedWeapon()));
+			client->ps.stats[STAT_WEAPONS] |= (1 << WP_BRYAR_PISTOL);	//these are precached in g_items, ClearRegisteredItems()
 		}
 		else
 		{
