@@ -99,6 +99,7 @@ void WP_ForcePowerDrain( gentity_t *self, forcePowers_t forcePower, int override
 extern cvar_t	*g_saberAutoBlocking;
 extern cvar_t	*g_saberRealisticCombat;
 extern vmCvar_t cg_enableRandomizer;
+extern vmCvar_t cg_enableRandomizerEnhancements;
 extern int g_crosshairEntNum;
 
 int		g_saberFlashTime = 0;
@@ -461,7 +462,7 @@ void WP_SaberInitBladeData( gentity_t *ent )
 		{
 			if ( !ent->client->ps.saberAnimLevel )
 			{//initialize, but don't reset
-				if (cg_enableRandomizer.integer) // Random saber style at pickup, but I need to NOT call rand() to keep NPC spawn consistent.
+				if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer) // Random saber style at pickup, but I need to NOT call rand() to keep NPC spawn consistent.
 				{
 					ent->client->ps.saberAnimLevel = (level.framenum + level.time) % 3 + 1;
 				}
@@ -480,7 +481,7 @@ void WP_SaberInitBladeData( gentity_t *ent )
 		if ( ent->client->NPC_class == CLASS_DESANN )
 		{//longer saber
 			ent->client->ps.saberLengthMax = 48;
-			if (cg_enableRandomizer.integer) // Would be the funniest thing ever, range of 25% to 400% of initial value
+			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer) // Would be the funniest thing ever, range of 25% to 400% of initial value
 			{
 					ent->client->ps.saberLengthMax = rand() % 181 + 12;
 			}
@@ -488,7 +489,7 @@ void WP_SaberInitBladeData( gentity_t *ent )
 		else if ( ent->client->NPC_class == CLASS_REBORN )
 		{//shorter saber
 			ent->client->ps.saberLengthMax = 32;
-			if (cg_enableRandomizer.integer) // Would be the funniest thing ever, range of 25% to 400% of initial value
+			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer) // Would be the funniest thing ever, range of 25% to 400% of initial value
 			{
 				ent->client->ps.saberLengthMax = rand() % 121 + 8;
 			}
@@ -496,7 +497,7 @@ void WP_SaberInitBladeData( gentity_t *ent )
 		else
 		{//standard saber length
 			ent->client->ps.saberLengthMax = 40; // Default
-			if (cg_enableRandomizer.integer) // Would be the funniest thing ever, range of 25% to 400% of initial value
+			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer) // Would be the funniest thing ever, range of 25% to 400% of initial value
 			{
 				if (ent->client->NPC_class != CLASS_KYLE) // Since it's at map load, and all npc are generated here, we may use rand()
 				{

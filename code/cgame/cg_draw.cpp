@@ -2344,7 +2344,15 @@ CG_DrawSeed
 static float CG_DrawSeed(float y) {
 	if (cg_enableRandomizer.integer)
 	{
-		const char* seed_string = va("Seed: %s", cg_setSeed.string);
+		char* seed_string;
+		if (cg_enableRandomizerEnhancements.integer)
+		{
+			seed_string = va("Seed (X): %s", cg_setSeed.string);
+		}
+		else
+		{
+			seed_string = va("Seed : %s", cg_setSeed.string);
+		}
 		const int width = cgi_R_Font_StrLenPixels(seed_string, cgs.media.qhFontMedium, 1.0f);
 		cgi_R_Font_DrawString(635 - width, y + 2, seed_string, colorTable[CT_LTGOLD1], cgs.media.qhFontMedium, -1, 1.0f);
 		return y + BIGCHAR_HEIGHT + 10;

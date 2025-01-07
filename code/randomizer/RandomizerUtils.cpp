@@ -13,6 +13,7 @@ using namespace std::chrono;
 
 // Randomizer
 extern	vmCvar_t		cg_enableRandomizer;
+extern	vmCvar_t		cg_enableRandomizerEnhancements;
 extern	vmCvar_t		cg_useSetSeed;
 extern	vmCvar_t		cg_setSeed;
 // To access the game
