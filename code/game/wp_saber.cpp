@@ -483,7 +483,10 @@ void WP_SaberInitBladeData( gentity_t *ent )
 			ent->client->ps.saberLengthMax = 48;
 			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer) // Would be the funniest thing ever, range of 25% to 400% of initial value
 			{
-					ent->client->ps.saberLengthMax = rand() % 181 + 12;
+				ent->client->ps.saberLengthMax = rand() % 181 + 12;
+				// For now we use rand, but that will be fixed in the future
+				ent->client->ps.saberColor = (saber_colors_t) (rand() % 6);
+					
 			}
 		}
 		else if ( ent->client->NPC_class == CLASS_REBORN )
@@ -492,6 +495,8 @@ void WP_SaberInitBladeData( gentity_t *ent )
 			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer) // Would be the funniest thing ever, range of 25% to 400% of initial value
 			{
 				ent->client->ps.saberLengthMax = rand() % 121 + 8;
+				// For now we use rand, but that will be fixed in the future
+				ent->client->ps.saberColor = (saber_colors_t)(rand() % 6);
 			}
 		}
 		else
@@ -502,11 +507,16 @@ void WP_SaberInitBladeData( gentity_t *ent )
 				if (ent->client->NPC_class != CLASS_KYLE) // Since it's at map load, and all npc are generated here, we may use rand()
 				{
 					ent->client->ps.saberLengthMax = rand() % 151 + 10;
+					// For now we use rand, but that will be fixed in the future
+					ent->client->ps.saberColor = (saber_colors_t)(rand() % 6);
 				}
 				else // That's Kyle, when he's getting the saber at trial or before, might as well use the current time like for the saber style (to be sonsistent with our seed)
 				{
 					// That's a range of 25% to 400%
 					ent->client->ps.saberLengthMax = (level.framenum + level.time) % 151 + 10;
+					// Changing the saber will ruin the rng calls, but they will be on a different 'rng source', so it's not that bad in the future
+					// For now we use rand, but that will be fixed in the future
+					ent->client->ps.saberColor = (saber_colors_t)(rand() % 6);
 				}
 				
 			}
