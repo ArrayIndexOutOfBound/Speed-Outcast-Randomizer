@@ -20,6 +20,7 @@ extern	vmCvar_t		cg_setSeed;
 extern vmCvar_t			cg_enableRandSaberLenght;
 extern vmCvar_t			cg_enableRandSaberColor;
 extern vmCvar_t			cg_enableRandJumpHeight;
+extern vmCvar_t			cg_enableRandJumpStrenght;
 // To access the game
 extern game_import_t	gi;
 

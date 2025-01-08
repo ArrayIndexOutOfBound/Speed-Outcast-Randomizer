@@ -703,6 +703,7 @@ extern vmCvar_t			cg_enableRandSaberStyle;
 extern vmCvar_t			cg_enableRandSaberLenght;
 extern vmCvar_t			cg_enableRandSaberColor;
 extern vmCvar_t			cg_enableRandJumpHeight;
+extern vmCvar_t			cg_enableRandJumpStrength;
 // Additions for Base Game fixes (ex : artus_mine crates to get all pickups)
 extern vmCvar_t			cg_baseGameFixes;
 

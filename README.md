@@ -80,6 +80,9 @@ Random saber color every time the saber is chosen. Blue, Green, Yeelow, Orange, 
 #### `cg_enableRandJumpHeight` (0 or 1)
 Random jump height with every jump. From 1/3 the normal jump without force to double the height with jump force 3.
 
+#### `cg_enableRandJumpStrength` (0 or 1)
+Random jump strength with every jump. From the normal jump without force to quadruple the Z velocity with jump force 3.
+
 #### Todos
 - Random projectiles every shot
 - Random sounds

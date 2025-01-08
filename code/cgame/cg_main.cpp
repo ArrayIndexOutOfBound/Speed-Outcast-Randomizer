@@ -401,6 +401,7 @@ vmCvar_t	cg_enableRandSaberStyle;
 vmCvar_t	cg_enableRandSaberLenght;
 vmCvar_t	cg_enableRandSaberColor;
 vmCvar_t	cg_enableRandJumpHeight;
+vmCvar_t	cg_enableRandJumpStrength;
 // Additions for Base Game fixes (ex : artus_mine crates to get all pickups)
 vmCvar_t	cg_baseGameFixes;
 
@@ -599,6 +600,7 @@ Ghoul2 Insert End
 	{ &cg_enableRandSaberLenght, "cg_enableRandSaberLenght", "0", CVAR_ARCHIVE },
 	{ &cg_enableRandSaberColor, "cg_enableRandSaberColor", "0", CVAR_ARCHIVE },
 	{ &cg_enableRandJumpHeight, "cg_enableRandJumpHeight", "0", CVAR_ARCHIVE },
+	{ &cg_enableRandJumpStrength, "cg_enableRandJumpStrength", "0", CVAR_ARCHIVE },
 	
 	// Additions for BaseGame fixes
 	{ &cg_baseGameFixes, "cg_baseGameFixes", "0", CVAR_ARCHIVE }
