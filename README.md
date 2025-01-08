@@ -38,7 +38,7 @@ Default: `0`.
 
 #### `cg_drawSeed` (0 or 1)
 
-Draw the seed used during a run. Will draw "No Rand" is `cg_enableRandomizer` is 0
+Draw the seed used during a run. Will draw "No Rand" is `cg_enableRandomizer` is 0.
 Default: `0`.
 
 
@@ -57,7 +57,7 @@ Default: `0`.
 
 #### Exceptions
 
-- Lando, Jan, Luke, MonMothman, Reelo, Desann, Ugnaught, 
+- Lando, Jan, Luke, MonMothman, Reelo, Desann and Ugnaught will always spawn as humanoids.
 - ATSTs, Seekers, MouseDroids, R5D2 (bespin) and 'Chicken Robots' will always spawn as themselves.
 - The warden in `artus_detention` will always be an humanoid.
 - The stormtrooper shooting at the prisoners in `artus_topside` will always be humanoids.
@@ -67,11 +67,12 @@ Default: `0`.
 
 ### List of addition for the 'exotic' Randomizer
 
-- Randomized saber lenght every time the saber is chosen.
-- Randomized saber color every time the saber is chosen.
-- TODO : Random jump height 
+- Random saber style at pickup. That means you will always get a change to get any saber style, so go for a qs/ql if you want something specific.
+- Random saber lenght every time the saber is chosen. From 25% to 400% the saber lenght.
+- Random saber color every time the saber is chosen. Blue, Green, Yeelow, Orange, Purple and Red. RGB might be possible but that needs investigation.
+- Random jump height with every jump. From 1/3 the normal jump without force to double the height with jump force 3.
+- TODO : Random projectiles every shot
 - TODO : Random sounds
 - TODO : Random NPC size (may not be possible because of insane hitbox and things)
-- TODO : Random projectiles every shot
 
 
