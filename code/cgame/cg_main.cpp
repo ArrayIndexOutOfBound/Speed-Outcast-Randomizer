@@ -396,6 +396,11 @@ vmCvar_t	cg_enableRandomizerEnhancements;
 vmCvar_t	cg_drawSeed;
 vmCvar_t	cg_useSetSeed;
 vmCvar_t	cg_setSeed;
+// Randomizer - evil mode
+vmCvar_t	cg_enableRandSaberStyle;
+vmCvar_t	cg_enableRandSaberLenght;
+vmCvar_t	cg_enableRandSaberColor;
+vmCvar_t	cg_enableRandJumpHeight;
 // Additions for Base Game fixes (ex : artus_mine crates to get all pickups)
 vmCvar_t	cg_baseGameFixes;
 
@@ -589,6 +594,12 @@ Ghoul2 Insert End
 	{ &cg_drawSeed, "cg_drawSeed", "0", CVAR_ARCHIVE },
 	{ &cg_useSetSeed, "cg_useSetSeed", "0", CVAR_ARCHIVE },
 	{ &cg_setSeed, "cg_setSeed", "", CVAR_ARCHIVE },
+	// Randomizer - evil mode
+	{ &cg_enableRandSaberStyle, "cg_enableRandSaberStyle", "0", CVAR_ARCHIVE },
+	{ &cg_enableRandSaberLenght, "cg_enableRandSaberLenght", "0", CVAR_ARCHIVE },
+	{ &cg_enableRandSaberColor, "cg_enableRandSaberColor", "0", CVAR_ARCHIVE },
+	{ &cg_enableRandJumpHeight, "cg_enableRandJumpHeight", "0", CVAR_ARCHIVE },
+	
 	// Additions for BaseGame fixes
 	{ &cg_baseGameFixes, "cg_baseGameFixes", "0", CVAR_ARCHIVE }
 };

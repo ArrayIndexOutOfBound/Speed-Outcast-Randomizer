@@ -625,7 +625,7 @@ static qboolean PM_CheckJump( void )
 				// curHeight is zero when we start a jump, so if it is zero and we start a force jump 
 				float curHeight = pm->ps->origin[2] - pm->ps->forceJumpZStart;
 
-				if (curHeight == 0 && cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer)
+				if (curHeight == 0 && cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer && cg_enableRandJumpHeight.integer)
 				{
 					// Need to change the rng calls later
 					// Change the values for the force jumps, not the normal one (but since this is called when you have force power, that don't change much)

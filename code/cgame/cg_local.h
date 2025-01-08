@@ -693,12 +693,17 @@ extern	vmCvar_t		cg_strafeHelperColorSpeedG;
 extern	vmCvar_t		cg_strafeHelperColorSpeedB;
 extern	vmCvar_t		cg_strafeHelperColorSpeedA;
 
-//Additions for Randomizer
+// Additions for Randomizer
 extern vmCvar_t			cg_enableRandomizer;
 extern vmCvar_t			cg_enableRandomizerEnhancements;
 extern vmCvar_t			cg_drawSeed;
 extern vmCvar_t			cg_setSeed;
-//Additions for Base Game fixes (ex : artus_mine crates to get all pickups)
+// Randomizer - evil mode
+extern vmCvar_t			cg_enableRandSaberStyle;
+extern vmCvar_t			cg_enableRandSaberLenght;
+extern vmCvar_t			cg_enableRandSaberColor;
+extern vmCvar_t			cg_enableRandJumpHeight;
+// Additions for Base Game fixes (ex : artus_mine crates to get all pickups)
 extern vmCvar_t			cg_baseGameFixes;
 
 void CG_NewClientinfo( int clientNum );

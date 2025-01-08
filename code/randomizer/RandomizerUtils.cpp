@@ -16,6 +16,10 @@ extern	vmCvar_t		cg_enableRandomizer;
 extern	vmCvar_t		cg_enableRandomizerEnhancements;
 extern	vmCvar_t		cg_useSetSeed;
 extern	vmCvar_t		cg_setSeed;
+// Randomizer - evil mode
+extern vmCvar_t			cg_enableRandSaberLenght;
+extern vmCvar_t			cg_enableRandSaberColor;
+extern vmCvar_t			cg_enableRandJumpHeight;
 // To access the game
 extern game_import_t	gi;
 

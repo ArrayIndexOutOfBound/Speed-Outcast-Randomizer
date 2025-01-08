@@ -100,6 +100,9 @@ extern cvar_t	*g_saberAutoBlocking;
 extern cvar_t	*g_saberRealisticCombat;
 extern vmCvar_t cg_enableRandomizer;
 extern vmCvar_t cg_enableRandomizerEnhancements;
+extern vmCvar_t	cg_enableRandSaberStyle;
+extern vmCvar_t	cg_enableRandSaberLenght;
+extern vmCvar_t	cg_enableRandSaberColor;
 extern int g_crosshairEntNum;
 
 int		g_saberFlashTime = 0;
@@ -462,7 +465,8 @@ void WP_SaberInitBladeData( gentity_t *ent )
 		{
 			if ( !ent->client->ps.saberAnimLevel )
 			{//initialize, but don't reset
-				if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer) // Random saber style at pickup, but I need to NOT call rand() to keep NPC spawn consistent.
+				// Random saber style at pickup, but I need to NOT call rand() to keep NPC spawn consistent.
+				if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer && cg_enableRandSaberStyle.integer) 
 				{
 					ent->client->ps.saberAnimLevel = (level.framenum) % 3 + 1;
 				}
@@ -481,44 +485,36 @@ void WP_SaberInitBladeData( gentity_t *ent )
 		if ( ent->client->NPC_class == CLASS_DESANN )
 		{//longer saber
 			ent->client->ps.saberLengthMax = 48;
-			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer) // Would be the funniest thing ever, range of 25% to 400% of initial value
+			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer)
 			{
-				ent->client->ps.saberLengthMax = rand() % 181 + 12;
-				// For now we use rand, but that will be fixed in the future
-				ent->client->ps.saberColor = (saber_colors_t) (rand() % 6);
-					
+				if (cg_enableRandSaberLenght.integer) ent->client->ps.saberLengthMax = rand() % 181 + 12; // Range of 25% to 400% of initial value
+				if (cg_enableRandSaberColor.integer) ent->client->ps.saberColor = (saber_colors_t) (rand() % 6);
 			}
 		}
 		else if ( ent->client->NPC_class == CLASS_REBORN )
 		{//shorter saber
 			ent->client->ps.saberLengthMax = 32;
-			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer) // Would be the funniest thing ever, range of 25% to 400% of initial value
+			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer)
 			{
-				ent->client->ps.saberLengthMax = rand() % 121 + 8;
-				// For now we use rand, but that will be fixed in the future
-				ent->client->ps.saberColor = (saber_colors_t)(rand() % 6);
+				if (cg_enableRandSaberLenght.integer) ent->client->ps.saberLengthMax = rand() % 121 + 8; // Range of 25% to 400% of initial value
+				if (cg_enableRandSaberColor.integer) ent->client->ps.saberColor = (saber_colors_t)(rand() % 6);
 			}
 		}
 		else
 		{//standard saber length
 			ent->client->ps.saberLengthMax = 40; // Default
-			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer) // Would be the funniest thing ever, range of 25% to 400% of initial value
+			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer)
 			{
 				if (ent->client->NPC_class != CLASS_KYLE) // Since it's at map load, and all npc are generated here, we may use rand()
 				{
-					ent->client->ps.saberLengthMax = rand() % 151 + 10;
-					// For now we use rand, but that will be fixed in the future
-					ent->client->ps.saberColor = (saber_colors_t)(rand() % 6);
+					if (cg_enableRandSaberLenght.integer) ent->client->ps.saberLengthMax = rand() % 151 + 10; // Range of 25% to 400% of initial value
+					if (cg_enableRandSaberColor.integer) ent->client->ps.saberColor = (saber_colors_t)(rand() % 6);
 				}
 				else // That's Kyle, when he's getting the saber at trial or before, might as well use the current time like for the saber style (to be sonsistent with our seed)
 				{
-					// That's a range of 25% to 400%
-					ent->client->ps.saberLengthMax = (level.framenum + level.time) % 151 + 10;
-					// Changing the saber will ruin the rng calls, but they will be on a different 'rng source', so it's not that bad in the future
-					// For now we use rand, but that will be fixed in the future
-					ent->client->ps.saberColor = (saber_colors_t)(rand() % 6);
+					if (cg_enableRandSaberLenght.integer) ent->client->ps.saberLengthMax = level.framenum % 151 + 10; // Range of 25% to 400% of initial value
+					if (cg_enableRandSaberColor.integer) ent->client->ps.saberColor = (saber_colors_t)(rand() % 6);
 				}
-				
 			}
 		}
 
