@@ -19,7 +19,8 @@ Default: `0`.
 
 #### `cg_enableRandomizerEnhancements` (0 or 1)
 
-Enable or disable the other more 'exotic' randomized elements in the game (check list below for more details).
+Enable or disable the other more 'exotic' randomized elements in the game.
+Check `List of addition for the 'exotic' Randomizer` below for more details.
 Need `cg_enableRandomizer` to be 1 to work.
 Default: `0`.
 
@@ -67,12 +68,21 @@ Default: `0`.
 
 ### List of addition for the 'exotic' Randomizer
 
-- Random saber style at pickup. That means you will always get a change to get any saber style, so go for a qs/ql if you want something specific.
-- Random saber lenght every time the saber is chosen. From 25% to 400% the saber lenght.
-- Random saber color every time the saber is chosen. Blue, Green, Yeelow, Orange, Purple and Red. RGB might be possible but that needs investigation.
-- Random jump height with every jump. From 1/3 the normal jump without force to double the height with jump force 3.
-- TODO : Random projectiles every shot
-- TODO : Random sounds
-- TODO : Random NPC size (may not be possible because of insane hitbox and things)
+#### `cg_enableRandSaberStyle` (0 or 1)
+Random saber style at pickup. That means you will always get a change to get any saber style, so go for a qs/ql if you want something specific.
+
+#### `cg_enableRandSaberLenght` (0 or 1)
+Random saber lenght every time the saber is chosen. From 25% to 400% the saber lenght.
+
+#### `cg_enableRandSaberColor` (0 or 1)
+Random saber color every time the saber is chosen. Blue, Green, Yeelow, Orange, Purple and Red. RGB might be possible but that needs investigation.
+
+#### `cg_enableRandJumpHeight` (0 or 1)
+Random jump height with every jump. From 1/3 the normal jump without force to double the height with jump force 3.
+
+#### Todos
+- Random projectiles every shot
+- Random sounds
+- Random NPC size (may not be possible because of insane hitbox and things)
 
 
