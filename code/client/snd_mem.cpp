@@ -571,46 +571,46 @@ static qboolean S_LoadSound_FileLoadAndNameAdjuster(char *psFilename, byte **pDa
 		if (com_buildScript->integer)
 		{
 			fileHandle_t hFile;
-				//German
+			//German
 			strncpy(psVoice,"chr_d",5);	// same number of letters as "chars"
-				FS_FOpenFileRead(psFilename, &hFile, qfalse);		//cache the wav
-				if (!hFile)
-				{
+			FS_FOpenFileRead(psFilename, &hFile, qfalse);		//cache the wav
+			if (!hFile)
+			{
 				strcpy(&psFilename[iNameStrlen-3],"mp3");		//not there try mp3
-					FS_FOpenFileRead(psFilename, &hFile, qfalse);	//cache the mp3
-				}
-				if (hFile)
-				{
-					FS_FCloseFile(hFile);
-				}
+				FS_FOpenFileRead(psFilename, &hFile, qfalse);	//cache the mp3
+			}
+			if (hFile)
+			{
+				FS_FCloseFile(hFile);
+			}
 			strcpy(&psFilename[iNameStrlen-3],"wav");	//put it back to wav
 
-				//French
+			//French
 			strncpy(psVoice,"chr_f",5);	// same number of letters as "chars"
-				FS_FOpenFileRead(psFilename, &hFile, qfalse);		//cache the wav
-				if (!hFile)
-				{
+			FS_FOpenFileRead(psFilename, &hFile, qfalse);		//cache the wav
+			if (!hFile)
+			{
 				strcpy(&psFilename[iNameStrlen-3],"mp3");		//not there try mp3
-					FS_FOpenFileRead(psFilename, &hFile, qfalse);	//cache the mp3
-				}
-				if (hFile)
-				{
-					FS_FCloseFile(hFile);
-				}
+				FS_FOpenFileRead(psFilename, &hFile, qfalse);	//cache the mp3
+			}
+			if (hFile)
+			{
+				FS_FCloseFile(hFile);
+			}
 			strcpy(&psFilename[iNameStrlen-3],"wav");	//put it back to wav
 
-				//Spanish
+			//Spanish
 			strncpy(psVoice,"chr_e",5);	// same number of letters as "chars"
-				FS_FOpenFileRead(psFilename, &hFile, qfalse);		//cache the wav
-				if (!hFile)
-				{
+			FS_FOpenFileRead(psFilename, &hFile, qfalse);		//cache the wav
+			if (!hFile)
+			{
 				strcpy(&psFilename[iNameStrlen-3],"mp3");		//not there try mp3
-					FS_FOpenFileRead(psFilename, &hFile, qfalse);	//cache the mp3
-				}
-				if (hFile)
-				{
-					FS_FCloseFile(hFile);
-				}
+				FS_FOpenFileRead(psFilename, &hFile, qfalse);	//cache the mp3
+			}
+			if (hFile)
+			{
+				FS_FCloseFile(hFile);
+			}
 			strcpy(&psFilename[iNameStrlen-3],"wav");	//put it back to wav
 
 			strncpy(psVoice,"chars",5);	//put it back to chars
@@ -641,15 +641,15 @@ static qboolean S_LoadSound_FileLoadAndNameAdjuster(char *psFilename, byte **pDa
 			// account for foreign voices...
 //		
 			extern cvar_t* s_language;
-		if (s_language && stricmp("DEUTSCH",s_language->string)==0)
+			if (s_language && stricmp("DEUTSCH",s_language->string)==0)
 			{
 				strncpy(psVoice,"chr_d",5);	// same number of letters as "chars"
 			}
-		else if (s_language && stricmp("FRANCAIS",s_language->string)==0)
+			else if (s_language && stricmp("FRANCAIS",s_language->string)==0)
 			{
 				strncpy(psVoice,"chr_f",5);	// same number of letters as "chars"
 			}
-		else if (s_language && stricmp("ESPANOL",s_language->string)==0)
+			else if (s_language && stricmp("ESPANOL",s_language->string)==0)
 			{
 				strncpy(psVoice,"chr_e",5);	// same number of letters as "chars"
 			}
