@@ -550,8 +550,17 @@ void S_ReloadAllUsedSounds(void)
 		{
 			sfx_t *sfx = &s_knownSfx[i];
 
-			if (!sfx->bInMemory && !sfx->bDefaultSound && sfx->iLastLevelUsedOn == RE_RegisterMedia_GetLevel()){
+			//Reload ALL sounds
+			if (Cvar_VariableIntegerValue("cg_enableRandomizer") &&
+				Cvar_VariableIntegerValue("cg_enableRandomizerEnhancements") &&
+				Cvar_VariableIntegerValue("cg_enableRandLanguageVoices")) {
 				S_memoryLoad(sfx);
+			}
+			else {
+				//Vanilla
+				if (!sfx->bInMemory && !sfx->bDefaultSound && sfx->iLastLevelUsedOn == RE_RegisterMedia_GetLevel()) {
+					S_memoryLoad(sfx);
+				}
 			}
 		}
 	}
