@@ -45,6 +45,7 @@ void G_MissileBounceEffect( gentity_t *ent, vec3_t org, vec3_t dir )
 		break;
 		//Amber this should be a temp fix, we really need to figure out how to up GENTITYNUM_BITS value safely
 	case WP_REPEATER: //Reduce missile spam created by repeaters to reduce risk of going over entity limit
+		// Sure, we can keep rand for this, don't want an rng engine just for this.
 		if (rand() % 2 == 0) {
 			gentity_t* tent = G_TempEntity(org, EV_GRENADE_BOUNCE);
 			VectorCopy(dir, tent->pos1);

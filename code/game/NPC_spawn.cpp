@@ -64,6 +64,7 @@ extern int WP_SetSaberModel( gclient_t *client, class_t npcClass );
 extern	vmCvar_t		cg_enableRandomizer;
 extern	vmCvar_t		cg_useSetSeed;
 extern	vmCvar_t		cg_setSeed;
+extern mt19937 rngRandoBase;
 
 #define	NSF_DROP_TO_FLOOR	16
 
@@ -3358,7 +3359,9 @@ char* GetNPCNames(int source)
 void SP_NPC_Spawn_Random(gentity_t* self)
 {
 	// Pas besoin de srand puisqu'il est call déjà sur g_main.cpp (???????)
-	int rng = rand() % 50 ;
+	uniform_int_distribution<int> NPCDist(0, 49);
+	int rng = NPCDist(rngRandoBase);
+	//int rng = rand() % 50 ;
 
 	// Idée d'Amber : limiter le nombre de NPC plutôt que de modifier d'autres valeurs in game qui peuvent potentiellement faire crash le jeu.
 	// Du coup, tableau de 10 emplacements déclaré plus haut afin de faire mes tests.
@@ -3370,7 +3373,7 @@ void SP_NPC_Spawn_Random(gentity_t* self)
 	// This can be commented if in the future we find a way to have any kind of NPC to spawn without restiction
 	while (IsThereDuplicateInTab(rng) && currentTabPosition!=tabSize && tabSize!=50)
 	{
-		rng = rand() % 50;
+		int rng = NPCDist(rngRandoBase);
 	}
 
 	// Let's suppose we find a way to have any kind of NPC, we can authorize anything in our big array, so that we don't have to change "much" of the code.
@@ -3383,7 +3386,7 @@ void SP_NPC_Spawn_Random(gentity_t* self)
 	// Case : We already have 10 NPC loaded, so we want to roll one of them. This can take time, but only during a map load.
 	while ((currentTabPosition == tabSize && !IsRNGInTab(rng)))
 	{
-		rng = rand() % 50;
+		int rng = NPCDist(rngRandoBase);
 	}
 
  	switch (rng)
@@ -3612,8 +3615,9 @@ void SP_NPC_Spawn_Random(gentity_t* self)
 // Used for Lando, Jan, and other NPCs that have to be humanoid due to their size (door in artus_detention is too small for Desann for example)
 void SP_NPC_Spawn_Random_Humanoid(gentity_t* self)
 {
-	int numberOfHumanoid = 25;
-	int rng = rand() % numberOfHumanoid;
+	//int numberOfHumanoid = 25;
+	uniform_int_distribution<int> NPC_H_Dist(0, 24);
+	int rng = NPC_H_Dist(rngRandoBase);
 
 	// Amber found a way to have any kind of NPC.
 	if (tabSize == 50)
