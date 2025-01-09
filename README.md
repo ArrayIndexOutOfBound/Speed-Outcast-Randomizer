@@ -71,7 +71,7 @@ Default: `0`.
 #### `cg_enableRandSaberStyle` (0 or 1)
 Random saber style at pickup. That means you will always get a change to get any saber style, so go for a qs/ql if you want something specific.
 
-#### `cg_enableRandSaberLenght` (0 or 1)
+#### `cg_enableRandSaberLength` (0 or 1)
 Random saber lenght every time the saber is chosen. From 25% to 400% the saber lenght.
 
 #### `cg_enableRandSaberColor` (0 or 1)
