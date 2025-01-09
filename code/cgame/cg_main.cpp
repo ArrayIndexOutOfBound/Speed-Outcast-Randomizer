@@ -396,6 +396,10 @@ vmCvar_t	cg_enableRandomizerEnhancements;
 vmCvar_t	cg_drawSeed;
 vmCvar_t	cg_useSetSeed;
 vmCvar_t	cg_setSeed;
+// Better rng for randomizer : uniform distribution.
+#include <random>
+mt19937 rngRandoBase;
+mt19937 rngRandoEnhancements;
 // Randomizer - evil mode
 vmCvar_t	cg_enableRandSaberStyle;
 vmCvar_t	cg_enableRandSaberLength;
