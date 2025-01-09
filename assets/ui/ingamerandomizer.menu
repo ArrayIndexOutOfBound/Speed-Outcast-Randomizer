@@ -1064,7 +1064,7 @@
 			} 
 		}
 
-				itemDef 
+		itemDef 
 		{	
 			name				random_jump_strength
 			group				enhancements
@@ -1092,6 +1092,37 @@
 			mouseexit 
 			{ 
 				hide			highlight8
+			} 
+		}
+
+		itemDef 
+		{	
+			name				random_language_voice_lines
+			group				enhancements
+      		type				ITEM_TYPE_MULTI
+			text				"Random Language Voices:"
+			cvar				"cg_enableRandLanguageVoices"
+			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
+			rect				305 331 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font 				2
+			textscale 			0.8
+			forecolor			1 1 1 1
+			visible			0
+			descText			"Use a random language version of each line (chosen per level)"
+			action
+			{
+				play			"sound/interface/button1.wav"
+			}
+			mouseenter 
+			{ 
+				show			highlight9
+			}
+			mouseexit 
+			{ 
+				hide			highlight9
 			} 
 		}
 	}
