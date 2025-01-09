@@ -700,7 +700,7 @@ extern vmCvar_t			cg_drawSeed;
 extern vmCvar_t			cg_setSeed;
 // Randomizer - evil mode
 extern vmCvar_t			cg_enableRandSaberStyle;
-extern vmCvar_t			cg_enableRandSaberLenght;
+extern vmCvar_t			cg_enableRandSaberLength;
 extern vmCvar_t			cg_enableRandSaberColor;
 extern vmCvar_t			cg_enableRandJumpHeight;
 extern vmCvar_t			cg_enableRandJumpStrength;

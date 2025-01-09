@@ -101,7 +101,7 @@ extern cvar_t	*g_saberRealisticCombat;
 extern vmCvar_t cg_enableRandomizer;
 extern vmCvar_t cg_enableRandomizerEnhancements;
 extern vmCvar_t	cg_enableRandSaberStyle;
-extern vmCvar_t	cg_enableRandSaberLenght;
+extern vmCvar_t	cg_enableRandSaberLength;
 extern vmCvar_t	cg_enableRandSaberColor;
 extern int g_crosshairEntNum;
 
@@ -487,7 +487,7 @@ void WP_SaberInitBladeData( gentity_t *ent )
 			ent->client->ps.saberLengthMax = 48;
 			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer)
 			{
-				if (cg_enableRandSaberLenght.integer) ent->client->ps.saberLengthMax = rand() % 181 + 12; // Range of 25% to 400% of initial value
+				if (cg_enableRandSaberLength.integer) ent->client->ps.saberLengthMax = rand() % 181 + 12; // Range of 25% to 400% of initial value
 				if (cg_enableRandSaberColor.integer) ent->client->ps.saberColor = (saber_colors_t) (rand() % 6);
 			}
 		}
@@ -496,7 +496,7 @@ void WP_SaberInitBladeData( gentity_t *ent )
 			ent->client->ps.saberLengthMax = 32;
 			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer)
 			{
-				if (cg_enableRandSaberLenght.integer) ent->client->ps.saberLengthMax = rand() % 121 + 8; // Range of 25% to 400% of initial value
+				if (cg_enableRandSaberLength.integer) ent->client->ps.saberLengthMax = rand() % 121 + 8; // Range of 25% to 400% of initial value
 				if (cg_enableRandSaberColor.integer) ent->client->ps.saberColor = (saber_colors_t)(rand() % 6);
 			}
 		}
@@ -507,12 +507,12 @@ void WP_SaberInitBladeData( gentity_t *ent )
 			{
 				if (ent->client->NPC_class != CLASS_KYLE) // Since it's at map load, and all npc are generated here, we may use rand()
 				{
-					if (cg_enableRandSaberLenght.integer) ent->client->ps.saberLengthMax = rand() % 151 + 10; // Range of 25% to 400% of initial value
+					if (cg_enableRandSaberLength.integer) ent->client->ps.saberLengthMax = rand() % 151 + 10; // Range of 25% to 400% of initial value
 					if (cg_enableRandSaberColor.integer) ent->client->ps.saberColor = (saber_colors_t)(rand() % 6);
 				}
 				else // That's Kyle, when he's getting the saber at trial or before, might as well use the current time like for the saber style (to be sonsistent with our seed)
 				{
-					if (cg_enableRandSaberLenght.integer) ent->client->ps.saberLengthMax = level.framenum % 151 + 10; // Range of 25% to 400% of initial value
+					if (cg_enableRandSaberLength.integer) ent->client->ps.saberLengthMax = level.framenum % 151 + 10; // Range of 25% to 400% of initial value
 					if (cg_enableRandSaberColor.integer) ent->client->ps.saberColor = (saber_colors_t)(rand() % 6);
 				}
 			}

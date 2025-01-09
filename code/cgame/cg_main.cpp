@@ -398,7 +398,7 @@ vmCvar_t	cg_useSetSeed;
 vmCvar_t	cg_setSeed;
 // Randomizer - evil mode
 vmCvar_t	cg_enableRandSaberStyle;
-vmCvar_t	cg_enableRandSaberLenght;
+vmCvar_t	cg_enableRandSaberLength;
 vmCvar_t	cg_enableRandSaberColor;
 vmCvar_t	cg_enableRandJumpHeight;
 vmCvar_t	cg_enableRandJumpStrength;
@@ -598,7 +598,7 @@ Ghoul2 Insert End
 	{ &cg_setSeed, "cg_setSeed", "", CVAR_ARCHIVE },
 	// Randomizer - evil mode
 	{ &cg_enableRandSaberStyle, "cg_enableRandSaberStyle", "0", CVAR_ARCHIVE },
-	{ &cg_enableRandSaberLenght, "cg_enableRandSaberLenght", "0", CVAR_ARCHIVE },
+	{ &cg_enableRandSaberLength, "cg_enableRandSaberLength", "0", CVAR_ARCHIVE },
 	{ &cg_enableRandSaberColor, "cg_enableRandSaberColor", "0", CVAR_ARCHIVE },
 	{ &cg_enableRandJumpHeight, "cg_enableRandJumpHeight", "0", CVAR_ARCHIVE },
 	{ &cg_enableRandJumpStrength, "cg_enableRandJumpStrength", "0", CVAR_ARCHIVE },
