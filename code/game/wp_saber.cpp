@@ -27,6 +27,9 @@ static int		numVictims = 0;
 
 #define SABER_PITCH_HACK 90
 
+// Randomizer : proper uniform numbers
+#include <random>
+extern mt19937 rngRandoEnhancements;
 
 extern cvar_t	*g_timescale;
 extern cvar_t	*g_dismemberment;
@@ -487,8 +490,19 @@ void WP_SaberInitBladeData( gentity_t *ent )
 			ent->client->ps.saberLengthMax = 48;
 			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer)
 			{
-				if (cg_enableRandSaberLength.integer) ent->client->ps.saberLengthMax = rand() % 181 + 12; // Range of 25% to 400% of initial value
-				if (cg_enableRandSaberColor.integer) ent->client->ps.saberColor = (saber_colors_t) (rand() % 6);
+				if (cg_enableRandSaberLength.integer)
+				{
+					uniform_int_distribution<int> lengthDist(1, 180);
+					int rng = lengthDist(rngRandoEnhancements);
+					ent->client->ps.saberLengthMax = rng + 12; // Range of 25% to 400% of initial value
+				}
+				
+				if (cg_enableRandSaberColor.integer)
+				{
+					uniform_int_distribution<int> colorDist(0, 5);
+					int rng = colorDist(rngRandoEnhancements);
+					ent->client->ps.saberColor = (saber_colors_t)rng;
+				}
 			}
 		}
 		else if ( ent->client->NPC_class == CLASS_REBORN )
@@ -496,8 +510,19 @@ void WP_SaberInitBladeData( gentity_t *ent )
 			ent->client->ps.saberLengthMax = 32;
 			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer)
 			{
-				if (cg_enableRandSaberLength.integer) ent->client->ps.saberLengthMax = rand() % 121 + 8; // Range of 25% to 400% of initial value
-				if (cg_enableRandSaberColor.integer) ent->client->ps.saberColor = (saber_colors_t)(rand() % 6);
+				if (cg_enableRandSaberLength.integer)
+				{
+					uniform_int_distribution<int> lengthDist(1, 120);
+					int rng = lengthDist(rngRandoEnhancements);
+					ent->client->ps.saberLengthMax = rng + 8; // Range of 25% to 400% of initial value
+				}
+
+				if (cg_enableRandSaberColor.integer)
+				{
+					uniform_int_distribution<int> colorDist(0, 5);
+					int rng = colorDist(rngRandoEnhancements);
+					ent->client->ps.saberColor = (saber_colors_t)rng;
+				}
 			}
 		}
 		else
@@ -507,13 +532,29 @@ void WP_SaberInitBladeData( gentity_t *ent )
 			{
 				if (ent->client->NPC_class != CLASS_KYLE) // Since it's at map load, and all npc are generated here, we may use rand()
 				{
-					if (cg_enableRandSaberLength.integer) ent->client->ps.saberLengthMax = rand() % 151 + 10; // Range of 25% to 400% of initial value
-					if (cg_enableRandSaberColor.integer) ent->client->ps.saberColor = (saber_colors_t)(rand() % 6);
+					if (cg_enableRandSaberLength.integer)
+					{
+						uniform_int_distribution<int> lengthDist(1, 150);
+						int rng = lengthDist(rngRandoEnhancements);
+						ent->client->ps.saberLengthMax = rng + 10; // Range of 25% to 400% of initial value
+					}
+
+					if (cg_enableRandSaberColor.integer)
+					{
+						uniform_int_distribution<int> colorDist(0, 5);
+						int rng = colorDist(rngRandoEnhancements);
+						ent->client->ps.saberColor = (saber_colors_t)rng;
+					}
 				}
-				else // That's Kyle, when he's getting the saber at trial or before, might as well use the current time like for the saber style (to be sonsistent with our seed)
+				else // That's Kyle, when drawing the saber might as well use the current time for the saber lenght
 				{
 					if (cg_enableRandSaberLength.integer) ent->client->ps.saberLengthMax = level.framenum % 151 + 10; // Range of 25% to 400% of initial value
-					if (cg_enableRandSaberColor.integer) ent->client->ps.saberColor = (saber_colors_t)(rand() % 6);
+					if (cg_enableRandSaberColor.integer)
+					{
+						uniform_int_distribution<int> colorDist(0, 5);
+						int rng = colorDist(rngRandoEnhancements);
+						ent->client->ps.saberColor = (saber_colors_t)rng;
+					}
 				}
 			}
 		}

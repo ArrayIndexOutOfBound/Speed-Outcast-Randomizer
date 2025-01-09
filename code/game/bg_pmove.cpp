@@ -633,7 +633,8 @@ static qboolean PM_CheckJump( void )
 						// Change the values for the force jumps, not the normal one (but since this is called when you have force power, that don't change much)
 						for (int i = 1; i < 4; i++)
 						{
-							int newHeight = rand() % 759 + 10; // 10 as the minimum, 768 as the maximum, which is double force jump 3
+							uniform_int_distribution<int> localDist(1, 768);
+							int newHeight = localDist(rngRandoEnhancements) + 10; // 10 as the minimum, 768 as the maximum, which is double force jump 3
 							forceJumpHeight[i] = newHeight;
 							// forceJumpHeightMax is not declared in this score, maybe it's not needed ?
 							// forceJumpHeightMax[i] = newHeight + 34;
@@ -647,7 +648,8 @@ static qboolean PM_CheckJump( void )
 						for (int i = 1; i < 4; i++)
 						{
 							//int newStrength = rand() % 1568 + 112; // 112 as the minimum, 225 is the normal value for no force, 1680 as the maximum, which is double force jump 3
-							int newStrength = rand() % 3776 + 225; // Base Velocity is guaranted, but now every jump can be extremely fast
+							uniform_int_distribution<int> localDist(1, 3775);
+							int newStrength = localDist(rngRandoEnhancements) + 225; // Base Velocity is guaranted, but now every jump can be extremely fast
 							forceJumpStrength[i] = newStrength;
 						}
 					}

@@ -16,6 +16,10 @@ extern	vmCvar_t		cg_enableRandomizer;
 extern	vmCvar_t		cg_enableRandomizerEnhancements;
 extern	vmCvar_t		cg_useSetSeed;
 extern	vmCvar_t		cg_setSeed;
+// Randomizer - correct rng engines for the base randomizer (items and NPC spawn) and enhancements (all the rest)
+// Given the seed, I can predict every items, every NPC with a 100% accuracy.
+extern mt19937 rngRandoBase;
+extern mt19937 rngRandoEnhancements;
 // Randomizer - evil mode
 extern vmCvar_t			cg_enableRandSaberLength;
 extern vmCvar_t			cg_enableRandSaberColor;
@@ -45,7 +49,10 @@ void RandomizerUtils::seedRandomizer(std::string seedString, std::string levelNa
 		int seed = 0;
 		AddCharArrayToInt(seedString, &seed);
 		AddCharArrayToInt(levelName, &seed);
-		srand(seed);
+		//srand(seed);
+		// New method ! Using the more recent way to use the <random> library.
+		rngRandoBase.seed(seed);
+		rngRandoEnhancements.seed(seed);
 	}
 }
 

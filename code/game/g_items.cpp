@@ -8,6 +8,10 @@
 #include "g_items.h"
 #include "wp_saber.h"
 
+// Randomizer : proper uniform numbers
+#include <random>
+extern mt19937 rngRandoBase;
+
 extern qboolean	missionInfo_Updated;
 
 extern void CrystalAmmoSettings(gentity_t *ent);
@@ -866,7 +870,8 @@ void FinishSpawningItem( gentity_t *ent ) {
 	if (cg_enableRandomizer.integer)
 	{
 		itemOld = item;
-		int rng = rand() % 53 + 1;
+		uniform_int_distribution<int> itemDist(1,53);
+		int rng = itemDist(rngRandoBase);
 		itemNew = bg_itemlist + rng;
 		// No baton, no strange items.
 		if ((strcmp(level.mapname, "yavin_trial")))
@@ -874,19 +879,20 @@ void FinishSpawningItem( gentity_t *ent ) {
 			// No strange weapon, 'shield' and 'datapad'
 			while ((itemNew->giTag >= 13 && itemNew->giTag <= 22) || (itemNew->giTag == 43) || (itemNew->giTag == 45))
 			{
-				rng = rand() % 53 + 1;
+				rng = itemDist(rngRandoBase);
 				itemNew = bg_itemlist + rng;
 			}
 			if (itemNew->giType == IT_HOLOCRON || (itemNew->giTag == WP_SABER && itemNew->giType == IT_WEAPON)) // In case we roll a saber or an holocron, we shall roll a 33/66 to keep the item or not
 			{
-				rng = rand() % 3;
+				uniform_int_distribution<int> holocronDist(0, 2);
+				rng = holocronDist(rngRandoBase);
 				if (!rng) // We rolled a 0, reroll once
 				{
-					rng = rand() % 53 + 1;
+					rng = itemDist(rngRandoBase);
 					// No strange weapon, 'shield' and 'datapad'
 					while ((itemNew->giTag >= 13 && itemNew->giTag <= 22) || (itemNew->giTag == 43) || (itemNew->giTag == 45))
 					{
-						rng = rand() % 53 + 1;
+						rng = itemDist(rngRandoBase);
 						itemNew = bg_itemlist + rng;
 					}
 				}
