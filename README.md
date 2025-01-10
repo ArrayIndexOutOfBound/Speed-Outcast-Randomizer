@@ -83,6 +83,9 @@ Random jump height with every jump. From 1/3 the normal jump without force to do
 #### `cg_enableRandJumpStrength` (0 or 1)
 Random jump strength with every jump. From the normal jump without force to quadruple the Z velocity with jump force 3.
 
+#### `cg_enableRandLanguageVoices` (0 or 1)
+Random language for each voice line (randomized when loaded on map init)
+
 #### Todos
 - Random projectiles every shot
 - Random sounds
