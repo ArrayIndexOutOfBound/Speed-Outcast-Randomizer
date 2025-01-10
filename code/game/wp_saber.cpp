@@ -4973,7 +4973,16 @@ void WP_SaberStartMissileBlockCheck( gentity_t *self, usercmd_t *ucmd  )
 		&& self->targetname && !Q_strncmp(self->targetname, "reelo_thug", 10)
 		|| cg_enableRandomizer.integer && !Q_stricmp(level.mapname, "ns_starpad")
 		&& self->targetname && !Q_strncmp(self->targetname, "bea", 3)) {
+		// Excessive, but disable saber defense at each check
+		self->client->ps.forcePowersKnown &= ~(1 << FP_SABER_DEFENSE); // Remove the bit
+		self->client->ps.forcePowerLevel[FP_SABER_DEFENSE] = FORCE_LEVEL_0;
 		return;
+	}
+	if (cg_enableRandomizer.integer && !Q_stricmp(level.mapname, "artus_topside") && self->targetname && !Q_strncmp(self->targetname, "cinematic9_desann", 17))
+	{
+		// Excessive, but give this NPC saber defense 3 at each check
+		self->client->ps.forcePowersKnown |= (1 << FP_SABER_DEFENSE);
+		self->client->ps.forcePowerLevel[FP_SABER_DEFENSE] = FORCE_LEVEL_3;
 	}
 
 	if ( self->client->ps.weapon != WP_SABER )

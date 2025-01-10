@@ -112,7 +112,7 @@ void initialiseNameMap() {
 	teamsByName["NPC_BespinCop"] = TEAM_PLAYER;
 	teamsByName["NPC_Reborn"] = TEAM_ENEMY;
 	teamsByName["NPC_ShadowTrooper"] = TEAM_ENEMY;
-	//teamsByName["NPC_MineMonster"] = TEAM_NEUTRAL;
+	//teamsByName["NPC_MineMonster"] = TEAM_NEUTRAL; // Breaks their AI
 	teamsByName["NPC_MineMonster"] = TEAM_ENEMY;
 	teamsByName["NPC_Droid_Interrogator"] = TEAM_ENEMY;
 	teamsByName["NPC_Droid_Probe"] = TEAM_ENEMY;
@@ -125,6 +125,7 @@ void initialiseNameMap() {
 	teamsByName["NPC_Droid_R5D2"] = TEAM_PLAYER;
 	teamsByName["NPC_Droid_Protocol"] = TEAM_PLAYER;
 	teamsByName["NPC_Galak_Mech"] = TEAM_ENEMY;
+	teamsByName["NPC_Droid_ATST"] = TEAM_ENEMY;
 	teamsByName["NPC_SwampTrooper"] = TEAM_ENEMY;
 }
 
@@ -167,6 +168,7 @@ void initialiseMapByClass() {
 	teamsByClass[CLASS_PROTOCOL] = TEAM_PLAYER;
 	teamsByClass[CLASS_SWAMPTROOPER] = TEAM_ENEMY;
 	teamsByClass[CLASS_GALAKMECH] = TEAM_ENEMY;
+	teamsByClass[CLASS_ATST] = TEAM_ENEMY;
 	teamsByClass[CLASS_NONE] = TEAM_PLAYER;
 }
 
