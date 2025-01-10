@@ -13,8 +13,18 @@ using namespace std::chrono;
 
 // Randomizer
 extern	vmCvar_t		cg_enableRandomizer;
+extern	vmCvar_t		cg_enableRandomizerEnhancements;
 extern	vmCvar_t		cg_useSetSeed;
 extern	vmCvar_t		cg_setSeed;
+// Randomizer - correct rng engines for the base randomizer (items and NPC spawn) and enhancements (all the rest)
+// Given the seed, I can predict every items, every NPC with a 100% accuracy.
+extern mt19937 rngRandoBase;
+extern mt19937 rngRandoEnhancements;
+// Randomizer - evil mode
+extern vmCvar_t			cg_enableRandSaberLength;
+extern vmCvar_t			cg_enableRandSaberColor;
+extern vmCvar_t			cg_enableRandJumpHeight;
+extern vmCvar_t			cg_enableRandJumpStrenght;
 // To access the game
 extern game_import_t	gi;
 
@@ -39,7 +49,10 @@ void RandomizerUtils::seedRandomizer(std::string seedString, std::string levelNa
 		int seed = 0;
 		AddCharArrayToInt(seedString, &seed);
 		AddCharArrayToInt(levelName, &seed);
-		srand(seed);
+		//srand(seed);
+		// New method ! Using the more recent way to use the <random> library.
+		rngRandoBase.seed(seed);
+		rngRandoEnhancements.seed(seed);
 	}
 }
 
@@ -99,7 +112,7 @@ void initialiseNameMap() {
 	teamsByName["NPC_BespinCop"] = TEAM_PLAYER;
 	teamsByName["NPC_Reborn"] = TEAM_ENEMY;
 	teamsByName["NPC_ShadowTrooper"] = TEAM_ENEMY;
-	//teamsByName["NPC_MineMonster"] = TEAM_NEUTRAL;
+	//teamsByName["NPC_MineMonster"] = TEAM_NEUTRAL; // Breaks their AI
 	teamsByName["NPC_MineMonster"] = TEAM_ENEMY;
 	teamsByName["NPC_Droid_Interrogator"] = TEAM_ENEMY;
 	teamsByName["NPC_Droid_Probe"] = TEAM_ENEMY;
@@ -112,6 +125,7 @@ void initialiseNameMap() {
 	teamsByName["NPC_Droid_R5D2"] = TEAM_PLAYER;
 	teamsByName["NPC_Droid_Protocol"] = TEAM_PLAYER;
 	teamsByName["NPC_Galak_Mech"] = TEAM_ENEMY;
+	teamsByName["NPC_Droid_ATST"] = TEAM_ENEMY;
 	teamsByName["NPC_SwampTrooper"] = TEAM_ENEMY;
 }
 
@@ -154,6 +168,7 @@ void initialiseMapByClass() {
 	teamsByClass[CLASS_PROTOCOL] = TEAM_PLAYER;
 	teamsByClass[CLASS_SWAMPTROOPER] = TEAM_ENEMY;
 	teamsByClass[CLASS_GALAKMECH] = TEAM_ENEMY;
+	teamsByClass[CLASS_ATST] = TEAM_ENEMY;
 	teamsByClass[CLASS_NONE] = TEAM_PLAYER;
 }
 

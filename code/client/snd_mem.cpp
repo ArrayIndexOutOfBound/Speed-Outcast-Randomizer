@@ -616,24 +616,47 @@ static qboolean S_LoadSound_FileLoadAndNameAdjuster(char *psFilename, byte **pDa
 			strncpy(psVoice,"chars",5);	//put it back to chars
 		}
 
-		// account for foreign voices...
-		//		
-		extern cvar_t* s_language;
-		if (s_language && stricmp("DEUTSCH",s_language->string)==0)
-		{				
-			strncpy(psVoice,"chr_d",5);	// same number of letters as "chars"
-		}
-		else if (s_language && stricmp("FRANCAIS",s_language->string)==0)
-		{				
-			strncpy(psVoice,"chr_f",5);	// same number of letters as "chars"
-		}
-		else if (s_language && stricmp("ESPANOL",s_language->string)==0)
-		{				
-			strncpy(psVoice,"chr_e",5);	// same number of letters as "chars"
-		}
-		else
-		{
-			psVoice = NULL;	// use this ptr as a flag as to whether or not we substituted with a foreign version
+		//When loading voice lines, select a random language version for each line
+		if (Cvar_VariableIntegerValue("cg_enableRandomizer") &&
+			Cvar_VariableIntegerValue("cg_enableRandomizerEnhancements") &&
+			Cvar_VariableIntegerValue("cg_enableRandLanguageVoices")) {
+			int rng = rand() % 4;
+			switch (rng)
+			{
+			case 0:
+				strncpy(psVoice, "chr_d", 5);	// same number of letters as "chars"
+				break;
+			case 1:
+				strncpy(psVoice, "chr_f", 5);	// same number of letters as "chars"
+				break;
+			case 2:
+				strncpy(psVoice, "chr_e", 5);	// same number of letters as "chars"
+				break;
+			default:
+				psVoice = NULL;	// use this ptr as a flag as to whether or not we substituted with a foreign version
+				break;
+			}
+		} else {
+			//Vanilla
+			// account for foreign voices...
+//		
+			extern cvar_t* s_language;
+			if (s_language && stricmp("DEUTSCH",s_language->string)==0)
+			{
+				strncpy(psVoice,"chr_d",5);	// same number of letters as "chars"
+			}
+			else if (s_language && stricmp("FRANCAIS",s_language->string)==0)
+			{
+				strncpy(psVoice,"chr_f",5);	// same number of letters as "chars"
+			}
+			else if (s_language && stricmp("ESPANOL",s_language->string)==0)
+			{
+				strncpy(psVoice,"chr_e",5);	// same number of letters as "chars"
+			}
+			else
+			{
+				psVoice = NULL;	// use this ptr as a flag as to whether or not we substituted with a foreign version
+			}
 		}
 	}
 

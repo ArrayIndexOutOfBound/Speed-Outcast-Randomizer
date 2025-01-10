@@ -27,6 +27,9 @@ static int		numVictims = 0;
 
 #define SABER_PITCH_HACK 90
 
+// Randomizer : proper uniform numbers
+#include <random>
+extern mt19937 rngRandoEnhancements;
 
 extern cvar_t	*g_timescale;
 extern cvar_t	*g_dismemberment;
@@ -99,6 +102,10 @@ void WP_ForcePowerDrain( gentity_t *self, forcePowers_t forcePower, int override
 extern cvar_t	*g_saberAutoBlocking;
 extern cvar_t	*g_saberRealisticCombat;
 extern vmCvar_t cg_enableRandomizer;
+extern vmCvar_t cg_enableRandomizerEnhancements;
+extern vmCvar_t	cg_enableRandSaberStyle;
+extern vmCvar_t	cg_enableRandSaberLength;
+extern vmCvar_t	cg_enableRandSaberColor;
 extern int g_crosshairEntNum;
 
 int		g_saberFlashTime = 0;
@@ -461,9 +468,10 @@ void WP_SaberInitBladeData( gentity_t *ent )
 		{
 			if ( !ent->client->ps.saberAnimLevel )
 			{//initialize, but don't reset
-				if (cg_enableRandomizer.integer) // Random saber style at pickup, but I need to NOT call rand() to keep NPC spawn consistent.
+				// Random saber style at pickup, but I need to NOT call rand() to keep NPC spawn consistent.
+				if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer && cg_enableRandSaberStyle.integer) 
 				{
-					ent->client->ps.saberAnimLevel = (level.framenum + level.time) % 3 + 1;
+					ent->client->ps.saberAnimLevel = (level.framenum) % 3 + 1;
 				}
 				else // Normal gameplay (and yes, there is a glitch to get fast style in trial)
 				{
@@ -480,34 +488,74 @@ void WP_SaberInitBladeData( gentity_t *ent )
 		if ( ent->client->NPC_class == CLASS_DESANN )
 		{//longer saber
 			ent->client->ps.saberLengthMax = 48;
-			if (cg_enableRandomizer.integer) // Would be the funniest thing ever, range of 25% to 400% of initial value
+			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer)
 			{
-					ent->client->ps.saberLengthMax = rand() % 181 + 12;
+				if (cg_enableRandSaberLength.integer)
+				{
+					uniform_int_distribution<int> lengthDist(1, 180);
+					int rng = lengthDist(rngRandoEnhancements);
+					ent->client->ps.saberLengthMax = rng + 12; // Range of 25% to 400% of initial value
+				}
+				
+				if (cg_enableRandSaberColor.integer)
+				{
+					uniform_int_distribution<int> colorDist(0, 5);
+					int rng = colorDist(rngRandoEnhancements);
+					ent->client->ps.saberColor = (saber_colors_t)rng;
+				}
 			}
 		}
 		else if ( ent->client->NPC_class == CLASS_REBORN )
 		{//shorter saber
 			ent->client->ps.saberLengthMax = 32;
-			if (cg_enableRandomizer.integer) // Would be the funniest thing ever, range of 25% to 400% of initial value
+			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer)
 			{
-				ent->client->ps.saberLengthMax = rand() % 121 + 8;
+				if (cg_enableRandSaberLength.integer)
+				{
+					uniform_int_distribution<int> lengthDist(1, 120);
+					int rng = lengthDist(rngRandoEnhancements);
+					ent->client->ps.saberLengthMax = rng + 8; // Range of 25% to 400% of initial value
+				}
+
+				if (cg_enableRandSaberColor.integer)
+				{
+					uniform_int_distribution<int> colorDist(0, 5);
+					int rng = colorDist(rngRandoEnhancements);
+					ent->client->ps.saberColor = (saber_colors_t)rng;
+				}
 			}
 		}
 		else
 		{//standard saber length
 			ent->client->ps.saberLengthMax = 40; // Default
-			if (cg_enableRandomizer.integer) // Would be the funniest thing ever, range of 25% to 400% of initial value
+			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer)
 			{
 				if (ent->client->NPC_class != CLASS_KYLE) // Since it's at map load, and all npc are generated here, we may use rand()
 				{
-					ent->client->ps.saberLengthMax = rand() % 151 + 10;
+					if (cg_enableRandSaberLength.integer)
+					{
+						uniform_int_distribution<int> lengthDist(1, 150);
+						int rng = lengthDist(rngRandoEnhancements);
+						ent->client->ps.saberLengthMax = rng + 10; // Range of 25% to 400% of initial value
+					}
+
+					if (cg_enableRandSaberColor.integer)
+					{
+						uniform_int_distribution<int> colorDist(0, 5);
+						int rng = colorDist(rngRandoEnhancements);
+						ent->client->ps.saberColor = (saber_colors_t)rng;
+					}
 				}
-				else // That's Kyle, when he's getting the saber at trial or before, might as well use the current time like for the saber style (to be sonsistent with our seed)
+				else // That's Kyle, when drawing the saber might as well use the current time for the saber lenght
 				{
-					// That's a range of 25% to 400%
-					ent->client->ps.saberLengthMax = (level.framenum + level.time) % 151 + 10;
+					if (cg_enableRandSaberLength.integer) ent->client->ps.saberLengthMax = level.framenum % 151 + 10; // Range of 25% to 400% of initial value
+					if (cg_enableRandSaberColor.integer)
+					{
+						uniform_int_distribution<int> colorDist(0, 5);
+						int rng = colorDist(rngRandoEnhancements);
+						ent->client->ps.saberColor = (saber_colors_t)rng;
+					}
 				}
-				
 			}
 		}
 
@@ -4925,7 +4973,16 @@ void WP_SaberStartMissileBlockCheck( gentity_t *self, usercmd_t *ucmd  )
 		&& self->targetname && !Q_strncmp(self->targetname, "reelo_thug", 10)
 		|| cg_enableRandomizer.integer && !Q_stricmp(level.mapname, "ns_starpad")
 		&& self->targetname && !Q_strncmp(self->targetname, "bea", 3)) {
+		// Excessive, but disable saber defense at each check
+		self->client->ps.forcePowersKnown &= ~(1 << FP_SABER_DEFENSE); // Remove the bit
+		self->client->ps.forcePowerLevel[FP_SABER_DEFENSE] = FORCE_LEVEL_0;
 		return;
+	}
+	if (cg_enableRandomizer.integer && !Q_stricmp(level.mapname, "artus_topside") && self->targetname && !Q_strncmp(self->targetname, "cinematic9_desann", 17))
+	{
+		// Excessive, but give this NPC saber defense 3 at each check
+		self->client->ps.forcePowersKnown |= (1 << FP_SABER_DEFENSE);
+		self->client->ps.forcePowerLevel[FP_SABER_DEFENSE] = FORCE_LEVEL_3;
 	}
 
 	if ( self->client->ps.weapon != WP_SABER )

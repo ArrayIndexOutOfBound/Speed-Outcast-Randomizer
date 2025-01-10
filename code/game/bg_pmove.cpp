@@ -620,7 +620,41 @@ static qboolean PM_CheckJump( void )
 					pm->ps->forceJumpZStart = pm->ps->origin[2];
 				}
 				*/
+
+				// Randomizer extreme : Here is when a FORCE jump is done. Normal jump is not touched.
+				// curHeight is zero when we start a jump, so if it is zero and we start a force jump 
 				float curHeight = pm->ps->origin[2] - pm->ps->forceJumpZStart;
+
+				if (curHeight == 0 && cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer)
+				{
+					if (cg_enableRandJumpHeight.integer)
+					{
+						// Need to change the rng calls later
+						// Change the values for the force jumps, not the normal one (but since this is called when you have force power, that don't change much)
+						for (int i = 1; i < 4; i++)
+						{
+							uniform_int_distribution<int> localDist(1, 768);
+							int newHeight = localDist(rngRandoEnhancements) + 10; // 10 as the minimum, 768 as the maximum, which is double force jump 3
+							forceJumpHeight[i] = newHeight;
+							// forceJumpHeightMax is not declared in this score, maybe it's not needed ?
+							// forceJumpHeightMax[i] = newHeight + 34;
+
+						}
+					}
+					if (cg_enableRandJumpStrength.integer)
+					{
+						// Need to change the rng calls later
+						// Change the values for the force jumps, not the normal one (but since this is called when you have force power, that don't change much)
+						for (int i = 1; i < 4; i++)
+						{
+							//int newStrength = rand() % 1568 + 112; // 112 as the minimum, 225 is the normal value for no force, 1680 as the maximum, which is double force jump 3
+							uniform_int_distribution<int> localDist(1, 3775);
+							int newStrength = localDist(rngRandoEnhancements) + 225; // Base Velocity is guaranted, but now every jump can be extremely fast
+							forceJumpStrength[i] = newStrength;
+						}
+					}
+				}
+
 				//check for max force jump level and cap off & cut z vel
 				if ( ( curHeight<=forceJumpHeight[0] ||//still below minimum jump height
 						(pm->ps->forcePower&&pm->cmd.upmove>=10) ) &&////still have force power available and still trying to jump up 
