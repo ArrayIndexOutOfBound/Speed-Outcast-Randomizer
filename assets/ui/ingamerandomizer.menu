@@ -25,10 +25,12 @@
 		{
 			show				randomizer_background ;
 			show 				basic ;
-			hide 				enhancements ;
+			hide 				enhancements1 ;
+			hide 				enhancements2 ;
 			setfocus			basic;
 			setitemcolor		basicmenubutton forecolor 1 1 1 1;
-			setitemcolor		enhancementsmenubutton forecolor 0.65 0.65 1 1;
+			setitemcolor		enhancements1menubutton forecolor 0.65 0.65 1 1;
+			setitemcolor		enhancements2menubutton forecolor 0.65 0.65 1 1;
 		}
 			
 		onESC 
@@ -554,17 +556,18 @@
 
 				show			randomizer_background ;
 				show 			basic ;
-				hide 			enhancements ;
+				hide 			enhancements1 ;
+				hide 			enhancements2 ;
 				setfocus		basic ;
-				setitemcolor	basicmenubutton forecolor 1 1 1 1;
-				setitemcolor	enhancementsmenubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	enhancements1menubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	enhancements2menubutton forecolor 0.65 0.65 1 1;
 			}
 		}
 
-		// Enhancements button
+		// Enhancements1 button
 		itemDef 
 		{
-			name				enhancements_glow
+			name				enhancements1_glow
 			group				highlights
 			style				WINDOW_STYLE_SHADER
 			rect				120 203 170 30
@@ -577,9 +580,9 @@
 
 		itemDef 
 		{
-			name				enhancementsmenubutton
+			name				enhancements1menubutton
 			group				none
-			text				ENHANCEMENTS
+			text				"ENHANCEMENTS 1"
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_EMPTY
 			rect				120 203 170 30
@@ -591,15 +594,15 @@
 			textalign			ITEM_ALIGN_RIGHT
 			forecolor			0.65 0.65 1 1
 			visible			1
-			descText			Configure Randomizer Enhancements
+			descText			Configure Randomizer Enhancements Group 1
 
 			mouseEnter 
 			{ 
-				show			enhancements_glow
+				show			enhancements1_glow
 			}
 			mouseExit 
 			{ 
-				hide			enhancements_glow
+				hide			enhancements1_glow
 			}	  	  
 			action 
 			{ 
@@ -607,10 +610,66 @@
 
 				show			randomizer_background ;
 				hide 			basic ;
-				show 			enhancements ;
-				setfocus		enhancements ;
+				show 			enhancements1 ;
+				hide 			enhancements2 ;
+				setfocus		enhancements1 ;
+				setitemcolor	enhancements1menubutton forecolor 1 1 1 1;
+				setitemcolor	enhancements2menubutton forecolor 0.65 0.65 1 1;
+			}
+		}
+
+		// Enhancements2 button
+		itemDef 
+		{
+			name				enhancements2_glow
+			group				highlights
+			style				WINDOW_STYLE_SHADER
+			rect				120 233 170 30
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			// appearance_slot		1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				enhancements2menubutton
+			group				none
+			text				"ENHANCEMENTS 2"
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				120 233 170 30
+			font				3
+			textscale			0.9
+			textalignx			170
+			textaligny			5
+			textstyle			3
+			textalign			ITEM_ALIGN_RIGHT
+			forecolor			0.65 0.65 1 1
+			visible			1
+			descText			Configure Randomizer Enhancements Group 2
+
+			mouseEnter 
+			{ 
+				show			enhancements2_glow
+			}
+			mouseExit 
+			{ 
+				hide			enhancements2_glow
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+
+				show			randomizer_background ;
+				hide 			basic ;
+				hide 			enhancements1 ;
+				show 			enhancements2 ;
+				setfocus		enhancements2 ;
 				setitemcolor	basicmenubutton forecolor 0.65 0.65 1 1;
-				setitemcolor	enhancementsmenubutton forecolor 1 1 1 1;
+				setitemcolor	enhancements1menubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	enhancements2menubutton forecolor 1 1 1 1;
 			}
 		}
 
@@ -906,13 +965,13 @@
 
 		//----------------------------------------------------------------------------------------------
 		//
-		//	ENHANCEMENTS FIELDS
+		//	ENHANCEMENTS FIELDS GROUP 1
 		//
 		//----------------------------------------------------------------------------------------------
 		itemDef 
 		{	
 			name				enable_randomizerEnhancements
-			group				enhancements
+			group				enhancements1
       		type				ITEM_TYPE_MULTI
 			text				"Enable Enhancements:"
 			cvar				"cg_enableRandomizerEnhancements"
@@ -943,7 +1002,7 @@
 		itemDef 
 		{	
 			name				random_saber_style
-			group				enhancements
+			group				enhancements1
       		type				ITEM_TYPE_MULTI
 			text				"Random Saber Style:"
 			cvar				"cg_enableRandSaberStyle"
@@ -974,7 +1033,7 @@
 		itemDef 
 		{	
 			name				random_saber_length
-			group				enhancements
+			group				enhancements1
       		type				ITEM_TYPE_MULTI
 			text				"Random Saber Length:"
 			cvar				"cg_enableRandSaberLength"
@@ -1005,7 +1064,7 @@
 		itemDef 
 		{	
 			name				random_saber_color
-			group				enhancements
+			group				enhancements1
       		type				ITEM_TYPE_MULTI
 			text				"Random Saber Color:"
 			cvar				"cg_enableRandSaberColor"
@@ -1036,7 +1095,7 @@
 		itemDef 
 		{	
 			name				random_jump_height
-			group				enhancements
+			group				enhancements1
       		type				ITEM_TYPE_MULTI
 			text				"Random Jump Height:"
 			cvar				"cg_enableRandJumpHeight"
@@ -1067,7 +1126,7 @@
 		itemDef 
 		{	
 			name				random_jump_strength
-			group				enhancements
+			group				enhancements1
       		type				ITEM_TYPE_MULTI
 			text				"Random Jump Strength:"
 			cvar				"cg_enableRandJumpStrength"
@@ -1098,7 +1157,7 @@
 		itemDef 
 		{	
 			name				random_language_voice_lines
-			group				enhancements
+			group				enhancements1
       		type				ITEM_TYPE_MULTI
 			text				"Random Language Voices:"
 			cvar				"cg_enableRandLanguageVoices"
@@ -1123,6 +1182,74 @@
 			mouseexit 
 			{ 
 				hide			highlight9
+			} 
+		}
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	ENHANCEMENTS FIELDS GROUP 2
+		//
+		//----------------------------------------------------------------------------------------------
+
+		itemDef 
+		{	
+			name				enable_randomizerEnhancements
+			group				enhancements2
+      		type				ITEM_TYPE_MULTI
+			text				"Enable Enhancements:"
+			cvar				"cg_enableRandomizerEnhancements"
+			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
+			rect				305 191 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font 				2
+			textscale 			0.8
+			forecolor			1 1 1 1
+			visible			0
+			descText			"Set to ON to enable listed enhancements"
+			action
+			{
+				play			"sound/interface/button1.wav"
+			}
+			mouseenter 
+			{ 
+				show			highlight2
+			}
+			mouseexit 
+			{ 
+				hide			highlight2
+			} 
+		}
+
+		itemDef 
+		{	
+			name				random_textures
+			group				enhancements2
+      		type				ITEM_TYPE_MULTI
+			text				"Random Textures:"
+			cvar				"cg_enableRandTextures"
+			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
+			rect				305 231 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font 				2
+			textscale 			0.8
+			forecolor			1 1 1 1
+			visible			0
+			descText			"Random textures assigned per surface"
+			action
+			{
+				play			"sound/interface/button1.wav"
+			}
+			mouseenter 
+			{ 
+				show			highlight4
+			}
+			mouseexit 
+			{ 
+				hide			highlight4
 			} 
 		}
 	}
