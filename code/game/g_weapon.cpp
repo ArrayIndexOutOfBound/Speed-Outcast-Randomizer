@@ -30,6 +30,12 @@ extern vmCvar_t	cg_enableRandomizerEnhancements;
 extern vmCvar_t	cg_enableRandWeaponProjectile;
 extern vmCvar_t	cg_enableRandWeaponProjectileMode;
 extern mt19937 rngRandoEnhancements;
+char lastCheckedMap[32] = "first_iteration";
+vector<gentity_t*> arrayNpcTracker; // Keep the pointers, if they match during a check with 'ent', we know it's the same
+vector<short> arrayWeaponProjectiles; // Keep the projectile type for the N-th entity on npcTracker
+vector<short> arrayKyleWP;
+
+
 
 // Bryar Pistol
 //--------
@@ -3499,6 +3505,16 @@ void FireWeapon( gentity_t *ent, qboolean alt_fire )
 	uniform_int_distribution<int> Weapon_Type_Dist(WP_BRYAR_PISTOL, WP_ROCKET_LAUNCHER);
 	if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer && cg_enableRandWeaponProjectile.integer)
 	{
+		// Precache the weapons
+		RegisterItem(FindItemForWeapon(WP_BRYAR_PISTOL));
+		RegisterItem(FindItemForWeapon(WP_BLASTER));
+		RegisterItem(FindItemForWeapon(WP_DISRUPTOR));
+		RegisterItem(FindItemForWeapon(WP_BOWCASTER));
+		RegisterItem(FindItemForWeapon(WP_REPEATER));
+		RegisterItem(FindItemForWeapon(WP_DEMP2));
+		RegisterItem(FindItemForWeapon(WP_FLECHETTE));
+		RegisterItem(FindItemForWeapon(WP_ROCKET_LAUNCHER));
+
 		if (cg_enableRandWeaponProjectileMode.integer) // Chaos mode
 		{
 			// If the weapon we are using is like a blaster or something, I don't want to randomize mines and others
@@ -3511,8 +3527,56 @@ void FireWeapon( gentity_t *ent, qboolean alt_fire )
 		else
 		{
 			// We need to be smart here
+			int rng;
+			// 1. Check if the map changed
+			if (strcmp(lastCheckedMap, level.mapname)) // If different, will output 1 or -1, which are both valid for a if staement
+			{
+				// Reset our tabs, keep the first 10 places for Kyle
+				//randomNumbers.push_back(dist(rng));
+				strcpy(lastCheckedMap, level.mapname);
+				arrayKyleWP.clear();
+				arrayWeaponProjectiles.clear();
+				arrayNpcTracker.clear();
+				for (int i = 0; i < 16; i++) // 8 possible weapons between bryar and rocket, *2 because of altfire
+				{
+					rng = Weapon_Type_Dist(rngRandoEnhancements);
+					arrayKyleWP.push_back(rng);
+				}
+				
+			}
+			// 2. If the weapon we are using is like a blaster or something, I don't want to randomize mines and others
+			if (ent->s.weapon >= WP_BRYAR_PISTOL && ent->s.weapon <= WP_ROCKET_LAUNCHER)
+			{
+				if (strcmp(ent->classname, "player") == 0)
+				{
+					// 3.1. Check if it's the player
+					ent->s.weapon = arrayKyleWP[ent->s.weapon - 2 + alt_fire] ; // -2 because Bryar is 2 and my array starts at 0 duh. +1 alt fire is needed
+				}
+				else
+				{
+					// 3.2 Check if this NPC is already present in our array, of not we must declare if.
+					// Since they have only one weapon each, I will do only one entry per NPC (non Kyle)
+					// If it's Kyle/the player, we need one entry per weapon of course and the alt fire
+					bool flagNpcExists = false;
+					for (int i = 0; i < arrayNpcTracker.size(); i++)
+					{
+						if (ent == arrayNpcTracker[i]) flagNpcExists = true;
+					}
+					if (!flagNpcExists) // NPC doesn't exist in my array, add the pointer to it and generate a new projectile for the guy
+					{
+						rng = Weapon_Type_Dist(rngRandoEnhancements);
+						arrayNpcTracker.push_back(ent);
+						arrayWeaponProjectiles.push_back(rng);
+					}
+					// 3 Find the correct projectile the NPC can shoot
+					for (int i = 0; i < arrayNpcTracker.size(); i++)
+					{
+						if (ent == arrayNpcTracker[i]) ent->s.weapon = arrayWeaponProjectiles[i];
+					}
+				}
+			}
+			
 		}
-		
 	}
 
 	// fire the specific weapon
