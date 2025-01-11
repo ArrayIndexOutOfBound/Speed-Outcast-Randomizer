@@ -89,6 +89,9 @@ Random language for each voice line (randomized when loaded on map init).
 #### `cg_enableRandWeaponProjectile` (0 or 1)
 Random weapon projectile per shot. Only applies if the weapon is a blaster of some sort.
 
+#### `cg_enableRandTextures` (0 or 1)
+Random texture assigned to each surface per map. No vid_restart required to toggle.
+
 #### Todos
 - Random sounds, edit : already kinda did with random voice lines, so we need more ?
 - Random NPC size (may not be possible because of insane hitbox and things)
