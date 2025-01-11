@@ -86,6 +86,9 @@ Random jump strength with every jump. From the normal jump without force to quad
 #### `cg_enableRandLanguageVoices` (0 or 1)
 Random language for each voice line (randomized when loaded on map init)
 
+#### `cg_enableRandTextures` (0 or 1)
+Random texture assigned to each surface per map. No vid_restart required to toggle.
+
 #### Todos
 - Random projectiles every shot
 - Random sounds
