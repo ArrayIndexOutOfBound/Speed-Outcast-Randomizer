@@ -28,6 +28,7 @@ static gentity_t *ent_list[MAX_GENTITIES];
 extern vmCvar_t	cg_enableRandomizer;
 extern vmCvar_t	cg_enableRandomizerEnhancements;
 extern vmCvar_t	cg_enableRandWeaponProjectile;
+extern vmCvar_t	cg_enableRandWeaponProjectileMode;
 extern mt19937 rngRandoEnhancements;
 
 // Bryar Pistol
@@ -3498,12 +3499,20 @@ void FireWeapon( gentity_t *ent, qboolean alt_fire )
 	uniform_int_distribution<int> Weapon_Type_Dist(WP_BRYAR_PISTOL, WP_ROCKET_LAUNCHER);
 	if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer && cg_enableRandWeaponProjectile.integer)
 	{
-		// If the weapon we are using is like a blaster or something, I don't want to randomize mines and others
-		if (ent->s.weapon >= WP_BRYAR_PISTOL && ent->s.weapon <= WP_ROCKET_LAUNCHER)
+		if (cg_enableRandWeaponProjectileMode.integer) // Chaos mode
 		{
-			int rng = Weapon_Type_Dist(rngRandoEnhancements);
-			ent->s.weapon = rng;
+			// If the weapon we are using is like a blaster or something, I don't want to randomize mines and others
+			if (ent->s.weapon >= WP_BRYAR_PISTOL && ent->s.weapon <= WP_ROCKET_LAUNCHER)
+			{
+				int rng = Weapon_Type_Dist(rngRandoEnhancements);
+				ent->s.weapon = rng;
+			}
 		}
+		else
+		{
+			// We need to be smart here
+		}
+		
 	}
 
 	// fire the specific weapon

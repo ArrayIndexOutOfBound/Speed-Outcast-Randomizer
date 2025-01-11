@@ -1125,5 +1125,67 @@
 				hide			highlight9
 			} 
 		}
+		
+		itemDef 
+		{	
+			name				random_weapon_projectiles
+			group				enhancements
+      		type				ITEM_TYPE_MULTI
+			text				"Random Weapon Projectile:"
+			cvar				"cg_enableRandWeaponProjectile"
+			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
+			rect				305 351 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font 				2
+			textscale 			0.8
+			forecolor			1 1 1 1
+			visible			0
+			descText			"Random weapon projectiles, check below for details"
+			action
+			{
+				play			"sound/interface/button1.wav"
+			}
+			mouseenter 
+			{ 
+				show			highlight10
+			}
+			mouseexit 
+			{ 
+				hide			highlight10
+			} 
+		}
+		
+		itemDef 
+		{	
+			name				random_weapon_projectiles_mode
+			group				enhancements
+      		type				ITEM_TYPE_MULTI
+			text				"Random Projectile CHAOS:"
+			cvar				"cg_enableRandWeaponProjectileMode"
+			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
+			rect				305 371 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font 				2
+			textscale 			0.8
+			forecolor			1 1 1 1
+			visible			0
+			descText			"Off : per map, per weapon, per npc | On : CHAOS."
+			action
+			{
+				play			"sound/interface/button1.wav"
+			}
+			mouseenter 
+			{ 
+				show			highlight11
+			}
+			mouseexit 
+			{ 
+				hide			highlight11
+			} 
+		}
 	}
 }
