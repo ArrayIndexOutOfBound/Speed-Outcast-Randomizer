@@ -713,6 +713,7 @@ extern vmCvar_t			cg_enableRandJumpHeight;
 extern vmCvar_t			cg_enableRandJumpStrength;
 extern vmCvar_t			cg_enableRandLanguageVoices;
 extern vmCvar_t			cg_enableRandTextures;
+extern vmCvar_t			cg_enableRandWeaponProjectile;
 // Additions for Base Game fixes (ex : artus_mine crates to get all pickups)
 extern vmCvar_t			cg_baseGameFixes;
 
