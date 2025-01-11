@@ -84,11 +84,13 @@ Random jump height with every jump. From 1/3 the normal jump without force to do
 Random jump strength with every jump. From the normal jump without force to quadruple the Z velocity with jump force 3.
 
 #### `cg_enableRandLanguageVoices` (0 or 1)
-Random language for each voice line (randomized when loaded on map init)
+Random language for each voice line (randomized when loaded on map init).
+
+#### `cg_enableRandWeaponProjectile` (0 or 1)
+Random weapon projectile per shot. Only applies if the weapon is a blaster of some sort.
 
 #### Todos
-- Random projectiles every shot
-- Random sounds
+- Random sounds, edit : already kinda did with random voice lines, so we need more ?
 - Random NPC size (may not be possible because of insane hitbox and things)
 
 

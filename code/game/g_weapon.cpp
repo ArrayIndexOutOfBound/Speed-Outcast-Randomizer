@@ -23,6 +23,13 @@ extern qboolean PM_DroidMelee( int npc_class );
 
 static gentity_t *ent_list[MAX_GENTITIES];
 
+// Randomizer
+#include <random>
+extern vmCvar_t	cg_enableRandomizer;
+extern vmCvar_t	cg_enableRandomizerEnhancements;
+extern vmCvar_t	cg_enableRandWeaponProjectile;
+extern mt19937 rngRandoEnhancements;
+
 // Bryar Pistol
 //--------
 #define BRYAR_PISTOL_VEL			1800
@@ -3486,6 +3493,18 @@ void FireWeapon( gentity_t *ent, qboolean alt_fire )
 
 	ent->alt_fire = alt_fire;
 	CalcMuzzlePoint ( ent, forwardVec, vright, up, muzzle , 0);
+
+	// Randomizer
+	uniform_int_distribution<int> Weapon_Type_Dist(WP_BRYAR_PISTOL, WP_ROCKET_LAUNCHER);
+	if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer && cg_enableRandWeaponProjectile.integer)
+	{
+		// If the weapon we are using is like a blaster or something, I don't want to randomize mines and others
+		if (ent->s.weapon >= WP_BRYAR_PISTOL && ent->s.weapon <= WP_ROCKET_LAUNCHER)
+		{
+			int rng = Weapon_Type_Dist(rngRandoEnhancements);
+			ent->s.weapon = rng;
+		}
+	}
 
 	// fire the specific weapon
 	switch( ent->s.weapon ) 
