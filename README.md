@@ -48,13 +48,14 @@ Default: `0`.
 #### Gameplay
 
 - Every NPC will be randomized during spawn, with exceptions listed below.
+- NPC health will be randomized between 25% and 400% of base health.
 - Every items spawned on the map such as items on the ground or in gun racks will be randomized.
 - The lightsaber can be obtained early and you will receive a random saber style on pickup.
 - Every Force powers (except Saber attack and Saber defense) can be obtained via holocrons.
 - NPCs replacing NPCs with keys or special trigger for script will inherit said keys and/or script.
 - NPCs replacing normal NPCs will inherit their AI as best as possible (droids can't pathfind exactly like a humanoid).
 - Easter egg NPC called `The Death Wiggle`.
-- The NPC you kill at the end of `yavin_trial` will trigger the end of the timer like in SpeedOutcast
+- The NPC you kill at the end of `yavin_trial` will trigger the end of the timer like in SpeedOutcast.
 
 #### Exceptions
 
