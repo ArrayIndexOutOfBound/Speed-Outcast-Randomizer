@@ -1410,6 +1410,14 @@ void NPC_Begin (gentity_t *ent)
 	ent->nextthink = level.time + FRAMETIME + Q_irand(0, 100);
 
 	NPC_SetMiscDefaultData( ent );
+	if (cg_enableRandomizer.integer) // Encapsulate max hp changes
+	{
+		if (ent->max_health) {
+			uniform_real_distribution<float> NPC_HP_Dist(25, 400);
+			float rng = NPC_HP_Dist(rngRandoBase) / 100; //Get a multiplier value between 0.25 and 4
+			ent->max_health = (int)((float)ent->max_health * rng); //Result gets rounded when converted back to int so nothing explodes
+		}
+	}
 	if ( ent->health <= 0 )
 	{
 		//ORIGINAL ID: health will count down towards max_health
