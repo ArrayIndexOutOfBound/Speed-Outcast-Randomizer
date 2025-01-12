@@ -64,7 +64,8 @@ extern int WP_SetSaberModel( gclient_t *client, class_t npcClass );
 extern	vmCvar_t		cg_enableRandomizer;
 extern	vmCvar_t		cg_useSetSeed;
 extern	vmCvar_t		cg_setSeed;
-extern mt19937 rngRandoBase;
+extern  mt19937			rngRandoBase;
+extern  vmCvar_t		cg_enableRandNPCSpeed;
 
 #define	NSF_DROP_TO_FLOOR	16
 
@@ -1416,6 +1417,17 @@ void NPC_Begin (gentity_t *ent)
 			uniform_real_distribution<float> NPC_HP_Dist(25, 400);
 			float rng = NPC_HP_Dist(rngRandoBase) / 100; //Get a multiplier value between 0.25 and 4
 			ent->max_health = (int)((float)ent->max_health * rng); //Result gets rounded when converted back to int so nothing explodes
+		}
+	}
+	if (cg_enableRandomizer.integer && cg_enableRandNPCSpeed.integer) // Too early
+	{
+		// Doesn't work, speed is 0 here and even if I fix it to 999, they don't care
+		ent->speed = 999;
+		ent->client->ps.speed = 999;
+		if (ent->client->ps.speed) {
+			uniform_real_distribution<float> NPC_Speed_Dist(25, 400);
+			float rng = NPC_Speed_Dist(rngRandoBase) / 100; //Get a multiplier value between 0.25 and 4
+			ent->client->ps.speed = (int)((float)ent->client->ps.speed * rng); //Result gets rounded when converted back to int so nothing explodes
 		}
 	}
 	if ( ent->health <= 0 )

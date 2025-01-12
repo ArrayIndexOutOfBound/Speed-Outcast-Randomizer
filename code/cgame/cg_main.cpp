@@ -410,6 +410,7 @@ vmCvar_t	cg_enableRandLanguageVoices;
 vmCvar_t	cg_enableRandTextures;
 vmCvar_t	cg_enableRandWeaponProjectile;
 vmCvar_t	cg_enableRandWeaponProjectileMode;
+vmCvar_t	cg_enableRandNPCSpeed;
 // Additions for Base Game fixes (ex : artus_mine crates to get all pickups)
 vmCvar_t	cg_baseGameFixes;
 
@@ -613,6 +614,7 @@ Ghoul2 Insert End
 	{ &cg_enableRandTextures, "cg_enableRandTextures", "0", CVAR_ARCHIVE },
 	{ &cg_enableRandWeaponProjectile, "cg_enableRandWeaponProjectile", "0", CVAR_ARCHIVE },
 	{ &cg_enableRandWeaponProjectileMode, "cg_enableRandWeaponProjectileMode", "0", CVAR_ARCHIVE },
+	{ &cg_enableRandNPCSpeed, "cg_enableRandNPCSpeed", "0", CVAR_ARCHIVE },
 	
 	// Additions for BaseGame fixes
 	{ &cg_baseGameFixes, "cg_baseGameFixes", "0", CVAR_ARCHIVE }
