@@ -962,6 +962,57 @@
 				hide			highlight6
 			} 
 		}
+		
+		itemDef 
+		{
+			name				randomizer_basic_info1
+			group				basic
+			text				"Base randomizer have the following :"
+			font				2
+			textscale			0.8
+			rect				305 351 300 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			150 
+			textaligny			-2
+			forecolor			0.7 0.7 0.7 1
+			visible			0
+			// appearance_slot		11
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				randomizer_basic_info2
+			group				basic
+			text				"RNG on items, NPC types, NPC health."
+			font				2
+			textscale			0.8
+			rect				305 371 300 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			150 
+			textaligny			-2
+			forecolor			0.7 0.7 0.7 1
+			visible			0
+			// appearance_slot		11
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				randomizer_basic_info3
+			group				basic
+			text				"-"
+			font				2
+			textscale			0.8
+			rect				305 391 300 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			150 
+			textaligny			-2
+			forecolor			0.7 0.7 0.7 1
+			visible			0
+			// appearance_slot		11
+			decoration
+		}
 
 		//----------------------------------------------------------------------------------------------
 		//
@@ -1312,6 +1363,37 @@
 			mouseexit 
 			{ 
 				hide			highlight6
+			} 
+		}
+		
+		itemDef 
+		{	
+			name				random_npc_speed
+			group				enhancements2
+      		type				ITEM_TYPE_MULTI
+			text				"Random NPC Speed:"
+			cvar				"cg_enableRandNPCSpeed"
+			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
+			rect				305 291 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font 				2
+			textscale 			0.8
+			forecolor			1 1 1 1
+			visible			0
+			descText			"Between 33% and 300%."
+			action
+			{
+				play			"sound/interface/button1.wav"
+			}
+			mouseenter 
+			{ 
+				show			highlight7
+			}
+			mouseexit 
+			{ 
+				hide			highlight7
 			} 
 		}
 	}

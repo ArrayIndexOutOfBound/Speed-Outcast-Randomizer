@@ -869,7 +869,14 @@ void CL_InitCGame( void ) {
 	if (Cvar_VariableIntegerValue("cg_enableRandomizer") &&
 		Cvar_VariableIntegerValue("cg_enableRandomizerEnhancements") &&
 		Cvar_VariableIntegerValue("cg_enableRandLanguageVoices")) {
+		// Careful for memory leaks
+		S_Shutdown(); // This release the memory we were holding
+		S_Init();
+		extern qboolean	s_soundMuted;
+		s_soundMuted = qfalse;
+		S_RestartMusic();
 		S_ReloadAllUsedSounds();
+		AS_ParseSets();
 	}
 
 	t1 = Sys_Milliseconds();

@@ -93,8 +93,12 @@ Random weapon projectile per shot. Only applies if the weapon is a blaster of so
 #### `cg_enableRandTextures` (0 or 1)
 Random texture assigned to each surface per map. No vid_restart required to toggle.
 
+#### `cg_enableRandNPCSpeed` (0 or 1)
+Random walking, runing and turning speed for NPCs. Range of 33% to 300%.
+
+
 #### Todos
-- Random sounds, edit : already kinda did with random voice lines, so we need more ?
-- Random NPC size (may not be possible because of insane hitbox and things)
+- Random codes for doom_comm (if possible)
+- Random codes for kejim_post (if possible)
 
 
