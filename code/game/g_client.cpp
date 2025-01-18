@@ -17,6 +17,7 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 // Posto / Randomizer : for the first weapon (It might roll a stun baton again, would be pretty funny)
 extern int GetRandomizedWeapon();
 extern vmCvar_t	cg_enableRandomizer;
+extern vmCvar_t	cg_startWithPush;
 
 // g_client.c -- client functions that don't happen every frame
 
@@ -650,7 +651,7 @@ Player_RestoreFromPrevLevel
   Argument		: gentity_t *ent
 ============
 */
-void Player_RestoreFromPrevLevel(gentity_t *ent)
+void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eSaveGameJustLoaded)
 {
 	gclient_t	*client = ent->client;
 	int			i;
@@ -732,6 +733,25 @@ void Player_RestoreFromPrevLevel(gentity_t *ent)
 			  var = strtok( NULL, " " );
 			}
 			assert (i==NUM_FORCE_POWERS);
+
+			//On resetting by loading auto_kejim_post
+			if (cg_enableRandomizer.integer && eSaveGameJustLoaded == eRESET) {
+				//If start with push enabled then apply - have to handle it here so it applies without having to go to menu
+				if (cg_startWithPush.integer) {
+					client->ps.forcePowerLevel[FP_PUSH] = 1;
+					client->ps.forcePowersKnown = (0 << FP_HEAL) | (0 << FP_LEVITATION) | (0 << FP_SPEED) | (1 << FP_PUSH) | (0 << FP_PULL) | (0 << FP_TELEPATHY) | (0 << FP_GRIP) | (0 << FP_LIGHTNING) | (0 << FP_SABERTHROW) | (0 << FP_SABER_DEFENSE) | (0 << FP_SABER_OFFENSE);
+					client->ps.forcePower = FORCE_POWER_MAX;
+				}
+				else if (client->ps.forcePowerLevel[FP_PUSH] > 0)
+				{
+					//Clear all force powers - necessary because the initial apply for startWithPush sets it on auto_kejim_post so we have to handle it here
+					for (int i = 0; i < NUM_FORCE_POWERS; i++) {
+						ent->client->ps.forcePowerLevel[i] = 0;
+					}
+					client->ps.forcePowersKnown = (0 << FP_HEAL) | (0 << FP_LEVITATION) | (0 << FP_SPEED) | (0 << FP_PUSH) | (0 << FP_PULL) | (0 << FP_TELEPATHY) | (0 << FP_GRIP) | (0 << FP_LIGHTNING) | (0 << FP_SABERTHROW) | (0 << FP_SABER_DEFENSE) | (0 << FP_SABER_OFFENSE);
+				}
+			}
+			
 
 			client->ps.forcePowerMax = FORCE_POWER_MAX;
 			client->ps.forceGripEntityNum = ENTITYNUM_NONE;
@@ -1683,7 +1703,7 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 			(spawnPoint->spawnflags&1) ||		// KEEP_PREV
 			g_qbLoadTransition == qtrue )
 		{
-			Player_RestoreFromPrevLevel(ent);
+			Player_RestoreFromPrevLevel(ent, eSavedGameJustLoaded);
 		}
 		
 		

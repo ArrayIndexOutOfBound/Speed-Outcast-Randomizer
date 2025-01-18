@@ -67,6 +67,8 @@ extern	vmCvar_t		cg_useSetSeed;
 extern	vmCvar_t		cg_setSeed;
 extern  mt19937			rngRandoBase;
 extern  vmCvar_t		cg_enableRandNPCSpeed;
+extern  vmCvar_t		cg_enableSafeStart;
+extern  vmCvar_t		cg_bonusJanHealth;
 
 #define	NSF_DROP_TO_FLOOR	16
 
@@ -177,6 +179,11 @@ extern void G_CreateG2AttachedWeaponModel(gentity_t* ent, const char* weaponMode
 //Easier to break this into another function as I refactored a bit to make it cleaner
 void NPC_SetMiscDefaultDataRandomizer(gentity_t* ent)
 {
+	//Set sleep behaviour state for two starting stormtroopers so other enemies spawned in their place don't instantly aggro
+	if (cg_enableSafeStart.integer && !Q_stricmp(level.mapname, "kejim_post") && ent->targetname && !Q_strncmp(ent->targetname, "st_guard", 8)) {
+		ent->NPC->behaviorState = BS_SLEEP;
+	}
+
 	if (ent->spawnflags & SFB_CINEMATIC)
 	{//if a cinematic guy, default us to wait bState
 		ent->NPC->behaviorState = BS_CINEMATIC;
@@ -1412,7 +1419,11 @@ void NPC_Begin (gentity_t *ent)
 	ent->nextthink = level.time + FRAMETIME + Q_irand(0, 100);
 
 	NPC_SetMiscDefaultData( ent );
-	if (cg_enableRandomizer.integer) // Encapsulate max hp changes
+	//Bump up Jan's max health a little - skip random health for her too
+	if (cg_bonusJanHealth.integer && !Q_stricmp(level.mapname, "kejim_post") && ent->targetname && !Q_stricmp(ent->targetname, "jan")) {
+		ent->max_health += 50;
+	}
+	else if (cg_enableRandomizer.integer) // Encapsulate max hp changes
 	{
 		if (ent->max_health) {
 			uniform_real_distribution<float> NPC_HP_Dist(25, 400);
