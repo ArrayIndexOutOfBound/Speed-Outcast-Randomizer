@@ -4043,9 +4043,9 @@ void SP_NPC_Imperial_Random(gentity_t* self)
 		CheckIfMapChanged();
 		if (strcmp(lastKnownMap, "artus_detention") == 0) // The warden that we have hostage
 		{
-			if (self->targetname)
+			if (self->NPC_targetname)
 			{
-				if (!strcmp(self->targetname, "warden"))
+				if (!strcmp(self->NPC_targetname, "warden"))
 				{
 					SP_NPC_Spawn_Random_Humanoid(self);
 					return;
@@ -4065,9 +4065,9 @@ void SP_NPC_Imperial_Random(gentity_t* self)
 		}
 		if (strcmp(lastKnownMap, "doom_detention") == 0) // The jailer of Jan
 		{
-			if (self->targetname)
+			if (self->NPC_targetname)
 			{
-				if (!strcmp(self->targetname, "jailer"))
+				if (!strcmp(self->NPC_targetname, "jailer"))
 				{
 					SP_NPC_Spawn_Random_Humanoid(self);
 					return;
