@@ -27,10 +27,12 @@
 			show 				basic ;
 			hide 				enhancements1 ;
 			hide 				enhancements2 ;
+			hide 				assists ;
 			setfocus			basic;
 			setitemcolor		basicmenubutton forecolor 1 1 1 1;
 			setitemcolor		enhancements1menubutton forecolor 0.65 0.65 1 1;
 			setitemcolor		enhancements2menubutton forecolor 0.65 0.65 1 1;
+			setitemcolor		assistsmenubutton forecolor 0.65 0.65 1 1;
 		}
 			
 		onESC 
@@ -551,10 +553,12 @@
 				show 			basic ;
 				hide 			enhancements1 ;
 				hide 			enhancements2 ;
+				hide 			assists ;
 				setfocus		basic ;
 				setitemcolor	basicmenubutton forecolor 1 1 1 1;
 				setitemcolor	enhancements1menubutton forecolor 0.65 0.65 1 1;
 				setitemcolor	enhancements2menubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	assistsmenubutton forecolor 0.65 0.65 1 1;
 			}
 		}
 
@@ -606,10 +610,12 @@
 				hide 			basic ;
 				show 			enhancements1 ;
 				hide 			enhancements2 ;
+				hide 			assists ;
 				setfocus		enhancements1 ;
 				setitemcolor	basicmenubutton forecolor 0.65 0.65 1 1;
 				setitemcolor	enhancements1menubutton forecolor 1 1 1 1;
 				setitemcolor	enhancements2menubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	assistsmenubutton forecolor 0.65 0.65 1 1;
 			}
 		}
 
@@ -661,10 +667,69 @@
 				hide 			basic ;
 				hide 			enhancements1 ;
 				show 			enhancements2 ;
+				hide 			assists ;
 				setfocus		enhancements2 ;
 				setitemcolor	basicmenubutton forecolor 0.65 0.65 1 1;
 				setitemcolor	enhancements1menubutton forecolor 0.65 0.65 1 1;
 				setitemcolor	enhancements2menubutton forecolor 1 1 1 1;
+				setitemcolor	assistsmenubutton forecolor 0.65 0.65 1 1;
+			}
+		}
+
+		// Assists button
+		itemDef 
+		{
+			name				assists_glow
+			group				highlights
+			style				WINDOW_STYLE_SHADER
+			rect				120 263 170 30
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			// appearance_slot		1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				assistsmenubutton
+			group				none
+			text				"ASSISTS"
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				120 263 170 30
+			font				3
+			textscale			0.9
+			textalignx			170
+			textaligny			5
+			textstyle			3
+			textalign			ITEM_ALIGN_RIGHT
+			forecolor			0.65 0.65 1 1
+			visible			1
+			descText			Configure Randomizer Assists
+
+			mouseEnter 
+			{ 
+				show			assists_glow
+			}
+			mouseExit 
+			{ 
+				hide			assists_glow
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+
+				show			randomizer_background ;
+				hide 			basic ;
+				hide 			enhancements1 ;
+				hide 			enhancements2 ;
+				show 			assists ;
+				setfocus		assists ;
+				setitemcolor	basicmenubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	enhancements1menubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	enhancements2menubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	assistsmenubutton forecolor 1 1 1 1;
 			}
 		}
 
@@ -1299,7 +1364,7 @@
 			} 
 		}
 
-				itemDef 
+		itemDef 
 		{	
 			name				random_weapon_projectiles
 			group				enhancements2
@@ -1389,6 +1454,136 @@
 			mouseexit 
 			{ 
 				hide			highlight7
+			} 
+		}
+
+		itemDef 
+		{	
+			name				enableEasyStart
+			group				enhancements2
+      		type				ITEM_TYPE_MULTI
+			text				"Random NPC Speed:"
+			cvar				"cg_enableRandNPCSpeed"
+			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
+			rect				305 291 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font 				2
+			textscale 			0.8
+			forecolor			1 1 1 1
+			visible			0
+			descText			"Between 33% and 300%."
+			action
+			{
+				play			"sound/interface/button1.wav"
+			}
+			mouseenter 
+			{ 
+				show			highlight7
+			}
+			mouseexit 
+			{ 
+				hide			highlight7
+			} 
+		}
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	ASSISTS FIELDS
+		//
+		//----------------------------------------------------------------------------------------------
+
+		itemDef 
+		{	
+			name				enable_safeStart
+			group				assists
+      		type				ITEM_TYPE_MULTI
+			text				"Enable Safe Start:"
+			cvar				"cg_enableSafeStart"
+			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
+			rect				305 191 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font 				2
+			textscale 			0.8
+			forecolor			1 1 1 1
+			visible			0
+			descText			"Prevents first two enemies from attacking unprovoked"
+			action
+			{
+				play			"sound/interface/button1.wav"
+			}
+			mouseenter 
+			{ 
+				show			highlight2
+			}
+			mouseexit 
+			{ 
+				hide			highlight2
+			} 
+		}
+
+		itemDef 
+		{	
+			name				startWithPush
+			group				assists
+      		type				ITEM_TYPE_MULTI
+			text				"Start With Force Push"
+			cvar				"cg_startWithPush"
+			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
+			rect				305 211 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font 				2
+			textscale 			0.8
+			forecolor			1 1 1 1
+			visible			0
+			descText			"Start with force push 1"
+			action
+			{
+				play			"sound/interface/button1.wav"
+			}
+			mouseenter 
+			{ 
+				show			highlight3
+			}
+			mouseexit 
+			{ 
+				hide			highlight3
+			} 
+		}
+
+		itemDef 
+		{	
+			name				bonusJanHealth
+			group				assists
+      		type				ITEM_TYPE_MULTI
+			text				"Bonus Jan Health:"
+			cvar				"cg_bonusJanHealth"
+			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
+			rect				305 231 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font 				2
+			textscale 			0.8
+			forecolor			1 1 1 1
+			visible			0
+			descText			"Starts Jan with +50 bonus health on kejim_post"
+			action
+			{
+				play			"sound/interface/button1.wav"
+			}
+			mouseenter 
+			{ 
+				show			highlight4
+			}
+			mouseexit 
+			{ 
+				hide			highlight4
 			} 
 		}
 	}

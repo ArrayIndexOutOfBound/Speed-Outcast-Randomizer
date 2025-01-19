@@ -94,7 +94,16 @@ Random weapon projectile per shot. Only applies if the weapon is a blaster of so
 Random texture assigned to each surface per map. No vid_restart required to toggle.
 
 #### `cg_enableRandNPCSpeed` (0 or 1)
-Random walking, runing and turning speed for NPCs. Range of 33% to 300%.
+Random walking, running and turning speed for NPCs. Range of 33% to 300%.
+
+#### `cg_enableSafeStart` (0 or 1)
+Prevents starting two enemies from attacking unless provoked.
+
+#### `cg_startWithPush` (0 or 1)
+Start game with force push 1.
+
+#### `cg_bonusJanHealth` (0 or 1)
+Applies a flat +50 to Jan's health on kejim_post.
 
 
 #### Todos

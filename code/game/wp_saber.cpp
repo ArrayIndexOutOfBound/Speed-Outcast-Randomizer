@@ -106,6 +106,7 @@ extern vmCvar_t cg_enableRandomizerEnhancements;
 extern vmCvar_t	cg_enableRandSaberStyle;
 extern vmCvar_t	cg_enableRandSaberLength;
 extern vmCvar_t	cg_enableRandSaberColor;
+extern vmCvar_t	cg_startWithPush;
 extern int g_crosshairEntNum;
 
 int		g_saberFlashTime = 0;
@@ -8718,9 +8719,19 @@ void WP_InitForcePowers( gentity_t *ent )
 	{//player
 		//Don't initialise us with a random set of force powers please
 		if (cg_enableRandomizer.integer) {
-			ent->client->ps.forcePowersKnown = (0 << FP_HEAL) | (0 << FP_LEVITATION) | (0 << FP_SPEED) | (0 << FP_PUSH) | (0 << FP_PULL) | (0 << FP_TELEPATHY) | (0 << FP_GRIP) | (0 << FP_LIGHTNING) | (0 << FP_SABERTHROW) | (0 << FP_SABER_DEFENSE) | (0 << FP_SABER_OFFENSE);
+			//Clear all force powers
 			for (int i = 0; i < NUM_FORCE_POWERS; i++) {
 				ent->client->ps.forcePowerLevel[i] = 0;
+			}
+			//If using easy start, apply force push
+			if (cg_startWithPush.integer && !Q_stricmp(level.mapname, "kejim_post")) {
+				ent->client->ps.forcePowersKnown = (0 << FP_HEAL) | (0 << FP_LEVITATION) | (0 << FP_SPEED) | (1 << FP_PUSH) | (0 << FP_PULL) | (0 << FP_TELEPATHY) | (0 << FP_GRIP) | (0 << FP_LIGHTNING) | (0 << FP_SABERTHROW) | (0 << FP_SABER_DEFENSE) | (0 << FP_SABER_OFFENSE);
+				ent->client->ps.forcePowerLevel[FP_PUSH] = 1;
+				ent->client->ps.forcePower = FORCE_POWER_MAX;
+			}
+			else {
+				//Don't need to worry about overwriting force powers from save here as they are applied later
+				ent->client->ps.forcePowersKnown = (0 << FP_HEAL) | (0 << FP_LEVITATION) | (0 << FP_SPEED) | (0 << FP_PUSH) | (0 << FP_PULL) | (0 << FP_TELEPATHY) | (0 << FP_GRIP) | (0 << FP_LIGHTNING) | (0 << FP_SABERTHROW) | (0 << FP_SABER_DEFENSE) | (0 << FP_SABER_OFFENSE);
 			}
 			ent->client->ps.forcePowerMax = FORCE_POWER_MAX;
 			ent->client->ps.forcePowerRegenDebounceTime = 0;

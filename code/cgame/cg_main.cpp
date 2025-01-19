@@ -411,6 +411,9 @@ vmCvar_t	cg_enableRandTextures;
 vmCvar_t	cg_enableRandWeaponProjectile;
 vmCvar_t	cg_enableRandWeaponProjectileMode;
 vmCvar_t	cg_enableRandNPCSpeed;
+vmCvar_t	cg_enableSafeStart;
+vmCvar_t	cg_startWithPush;
+vmCvar_t	cg_bonusJanHealth;
 // Additions for Base Game fixes (ex : artus_mine crates to get all pickups)
 vmCvar_t	cg_baseGameFixes;
 
@@ -615,6 +618,9 @@ Ghoul2 Insert End
 	{ &cg_enableRandWeaponProjectile, "cg_enableRandWeaponProjectile", "0", CVAR_ARCHIVE },
 	{ &cg_enableRandWeaponProjectileMode, "cg_enableRandWeaponProjectileMode", "0", CVAR_ARCHIVE },
 	{ &cg_enableRandNPCSpeed, "cg_enableRandNPCSpeed", "0", CVAR_ARCHIVE },
+	{ &cg_enableSafeStart, "cg_enableSafeStart", "0", CVAR_ARCHIVE },
+	{ &cg_startWithPush, "cg_startWithPush", "0", CVAR_ARCHIVE },
+	{ &cg_bonusJanHealth, "cg_bonusJanHealth", "0", CVAR_ARCHIVE },
 	
 	// Additions for BaseGame fixes
 	{ &cg_baseGameFixes, "cg_baseGameFixes", "0", CVAR_ARCHIVE }
