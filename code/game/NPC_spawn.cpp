@@ -180,7 +180,7 @@ extern void G_CreateG2AttachedWeaponModel(gentity_t* ent, const char* weaponMode
 void NPC_SetMiscDefaultDataRandomizer(gentity_t* ent)
 {
 	//Set sleep behaviour state for two starting stormtroopers so other enemies spawned in their place don't instantly aggro
-	if (cg_enableSafeStart.integer && !Q_stricmp(level.mapname, "kejim_post") && ent->targetname && !Q_strncmp(ent->targetname, "st_guard", 8)) {
+	if (cg_enableRandomizerEnhancements.integer && cg_enableSafeStart.integer && !Q_stricmp(level.mapname, "kejim_post") && ent->targetname && !Q_strncmp(ent->targetname, "st_guard", 8)) {
 		ent->NPC->behaviorState = BS_SLEEP;
 	}
 
@@ -1419,11 +1419,11 @@ void NPC_Begin (gentity_t *ent)
 	ent->nextthink = level.time + FRAMETIME + Q_irand(0, 100);
 
 	NPC_SetMiscDefaultData( ent );
-	//Bump up Jan's max health a little - skip random health for her too
-	if (cg_bonusJanHealth.integer && !Q_stricmp(level.mapname, "kejim_post") && ent->targetname && !Q_stricmp(ent->targetname, "jan")) {
+	// Bump up Jan's max health a little - give her random health for her too, with higher base pool it will be more leniant
+	if (cg_enableRandomizerEnhancements.integer && cg_bonusJanHealth.integer && !Q_stricmp(level.mapname, "kejim_post") && ent->targetname && !Q_stricmp(ent->targetname, "jan")) {
 		ent->max_health += 50;
 	}
-	else if (cg_enableRandomizer.integer) // Encapsulate max hp changes
+	if (cg_enableRandomizer.integer) // Encapsulate max hp changes
 	{
 		if (ent->max_health) {
 			uniform_real_distribution<float> NPC_HP_Dist(25, 400);

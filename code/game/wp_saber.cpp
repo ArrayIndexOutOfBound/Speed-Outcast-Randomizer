@@ -8724,7 +8724,7 @@ void WP_InitForcePowers( gentity_t *ent )
 				ent->client->ps.forcePowerLevel[i] = 0;
 			}
 			//If using easy start, apply force push
-			if (cg_startWithPush.integer && !Q_stricmp(level.mapname, "kejim_post")) {
+			if (cg_enableRandomizerEnhancements.integer && cg_startWithPush.integer && !Q_stricmp(level.mapname, "kejim_post")) {
 				ent->client->ps.forcePowersKnown = (0 << FP_HEAL) | (0 << FP_LEVITATION) | (0 << FP_SPEED) | (1 << FP_PUSH) | (0 << FP_PULL) | (0 << FP_TELEPATHY) | (0 << FP_GRIP) | (0 << FP_LIGHTNING) | (0 << FP_SABERTHROW) | (0 << FP_SABER_DEFENSE) | (0 << FP_SABER_OFFENSE);
 				ent->client->ps.forcePowerLevel[FP_PUSH] = 1;
 				ent->client->ps.forcePower = FORCE_POWER_MAX;
