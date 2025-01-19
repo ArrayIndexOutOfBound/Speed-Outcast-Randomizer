@@ -17,6 +17,7 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 // Posto / Randomizer : for the first weapon (It might roll a stun baton again, would be pretty funny)
 extern int GetRandomizedWeapon();
 extern vmCvar_t	cg_enableRandomizer;
+extern vmCvar_t	cg_enableRandomizerEnhancements;
 extern vmCvar_t	cg_startWithPush;
 
 // g_client.c -- client functions that don't happen every frame
@@ -737,7 +738,7 @@ void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eSaveGame
 			//On resetting by loading auto_kejim_post
 			if (cg_enableRandomizer.integer && eSaveGameJustLoaded == eRESET) {
 				//If start with push enabled then apply - have to handle it here so it applies without having to go to menu
-				if (cg_startWithPush.integer) {
+				if (cg_enableRandomizerEnhancements.integer && cg_startWithPush.integer) {
 					client->ps.forcePowerLevel[FP_PUSH] = 1;
 					client->ps.forcePowersKnown = (0 << FP_HEAL) | (0 << FP_LEVITATION) | (0 << FP_SPEED) | (1 << FP_PUSH) | (0 << FP_PULL) | (0 << FP_TELEPATHY) | (0 << FP_GRIP) | (0 << FP_LIGHTNING) | (0 << FP_SABERTHROW) | (0 << FP_SABER_DEFENSE) | (0 << FP_SABER_OFFENSE);
 					client->ps.forcePower = FORCE_POWER_MAX;
