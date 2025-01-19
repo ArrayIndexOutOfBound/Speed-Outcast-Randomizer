@@ -25,13 +25,15 @@
 		{
 			show				randomizer_background ;
 			show 				basic ;
-			hide 				enhancements1 ;
-			hide 				enhancements2 ;
+			hide 				enhancements_cosmetics ;
+			hide 				enhancements_force ;
+			hide 				enhancements_evil ;
 			hide 				assists ;
 			setfocus			basic;
 			setitemcolor		basicmenubutton forecolor 1 1 1 1;
-			setitemcolor		enhancements1menubutton forecolor 0.65 0.65 1 1;
-			setitemcolor		enhancements2menubutton forecolor 0.65 0.65 1 1;
+			setitemcolor		enhancements_cosmetics_menubutton forecolor 0.65 0.65 1 1;
+			setitemcolor		enhancements_force_menubutton forecolor 0.65 0.65 1 1;
+			setitemcolor		enhancements_evil_menubutton forecolor 0.65 0.65 1 1;
 			setitemcolor		assistsmenubutton forecolor 0.65 0.65 1 1;
 		}
 			
@@ -542,7 +544,7 @@
 			textalign			ITEM_ALIGN_RIGHT
 			forecolor			0.65 0.65 1 1
 			visible			1
-			descText			Configure Basic Randomizer Settings
+			descText			"Basic Randomizer Settings - Speedrun compliant"
 
 			mouseEnter 
 			{ 
@@ -558,23 +560,26 @@
 
 				show			randomizer_background ;
 				show 			basic ;
-				hide 			enhancements1 ;
-				hide 			enhancements2 ;
+				hide 			enhancements_cosmetics ;
+				hide 			enhancements_force ;
+				hide 			enhancements_evil ;
 				hide 			assists ;
 				setfocus		basic ;
-				setitemcolor	enhancements1menubutton forecolor 0.65 0.65 1 1;
-				setitemcolor	enhancements2menubutton forecolor 0.65 0.65 1 1;
-				setitemcolor	assistsmenubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	basicmenubutton forecolor 1 1 1 1;
+				setitemcolor	enhancements_cosmetics_menubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	enhancements_force_menubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	enhancements_evil_menubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	assists_menubutton forecolor 0.65 0.65 1 1;
 			}
 		}
 
 		// Enhancements1 button
 		itemDef 
 		{
-			name				enhancements1_glow
+			name				enhancements_cosmetics_glow
 			group				highlights
 			style				WINDOW_STYLE_SHADER
-			rect				120 203 170 30
+			rect				120 233 170 30
 			background			"gfx/menus/menu_blendbox2"			// Frame around button
 			forecolor			1 1 1 1
 			visible			0
@@ -584,12 +589,12 @@
 
 		itemDef 
 		{
-			name				enhancements1menubutton
+			name				enhancements_cosmetics_menubutton
 			group				none
-			text				"ENHANCEMENTS 1"
+			text				"Cosmetics"
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_EMPTY
-			rect				120 203 170 30
+			rect				120 233 170 30
 			font				3
 			textscale			0.9
 			textalignx			170
@@ -598,15 +603,15 @@
 			textalign			ITEM_ALIGN_RIGHT
 			forecolor			0.65 0.65 1 1
 			visible			1
-			descText			Configure Randomizer Enhancements Group 1
+			descText			"Randomizer Enhancements - Cosmetics"
 
 			mouseEnter 
 			{ 
-				show			enhancements1_glow
+				show			enhancements_cosmetics_glow
 			}
 			mouseExit 
 			{ 
-				hide			enhancements1_glow
+				hide			enhancements_cosmetics_glow
 			}	  	  
 			action 
 			{ 
@@ -614,23 +619,26 @@
 
 				show			randomizer_background ;
 				hide 			basic ;
-				show 			enhancements1 ;
-				hide 			enhancements2 ;
+				show 			enhancements_cosmetics ;
+				hide 			enhancements_force ;
+				hide 			enhancements_evil ;
 				hide 			assists ;
-				setfocus		enhancements1 ;
-				setitemcolor	enhancements1menubutton forecolor 1 1 1 1;
-				setitemcolor	enhancements2menubutton forecolor 0.65 0.65 1 1;
-				setitemcolor	assistsmenubutton forecolor 0.65 0.65 1 1;
+				setfocus		enhancements_cosmetics ;
+				setitemcolor	basicmenubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	enhancements_cosmetics_menubutton forecolor 1 1 1 1;
+				setitemcolor	enhancements_force_menubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	enhancements_evil_menubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	assists_menubutton forecolor 0.65 0.65 1 1;
 			}
 		}
 
 		// Enhancements2 button
 		itemDef 
 		{
-			name				enhancements2_glow
+			name				enhancements_force_glow
 			group				highlights
 			style				WINDOW_STYLE_SHADER
-			rect				120 233 170 30
+			rect				120 263 170 30
 			background			"gfx/menus/menu_blendbox2"			// Frame around button
 			forecolor			1 1 1 1
 			visible			0
@@ -640,12 +648,12 @@
 
 		itemDef 
 		{
-			name				enhancements2menubutton
+			name				enhancements_force_menubutton
 			group				none
-			text				"ENHANCEMENTS 2"
+			text				"Force"
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_EMPTY
-			rect				120 233 170 30
+			rect				120 263 170 30
 			font				3
 			textscale			0.9
 			textalignx			170
@@ -654,15 +662,15 @@
 			textalign			ITEM_ALIGN_RIGHT
 			forecolor			0.65 0.65 1 1
 			visible			1
-			descText			Configure Randomizer Enhancements Group 2
+			descText			"Randomizer Enhancements - Force"
 
 			mouseEnter 
 			{ 
-				show			enhancements2_glow
+				show			enhancements_force_glow
 			}
 			mouseExit 
 			{ 
-				hide			enhancements2_glow
+				hide			enhancements_force_glow
 			}	  	  
 			action 
 			{ 
@@ -670,14 +678,76 @@
 
 				show			randomizer_background ;
 				hide 			basic ;
-				hide 			enhancements1 ;
-				show 			enhancements2 ;
+				hide 			enhancements_cosmetics ;
+				show 			enhancements_force ;
+				hide 			enhancements_evil ;
 				hide 			assists ;
-				setfocus		enhancements2 ;
+				setfocus		enhancements_force ;
 				setitemcolor	basicmenubutton forecolor 0.65 0.65 1 1;
-				setitemcolor	enhancements1menubutton forecolor 0.65 0.65 1 1;
-				setitemcolor	enhancements2menubutton forecolor 1 1 1 1;
-				setitemcolor	assistsmenubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	enhancements_cosmetics_menubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	enhancements_force_menubutton forecolor 1 1 1 1;
+				setitemcolor	enhancements_evil_menubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	assists_menubutton forecolor 0.65 0.65 1 1;
+			}
+		}
+		
+		// Enhancements2 button
+		itemDef 
+		{
+			name				enhancements_evil_glow
+			group				highlights
+			style				WINDOW_STYLE_SHADER
+			rect				120 293 170 30
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			// appearance_slot		1
+			decoration
+		}
+
+		// Enhancements3 button
+		itemDef 
+		{
+			name				enhancements_evil_menubutton
+			group				none
+			text				"Evil / Chaos"
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				120 293 170 30
+			font				3
+			textscale			0.9
+			textalignx			170
+			textaligny			5
+			textstyle			3
+			textalign			ITEM_ALIGN_RIGHT
+			forecolor			0.65 0.65 1 1
+			visible			1
+			descText			"Randomizer Enhancements - Evil and Chaos"
+
+			mouseEnter 
+			{ 
+				show			enhancements_evil_glow
+			}
+			mouseExit 
+			{ 
+				hide			enhancements_evil_glow
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+
+				show			randomizer_background ;
+				hide 			basic ;
+				hide 			enhancements_cosmetics ;
+				hide 			enhancements_force ;
+				show 			enhancements_evil ;
+				hide 			assists ;
+				setfocus		enhancements_evil ;
+				setitemcolor	basicmenubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	enhancements_cosmetics_menubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	enhancements_force_menubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	enhancements_evil_menubutton forecolor 1 1 1 1;
+				setitemcolor	assists_menubutton forecolor 0.65 0.65 1 1;
 			}
 		}
 
@@ -687,7 +757,7 @@
 			name				assists_glow
 			group				highlights
 			style				WINDOW_STYLE_SHADER
-			rect				120 263 170 30
+			rect				120 323 170 30
 			background			"gfx/menus/menu_blendbox2"			// Frame around button
 			forecolor			1 1 1 1
 			visible			0
@@ -697,12 +767,12 @@
 
 		itemDef 
 		{
-			name				assistsmenubutton
+			name				assists_menubutton
 			group				none
-			text				"ASSISTS"
+			text				"Assists"
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_EMPTY
-			rect				120 263 170 30
+			rect				120 323 170 30
 			font				3
 			textscale			0.9
 			textalignx			170
@@ -711,7 +781,7 @@
 			textalign			ITEM_ALIGN_RIGHT
 			forecolor			0.65 0.65 1 1
 			visible			1
-			descText			Configure Randomizer Assists
+			descText			"Randomizer Enhancements - Assists"
 
 			mouseEnter 
 			{ 
@@ -727,14 +797,16 @@
 
 				show			randomizer_background ;
 				hide 			basic ;
-				hide 			enhancements1 ;
-				hide 			enhancements2 ;
+				hide 			enhancements_cosmetics ;
+				hide 			enhancements_force ;
+				hide 			enhancements_evil ;
 				show 			assists ;
 				setfocus		assists ;
 				setitemcolor	basicmenubutton forecolor 0.65 0.65 1 1;
-				setitemcolor	enhancements1menubutton forecolor 0.65 0.65 1 1;
-				setitemcolor	enhancements2menubutton forecolor 0.65 0.65 1 1;
-				setitemcolor	assistsmenubutton forecolor 1 1 1 1;
+				setitemcolor	enhancements_cosmetics_menubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	enhancements_force_menubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	enhancements_evil_menubutton forecolor 0.65 0.65 1 1;
+				setitemcolor	assists_menubutton forecolor 1 1 1 1;
 			}
 		}
 
@@ -1087,7 +1159,7 @@
 		itemDef 
 		{	
 			name				enable_randomizerEnhancements
-			group				enhancements1
+			group				enhancements_cosmetics
       		type				ITEM_TYPE_MULTI
 			text				"Enable Enhancements:"
 			cvar				"cg_enableRandomizerEnhancements"
@@ -1114,11 +1186,110 @@
 				hide			highlight2
 			} 
 		}
+		
+		itemDef 
+		{	
+			name				random_saber_color
+			group				enhancements_cosmetics
+      		type				ITEM_TYPE_MULTI
+			text				"Random Saber Color:"
+			cvar				"cg_enableRandSaberColor"
+			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
+			rect				305 231 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font 				2
+			textscale 			0.8
+			forecolor			1 1 1 1
+			visible			0
+			descText			"Random saber color every time the saber is chosen"
+			action
+			{
+				play			"sound/interface/button1.wav"
+			}
+			mouseenter 
+			{ 
+				show			highlight4
+			}
+			mouseexit 
+			{ 
+				hide			highlight4
+			} 
+		}
 
 		itemDef 
 		{	
+			name				random_language_voice_lines
+			group				enhancements_cosmetics
+      		type				ITEM_TYPE_MULTI
+			text				"Random Language Voices:"
+			cvar				"cg_enableRandLanguageVoices"
+			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
+			rect				305 251 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font 				2
+			textscale 			0.8
+			forecolor			1 1 1 1
+			visible			0
+			descText			"Use a random language version of each line (chosen per level)"
+			action
+			{
+				play			"sound/interface/button1.wav"
+			}
+			mouseenter 
+			{ 
+				show			highlight5
+			}
+			mouseexit 
+			{ 
+				hide			highlight5
+			} 
+		}
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	ENHANCEMENTS FIELDS GROUP 2
+		//
+		//----------------------------------------------------------------------------------------------
+
+		itemDef 
+		{	
+			name				enable_randomizerEnhancements
+			group				enhancements_force
+      		type				ITEM_TYPE_MULTI
+			text				"Enable Enhancements:"
+			cvar				"cg_enableRandomizerEnhancements"
+			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
+			rect				305 191 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font 				2
+			textscale 			0.8
+			forecolor			1 1 1 1
+			visible			0
+			descText			"Set to ON to enable listed enhancements"
+			action
+			{
+				play			"sound/interface/button1.wav"
+			}
+			mouseenter 
+			{ 
+				show			highlight2
+			}
+			mouseexit 
+			{ 
+				hide			highlight2
+			} 
+		}
+		
+				itemDef 
+		{	
 			name				random_saber_style
-			group				enhancements1
+			group				enhancements_force
       		type				ITEM_TYPE_MULTI
 			text				"Random Saber Style:"
 			cvar				"cg_enableRandSaberStyle"
@@ -1145,11 +1316,11 @@
 				hide			highlight4
 			} 
 		}
-
-		itemDef 
+		
+				itemDef 
 		{	
 			name				random_saber_length
-			group				enhancements1
+			group				enhancements_force
       		type				ITEM_TYPE_MULTI
 			text				"Random Saber Length:"
 			cvar				"cg_enableRandSaberLength"
@@ -1176,14 +1347,14 @@
 				hide			highlight5
 			} 
 		}
-
-		itemDef 
+		
+				itemDef 
 		{	
-			name				random_saber_color
-			group				enhancements1
+			name				random_jump_height
+			group				enhancements_force
       		type				ITEM_TYPE_MULTI
-			text				"Random Saber Color:"
-			cvar				"cg_enableRandSaberColor"
+			text				"Random Jump Height:"
+			cvar				"cg_enableRandJumpHeight"
 			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
 			rect				305 271 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
@@ -1193,7 +1364,7 @@
 			textscale 			0.8
 			forecolor			1 1 1 1
 			visible			0
-			descText			"Random saber color every time the saber is chosen"
+			descText			"Random jump height every jump"
 			action
 			{
 				play			"sound/interface/button1.wav"
@@ -1210,44 +1381,13 @@
 
 		itemDef 
 		{	
-			name				random_jump_height
-			group				enhancements1
-      		type				ITEM_TYPE_MULTI
-			text				"Random Jump Height:"
-			cvar				"cg_enableRandJumpHeight"
-			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
-			rect				305 291 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
-			textalignx			165
-			textaligny			-2
-			font 				2
-			textscale 			0.8
-			forecolor			1 1 1 1
-			visible			0
-			descText			"Random jump height every jump"
-			action
-			{
-				play			"sound/interface/button1.wav"
-			}
-			mouseenter 
-			{ 
-				show			highlight7
-			}
-			mouseexit 
-			{ 
-				hide			highlight7
-			} 
-		}
-
-		itemDef 
-		{	
 			name				random_jump_strength
-			group				enhancements1
+			group				enhancements_force
       		type				ITEM_TYPE_MULTI
 			text				"Random Jump Strength:"
 			cvar				"cg_enableRandJumpStrength"
 			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
-			rect				305 311 300 20
+			rect				305 291 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			-2
@@ -1262,23 +1402,23 @@
 			}
 			mouseenter 
 			{ 
-				show			highlight8
+				show			highlight7
 			}
 			mouseexit 
 			{ 
-				hide			highlight8
+				hide			highlight7
 			} 
 		}
-
+		
 		itemDef 
 		{	
-			name				random_language_voice_lines
-			group				enhancements1
+			name				random_npc_speed
+			group				enhancements_force
       		type				ITEM_TYPE_MULTI
-			text				"Random Language Voices:"
-			cvar				"cg_enableRandLanguageVoices"
+			text				"Random NPC Speed:"
+			cvar				"cg_enableRandNPCSpeed"
 			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
-			rect				305 331 300 20
+			rect				305 311 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			-2
@@ -1286,31 +1426,163 @@
 			textscale 			0.8
 			forecolor			1 1 1 1
 			visible			0
-			descText			"Use a random language version of each line (chosen per level)"
+			descText			"Between 33% and 300%."
 			action
 			{
 				play			"sound/interface/button1.wav"
 			}
 			mouseenter 
 			{ 
-				show			highlight9
+				show			highlight8
 			}
 			mouseexit 
 			{ 
-				hide			highlight9
+				hide			highlight8
+			} 
+		}
+		
+		
+		//----------------------------------------------------------------------------------------------
+		//
+		//	ENHANCEMENTS FIELDS GROUP 3
+		//
+		//----------------------------------------------------------------------------------------------
+		
+		itemDef 
+		{	
+			name				enable_randomizerEnhancements
+			group				enhancements_evil
+      		type				ITEM_TYPE_MULTI
+			text				"Enable Enhancements:"
+			cvar				"cg_enableRandomizerEnhancements"
+			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
+			rect				305 191 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font 				2
+			textscale 			0.8
+			forecolor			1 1 1 1
+			visible			0
+			descText			"Set to ON to enable listed enhancements"
+			action
+			{
+				play			"sound/interface/button1.wav"
+			}
+			mouseenter 
+			{ 
+				show			highlight2
+			}
+			mouseexit 
+			{ 
+				hide			highlight2
+			} 
+		}
+		
+				itemDef 
+		{	
+			name				random_weapon_projectiles
+			group				enhancements_evil
+      		type				ITEM_TYPE_MULTI
+			text				"Random Weapon Projectile:"
+			cvar				"cg_enableRandWeaponProjectile"
+			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
+			rect				305 231 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font 				2
+			textscale 			0.8
+			forecolor			1 1 1 1
+			visible			0
+			descText			"Random weapon projectiles, check below for details"
+			action
+			{
+				play			"sound/interface/button1.wav"
+			}
+			mouseenter 
+			{ 
+				show			highlight4
+			}
+			mouseexit 
+			{ 
+				hide			highlight4
+			} 
+		}
+		
+		itemDef 
+		{	
+			name				random_weapon_projectiles_mode
+			group				enhancements_evil
+      		type				ITEM_TYPE_MULTI
+			text				"Random Projectile CHAOS:"
+			cvar				"cg_enableRandWeaponProjectileMode"
+			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
+			rect				305 251 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font 				2
+			textscale 			0.8
+			forecolor			1 1 1 1
+			visible			0
+			descText			"Off : per map, per weapon, per npc | On : CHAOS."
+			action
+			{
+				play			"sound/interface/button1.wav"
+			}
+			mouseenter 
+			{ 
+				show			highlight5
+			}
+			mouseexit 
+			{ 
+				hide			highlight5
+			} 
+		}
+		
+		itemDef 
+		{	
+			name				random_textures
+			group				enhancements_evil
+      		type				ITEM_TYPE_MULTI
+			text				"Random Textures:"
+			cvar				"cg_enableRandTextures"
+			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
+			rect				305 271 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font 				2
+			textscale 			0.8
+			forecolor			1 1 1 1
+			visible			0
+			descText			"Random textures assigned per surface"
+			action
+			{
+				play			"sound/interface/button1.wav"
+			}
+			mouseenter 
+			{ 
+				show			highlight6
+			}
+			mouseexit 
+			{ 
+				hide			highlight6
 			} 
 		}
 
+
 		//----------------------------------------------------------------------------------------------
 		//
-		//	ENHANCEMENTS FIELDS GROUP 2
+		//	ASSISTS FIELDS
 		//
 		//----------------------------------------------------------------------------------------------
 
 		itemDef 
 		{	
 			name				enable_randomizerEnhancements
-			group				enhancements2
+			group				assists
       		type				ITEM_TYPE_MULTI
 			text				"Enable Enhancements:"
 			cvar				"cg_enableRandomizerEnhancements"
@@ -1340,143 +1612,13 @@
 
 		itemDef 
 		{	
-			name				random_textures
-			group				enhancements2
-      		type				ITEM_TYPE_MULTI
-			text				"Random Textures:"
-			cvar				"cg_enableRandTextures"
-			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
-			rect				305 231 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
-			textalignx			165
-			textaligny			-2
-			font 				2
-			textscale 			0.8
-			forecolor			1 1 1 1
-			visible			0
-			descText			"Random textures assigned per surface"
-			action
-			{
-				play			"sound/interface/button1.wav"
-			}
-			mouseenter 
-			{ 
-				show			highlight4
-			}
-			mouseexit 
-			{ 
-				hide			highlight4
-			} 
-		}
-
-		itemDef 
-		{	
-			name				random_weapon_projectiles
-			group				enhancements2
-      		type				ITEM_TYPE_MULTI
-			text				"Random Weapon Projectile:"
-			cvar				"cg_enableRandWeaponProjectile"
-			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
-			rect				305 251 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
-			textalignx			165
-			textaligny			-2
-			font 				2
-			textscale 			0.8
-			forecolor			1 1 1 1
-			visible			0
-			descText			"Random weapon projectiles, check below for details"
-			action
-			{
-				play			"sound/interface/button1.wav"
-			}
-			mouseenter 
-			{ 
-				show			highlight5
-			}
-			mouseexit 
-			{ 
-				hide			highlight5
-			} 
-		}
-		
-		itemDef 
-		{	
-			name				random_weapon_projectiles_mode
-			group				enhancements2
-      		type				ITEM_TYPE_MULTI
-			text				"Random Projectile CHAOS:"
-			cvar				"cg_enableRandWeaponProjectileMode"
-			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
-			rect				305 271 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
-			textalignx			165
-			textaligny			-2
-			font 				2
-			textscale 			0.8
-			forecolor			1 1 1 1
-			visible			0
-			descText			"Off : per map, per weapon, per npc | On : CHAOS."
-			action
-			{
-				play			"sound/interface/button1.wav"
-			}
-			mouseenter 
-			{ 
-				show			highlight6
-			}
-			mouseexit 
-			{ 
-				hide			highlight6
-			} 
-		}
-		
-		itemDef 
-		{	
-			name				random_npc_speed
-			group				enhancements2
-      		type				ITEM_TYPE_MULTI
-			text				"Random NPC Speed:"
-			cvar				"cg_enableRandNPCSpeed"
-			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
-			rect				305 291 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
-			textalignx			165
-			textaligny			-2
-			font 				2
-			textscale 			0.8
-			forecolor			1 1 1 1
-			visible			0
-			descText			"Between 33% and 300%."
-			action
-			{
-				play			"sound/interface/button1.wav"
-			}
-			mouseenter 
-			{ 
-				show			highlight7
-			}
-			mouseexit 
-			{ 
-				hide			highlight7
-			} 
-		}
-
-		//----------------------------------------------------------------------------------------------
-		//
-		//	ASSISTS FIELDS
-		//
-		//----------------------------------------------------------------------------------------------
-
-		itemDef 
-		{	
 			name				enable_safeStart
 			group				assists
       		type				ITEM_TYPE_MULTI
 			text				"Enable Safe Start:"
 			cvar				"cg_enableSafeStart"
 			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
-			rect				305 191 300 20
+			rect				305 231 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			-2
@@ -1491,11 +1633,11 @@
 			}
 			mouseenter 
 			{ 
-				show			highlight2
+				show			highlight4
 			}
 			mouseexit 
 			{ 
-				hide			highlight2
+				hide			highlight4
 			} 
 		}
 
@@ -1507,7 +1649,7 @@
 			text				"Start With Force Push"
 			cvar				"cg_startWithPush"
 			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
-			rect				305 211 300 20
+			rect				305 251 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			-2
@@ -1522,11 +1664,11 @@
 			}
 			mouseenter 
 			{ 
-				show			highlight3
+				show			highlight5
 			}
 			mouseexit 
 			{ 
-				hide			highlight3
+				hide			highlight5
 			} 
 		}
 
@@ -1538,7 +1680,7 @@
 			text				"Bonus Jan Health:"
 			cvar				"cg_bonusJanHealth"
 			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
-			rect				305 231 300 20
+			rect				305 271 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			-2
@@ -1553,12 +1695,13 @@
 			}
 			mouseenter 
 			{ 
-				show			highlight4
+				show			highlight6
 			}
 			mouseexit 
 			{ 
-				hide			highlight4
+				hide			highlight6
 			} 
 		}
+	}
 	}
 }
