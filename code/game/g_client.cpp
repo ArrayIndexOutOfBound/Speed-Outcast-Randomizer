@@ -458,6 +458,7 @@ void ClientUserinfoChanged( int clientNum ) {
 		}
 		else
 		{
+			// Why isn't memorized_health doing it's job ?! It's back to 0 at each qs/ql !
 			client->pers.maxHealth = memorized_health;
 		}
 	}
@@ -497,9 +498,6 @@ void ClientUserinfoChanged( int clientNum ) {
 		client->pers.maxHealth );
 
 	gi.SetConfigstring( CS_PLAYERS+clientNum, s );
-
-	// Randomizer : yes, I need to explicitly return so that my static variable retain information.
-	return;
 }
 
 
