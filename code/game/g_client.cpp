@@ -14,11 +14,16 @@ extern void G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *weaponMod
 extern qboolean	CheatsOk( gentity_t *ent );
 extern vmCvar_t	cg_thirdPersonAlpha;
 
-// Posto / Randomizer : for the first weapon (It might roll a stun baton again, would be pretty funny)
+//  Randomizer
+#include <random>
 extern int GetRandomizedWeapon();
 extern vmCvar_t	cg_enableRandomizer;
 extern vmCvar_t	cg_enableRandomizerEnhancements;
 extern vmCvar_t	cg_startWithPush;
+extern vmCvar_t	cg_enableRandKyleHealth;
+extern mt19937 rngRandoEnhancements;
+extern SavedGameJustLoaded_e g_eSavedGameJustLoaded;
+static int memorized_health;
 
 // g_client.c -- client functions that don't happen every frame
 
@@ -439,11 +444,32 @@ void ClientUserinfoChanged( int clientNum ) {
 		}
 	}
 
-	// set max health
-	client->pers.maxHealth = atoi( Info_ValueForKey( userinfo, "handicap" ) );
-	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > 100 ) {
-		client->pers.maxHealth = 100;
+	// Randomizer : max health changes for Kyle / player
+	if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer && cg_enableRandKyleHealth.integer)
+	{
+		// Set it only during kejim_post, eNo and eReset are valid
+		if (!strcmp(level.mapname, "kejim_post") && (g_eSavedGameJustLoaded == eNO || g_eSavedGameJustLoaded == eRESET))
+		{
+			int base_health = 100;
+			uniform_real_distribution<float> NPC_Speed_Dist(33, 300);
+			float rng = NPC_Speed_Dist(rngRandoEnhancements) / 100; //Get a multiplier value between 0.33 and 3
+			client->pers.maxHealth = (int)((float)base_health * rng);
+			memorized_health = client->pers.maxHealth;
+		}
+		else
+		{
+			client->pers.maxHealth = memorized_health;
+		}
 	}
+	else // Normal gameplay
+	{
+		// set max health
+		client->pers.maxHealth = atoi(Info_ValueForKey(userinfo, "handicap"));
+		if (client->pers.maxHealth < 1 || client->pers.maxHealth > 100) {
+			client->pers.maxHealth = 100;
+		}
+	}
+
 	client->ps.stats[STAT_MAX_HEALTH] = client->pers.maxHealth;
 
 	// sounds
@@ -471,6 +497,9 @@ void ClientUserinfoChanged( int clientNum ) {
 		client->pers.maxHealth );
 
 	gi.SetConfigstring( CS_PLAYERS+clientNum, s );
+
+	// Randomizer : yes, I need to explicitly return so that my static variable retain information.
+	return;
 }
 
 

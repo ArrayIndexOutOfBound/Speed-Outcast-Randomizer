@@ -69,6 +69,7 @@ extern  mt19937			rngRandoBase;
 extern  vmCvar_t		cg_enableRandNPCSpeed;
 extern  vmCvar_t		cg_enableSafeStart;
 extern  vmCvar_t		cg_bonusJanHealth;
+extern	vmCvar_t		cg_enableRandNpcHealth;
 
 #define	NSF_DROP_TO_FLOOR	16
 
@@ -1420,10 +1421,10 @@ void NPC_Begin (gentity_t *ent)
 
 	NPC_SetMiscDefaultData( ent );
 	// Bump up Jan's max health a little - give her random health for her too, with higher base pool it will be more leniant
-	if (cg_enableRandomizerEnhancements.integer && cg_bonusJanHealth.integer && !Q_stricmp(level.mapname, "kejim_post") && ent->targetname && !Q_stricmp(ent->targetname, "jan")) {
+	if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer && cg_bonusJanHealth.integer && !Q_stricmp(level.mapname, "kejim_post") && ent->targetname && !Q_stricmp(ent->targetname, "jan")) {
 		ent->max_health += 50;
 	}
-	if (cg_enableRandomizer.integer) // Encapsulate max hp changes
+	if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer && cg_enableRandNpcHealth.integer) // Encapsulate max hp changes
 	{
 		if (ent->max_health) {
 			uniform_real_distribution<float> NPC_HP_Dist(25, 400);

@@ -414,6 +414,8 @@ vmCvar_t	cg_enableRandNPCSpeed;
 vmCvar_t	cg_enableSafeStart;
 vmCvar_t	cg_startWithPush;
 vmCvar_t	cg_bonusJanHealth;
+vmCvar_t	cg_enableRandNpcHealth;
+vmCvar_t	cg_enableRandKyleHealth;
 // Additions for Base Game fixes (ex : artus_mine crates to get all pickups)
 vmCvar_t	cg_baseGameFixes;
 
@@ -621,6 +623,8 @@ Ghoul2 Insert End
 	{ &cg_enableSafeStart, "cg_enableSafeStart", "0", CVAR_ARCHIVE },
 	{ &cg_startWithPush, "cg_startWithPush", "0", CVAR_ARCHIVE },
 	{ &cg_bonusJanHealth, "cg_bonusJanHealth", "0", CVAR_ARCHIVE },
+	{ &cg_enableRandKyleHealth, "cg_enableRandKyleHealth", "0", CVAR_ARCHIVE },
+	{ &cg_enableRandNpcHealth, "cg_enableRandNpcHealth", "0", CVAR_ARCHIVE },
 	
 	// Additions for BaseGame fixes
 	{ &cg_baseGameFixes, "cg_baseGameFixes", "0", CVAR_ARCHIVE }
