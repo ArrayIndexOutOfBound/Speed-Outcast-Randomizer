@@ -1112,7 +1112,7 @@
 		{
 			name				randomizer_basic_info2
 			group				basic
-			text				"RNG on items, NPC types, NPC health."
+			text				"RNG on items, NPC types."
 			font				2
 			textscale			0.8
 			rect				305 371 300 20

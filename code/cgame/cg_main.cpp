@@ -416,6 +416,7 @@ vmCvar_t	cg_startWithPush;
 vmCvar_t	cg_bonusJanHealth;
 vmCvar_t	cg_enableRandNpcHealth;
 vmCvar_t	cg_enableRandKyleHealth;
+vmCvar_t	memorized_kyle_health;
 // Additions for Base Game fixes (ex : artus_mine crates to get all pickups)
 vmCvar_t	cg_baseGameFixes;
 
@@ -625,6 +626,8 @@ Ghoul2 Insert End
 	{ &cg_bonusJanHealth, "cg_bonusJanHealth", "0", CVAR_ARCHIVE },
 	{ &cg_enableRandKyleHealth, "cg_enableRandKyleHealth", "0", CVAR_ARCHIVE },
 	{ &cg_enableRandNpcHealth, "cg_enableRandNpcHealth", "0", CVAR_ARCHIVE },
+	// Randomizer : information holder
+	{ &memorized_kyle_health, "memorized_kyle_health", "0", CVAR_ARCHIVE },
 	
 	// Additions for BaseGame fixes
 	{ &cg_baseGameFixes, "cg_baseGameFixes", "0", CVAR_ARCHIVE }

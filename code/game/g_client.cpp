@@ -23,7 +23,7 @@ extern vmCvar_t	cg_startWithPush;
 extern vmCvar_t	cg_enableRandKyleHealth;
 extern mt19937 rngRandoEnhancements;
 extern SavedGameJustLoaded_e g_eSavedGameJustLoaded;
-static int memorized_health;
+extern vmCvar_t memorized_kyle_health;
 
 // g_client.c -- client functions that don't happen every frame
 
@@ -454,15 +454,25 @@ void ClientUserinfoChanged( int clientNum ) {
 			uniform_real_distribution<float> NPC_Speed_Dist(33, 300);
 			float rng = NPC_Speed_Dist(rngRandoEnhancements) / 100; //Get a multiplier value between 0.33 and 3
 			client->pers.maxHealth = (int)((float)base_health * rng);
-			memorized_health = client->pers.maxHealth;
+			ent->max_health = client->pers.maxHealth;
+			memorized_kyle_health.integer = client->pers.maxHealth;
+			memorized_kyle_health.value = client->pers.maxHealth;
+			string buffer = to_string(client->pers.maxHealth);
+			for (int i = 0 ; i < buffer.size() ; i++)
+			{
+				memorized_kyle_health.string[i] = buffer[i];
+			}
+			memorized_kyle_health.string[buffer.size()] = '\0';
+			memorized_kyle_health.modificationCount++;
+			extern void	cgi_Cvar_Set(const char* var_name, const char* value);
+			cgi_Cvar_Set("memorized_kyle_health", memorized_kyle_health.string);
 		}
 		else
 		{
-			// Why isn't memorized_health doing it's job ?! It's back to 0 at each qs/ql !
-			client->pers.maxHealth = memorized_health;
+			client->pers.maxHealth = memorized_kyle_health.integer;
 		}
 	}
-	else // Normal gameplay
+	else // Normal game, non randomizer
 	{
 		// set max health
 		client->pers.maxHealth = atoi(Info_ValueForKey(userinfo, "handicap"));
@@ -712,7 +722,27 @@ void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eSaveGame
 								&client->ps.saberLockEnemy,
 								&client->ps.saberLockTime
 					);
-			ent->health = client->ps.stats[STAT_HEALTH];
+			// Randomizer : max health changes for Kyle / player
+			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer && cg_enableRandKyleHealth.integer)
+			{
+				// Set it only during kejim_post, eNo and eReset are valid
+				// If you do a eReset during post, for some reason maxhealth is not cleared properly
+				if (!strcmp(level.mapname, "kejim_post") && (g_eSavedGameJustLoaded == eNO || g_eSavedGameJustLoaded == eRESET))
+				{
+					ent->max_health = client->ps.stats[STAT_MAX_HEALTH];
+					client->pers.maxHealth = client->ps.stats[STAT_MAX_HEALTH];
+				}
+				else // We good, it's not a reset in kejim_post
+				{
+					ent->health = client->ps.stats[STAT_HEALTH];
+				}
+
+			} // Base game
+			else
+			{
+				ent->health = client->ps.stats[STAT_HEALTH];
+			}
+			
 
 // slight issue with ths for the moment in that although it'll correctly restore angles it doesn't take into account
 //	the overall map orientation, so (eg) exiting east to enter south will be out by 90 degrees, best keep spawn angles for now
