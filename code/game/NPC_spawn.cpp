@@ -66,9 +66,11 @@ extern	vmCvar_t		cg_enableRandomizerEnhancements;
 extern	vmCvar_t		cg_useSetSeed;
 extern	vmCvar_t		cg_setSeed;
 extern  mt19937			rngRandoBase;
+extern	mt19937			rngRandoEnhancements;
 extern  vmCvar_t		cg_enableRandNPCSpeed;
 extern  vmCvar_t		cg_enableSafeStart;
 extern  vmCvar_t		cg_bonusJanHealth;
+extern	vmCvar_t		cg_enableRandNpcHealth;
 
 #define	NSF_DROP_TO_FLOOR	16
 
@@ -1420,21 +1422,21 @@ void NPC_Begin (gentity_t *ent)
 
 	NPC_SetMiscDefaultData( ent );
 	// Bump up Jan's max health a little - give her random health for her too, with higher base pool it will be more leniant
-	if (cg_enableRandomizerEnhancements.integer && cg_bonusJanHealth.integer && !Q_stricmp(level.mapname, "kejim_post") && ent->targetname && !Q_stricmp(ent->targetname, "jan")) {
+	if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer && cg_bonusJanHealth.integer && !Q_stricmp(level.mapname, "kejim_post") && ent->targetname && !Q_stricmp(ent->targetname, "jan")) {
 		ent->max_health += 50;
 	}
-	if (cg_enableRandomizer.integer) // Encapsulate max hp changes
+	if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer && cg_enableRandNpcHealth.integer) // Encapsulate max hp changes
 	{
 		if (ent->max_health) {
 			uniform_real_distribution<float> NPC_HP_Dist(25, 400);
-			float rng = NPC_HP_Dist(rngRandoBase) / 100; //Get a multiplier value between 0.25 and 4
+			float rng = NPC_HP_Dist(rngRandoEnhancements) / 100; //Get a multiplier value between 0.25 and 4
 			ent->max_health = (int)((float)ent->max_health * rng); //Result gets rounded when converted back to int so nothing explodes
 		}
 	}
 	if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer && cg_enableRandNPCSpeed.integer)
 	{
 		uniform_real_distribution<float> NPC_Speed_Dist(33, 300);
-		float rng = NPC_Speed_Dist(rngRandoBase) / 100; //Get a multiplier value between 0.33 and 3
+		float rng = NPC_Speed_Dist(rngRandoEnhancements) / 100; //Get a multiplier value between 0.33 and 3
 		ent->NPC->stats.runSpeed = (int)((float)ent->NPC->stats.runSpeed * rng);
 		ent->NPC->stats.walkSpeed = (int)((float)ent->NPC->stats.walkSpeed * rng);
 		ent->NPC->stats.yawSpeed = (int)((float)ent->NPC->stats.yawSpeed * rng);

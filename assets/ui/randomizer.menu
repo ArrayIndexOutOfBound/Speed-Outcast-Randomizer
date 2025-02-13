@@ -1112,7 +1112,7 @@
 		{
 			name				randomizer_basic_info2
 			group				basic
-			text				"RNG on items, NPC types, NPC health."
+			text				"RNG on items, NPC types."
 			font				2
 			textscale			0.8
 			rect				305 371 300 20
@@ -1562,6 +1562,37 @@
 				hide			highlight6
 			} 
 		}
+		
+		itemDef 
+		{	
+			name				random_npc_health
+			group				enhancements_evil
+      		type				ITEM_TYPE_MULTI
+			text				"Random NPC health :"
+			cvar				"cg_enableRandNpcHealth"
+			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
+			rect				305 291 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font 				2
+			textscale 			0.8
+			forecolor			1 1 1 1
+			visible			0
+			descText			"Between 25% and 400%."
+			action
+			{
+				play			"sound/interface/button1.wav"
+			}
+			mouseenter 
+			{ 
+				show			highlight7
+			}
+			mouseexit 
+			{ 
+				hide			highlight7
+			} 
+		}
 
 
 		//----------------------------------------------------------------------------------------------
@@ -1691,6 +1722,37 @@
 			mouseexit 
 			{ 
 				hide			highlight6
+			} 
+		}
+		
+		itemDef 
+		{	
+			name				random_kyle_health
+			group				assists
+      		type				ITEM_TYPE_MULTI
+			text				"Random Kyle/Player health :"
+			cvar				"cg_enableRandKyleHealth"
+			cvarFloatList		{  @MENUS0_OFF 0 @MENUS0_ON 1 }
+			rect				305 291 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font 				2
+			textscale 			0.8
+			forecolor			1 1 1 1
+			visible			0
+			descText			"Between 33% and 300%."
+			action
+			{
+				play			"sound/interface/button1.wav"
+			}
+			mouseenter 
+			{ 
+				show			highlight7
+			}
+			mouseexit 
+			{ 
+				hide			highlight7
 			} 
 		}
 	}

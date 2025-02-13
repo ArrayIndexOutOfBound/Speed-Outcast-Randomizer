@@ -14,11 +14,16 @@ extern void G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *weaponMod
 extern qboolean	CheatsOk( gentity_t *ent );
 extern vmCvar_t	cg_thirdPersonAlpha;
 
-// Posto / Randomizer : for the first weapon (It might roll a stun baton again, would be pretty funny)
+//  Randomizer
+#include <random>
 extern int GetRandomizedWeapon();
 extern vmCvar_t	cg_enableRandomizer;
 extern vmCvar_t	cg_enableRandomizerEnhancements;
 extern vmCvar_t	cg_startWithPush;
+extern vmCvar_t	cg_enableRandKyleHealth;
+extern mt19937 rngRandoEnhancements;
+extern SavedGameJustLoaded_e g_eSavedGameJustLoaded;
+extern vmCvar_t memorized_kyle_health;
 
 // g_client.c -- client functions that don't happen every frame
 
@@ -439,11 +444,43 @@ void ClientUserinfoChanged( int clientNum ) {
 		}
 	}
 
-	// set max health
-	client->pers.maxHealth = atoi( Info_ValueForKey( userinfo, "handicap" ) );
-	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > 100 ) {
-		client->pers.maxHealth = 100;
+	// Randomizer : max health changes for Kyle / player
+	if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer && cg_enableRandKyleHealth.integer)
+	{
+		// Set it only during kejim_post, eNo and eReset are valid
+		if (!strcmp(level.mapname, "kejim_post") && (g_eSavedGameJustLoaded == eNO || g_eSavedGameJustLoaded == eRESET))
+		{
+			int base_health = 100;
+			uniform_real_distribution<float> NPC_Speed_Dist(33, 300);
+			float rng = NPC_Speed_Dist(rngRandoEnhancements) / 100; //Get a multiplier value between 0.33 and 3
+			client->pers.maxHealth = (int)((float)base_health * rng);
+			ent->max_health = client->pers.maxHealth;
+			memorized_kyle_health.integer = client->pers.maxHealth;
+			memorized_kyle_health.value = client->pers.maxHealth;
+			string buffer = to_string(client->pers.maxHealth);
+			for (int i = 0 ; i < buffer.size() ; i++)
+			{
+				memorized_kyle_health.string[i] = buffer[i];
+			}
+			memorized_kyle_health.string[buffer.size()] = '\0';
+			memorized_kyle_health.modificationCount++;
+			extern void	cgi_Cvar_Set(const char* var_name, const char* value);
+			cgi_Cvar_Set("memorized_kyle_health", memorized_kyle_health.string);
+		}
+		else
+		{
+			client->pers.maxHealth = memorized_kyle_health.integer;
+		}
 	}
+	else // Normal game, non randomizer
+	{
+		// set max health
+		client->pers.maxHealth = atoi(Info_ValueForKey(userinfo, "handicap"));
+		if (client->pers.maxHealth < 1 || client->pers.maxHealth > 100) {
+			client->pers.maxHealth = 100;
+		}
+	}
+
 	client->ps.stats[STAT_MAX_HEALTH] = client->pers.maxHealth;
 
 	// sounds
@@ -685,7 +722,27 @@ void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eSaveGame
 								&client->ps.saberLockEnemy,
 								&client->ps.saberLockTime
 					);
-			ent->health = client->ps.stats[STAT_HEALTH];
+			// Randomizer : max health changes for Kyle / player
+			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer && cg_enableRandKyleHealth.integer)
+			{
+				// Set it only during kejim_post, eNo and eReset are valid
+				// If you do a eReset during post, for some reason maxhealth is not cleared properly
+				if (!strcmp(level.mapname, "kejim_post") && (g_eSavedGameJustLoaded == eNO || g_eSavedGameJustLoaded == eRESET))
+				{
+					ent->max_health = client->ps.stats[STAT_MAX_HEALTH];
+					client->pers.maxHealth = client->ps.stats[STAT_MAX_HEALTH];
+				}
+				else // We good, it's not a reset in kejim_post
+				{
+					ent->health = client->ps.stats[STAT_HEALTH];
+				}
+
+			} // Base game
+			else
+			{
+				ent->health = client->ps.stats[STAT_HEALTH];
+			}
+			
 
 // slight issue with ths for the moment in that although it'll correctly restore angles it doesn't take into account
 //	the overall map orientation, so (eg) exiting east to enter south will be out by 90 degrees, best keep spawn angles for now

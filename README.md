@@ -15,6 +15,7 @@ Based on the source port of Star Wars Jedi Knight II: Jedi Outcast named SpeedOu
 #### `cg_enableRandomizer` (0 or 1)
 
 Enable or disable the NPC and items randomizer.
+Only this was designed to be predictable.
 Default: `0`.
 
 #### `cg_enableRandomizerEnhancements` (0 or 1)
@@ -22,6 +23,7 @@ Default: `0`.
 Enable or disable the other more 'exotic' randomized elements in the game.
 Check `List of addition for the 'exotic' Randomizer` below for more details.
 Need `cg_enableRandomizer` to be 1 to work.
+This was not designed to be predictable but doesn't interfere with the RNG used in the 'base' randomizer.
 Default: `0`.
 
 #### `cg_setSeed` 10 digits string
@@ -103,10 +105,17 @@ Prevents starting two enemies from attacking unless provoked.
 Start game with force push 1.
 
 #### `cg_bonusJanHealth` (0 or 1)
-Applies a flat +50 to Jan's health on kejim_post.
+Applies a flat +50 to Jan's health on kejim_post. This applies before random NPC health.
+
+#### `cg_enableRandNPCHealth` (0 or 1)
+Random health for NPCs. Range of 25% to 400%.
+
+#### `cg_enableRandKyleHealth` (0 or 1)
+Random health for Kyle as the player. Range of 33% to 300%.
 
 
-#### Todos
+### Todos
+- Get approved for a possible speedrun randomizer leaderboard
 - Random codes for doom_comm (if possible)
 - Random codes for kejim_post (if possible)
 
