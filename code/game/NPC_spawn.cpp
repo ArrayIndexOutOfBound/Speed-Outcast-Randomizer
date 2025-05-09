@@ -13,6 +13,7 @@
 #include "g_functions.h"
 #include "g_icarus.h"
 #include "wp_saber.h"
+#include "..\randomizer\RandomizerUtils.h"
 
 extern cvar_t *g_sex;
 
@@ -58,6 +59,18 @@ extern void NPC_GalakMech_Precache( void );
 extern void NPC_GalakMech_Init( gentity_t *ent );
 extern void NPC_Protocol_Precache( void );
 extern int WP_SetSaberModel( gclient_t *client, class_t npcClass );
+
+// Randomizer
+extern	vmCvar_t		cg_enableRandomizer;
+extern	vmCvar_t		cg_enableRandomizerEnhancements;
+extern	vmCvar_t		cg_useSetSeed;
+extern	vmCvar_t		cg_setSeed;
+extern  mt19937			rngRandoBase;
+extern	mt19937			rngRandoEnhancements;
+extern  vmCvar_t		cg_enableRandNPCSpeed;
+extern  vmCvar_t		cg_enableSafeStart;
+extern  vmCvar_t		cg_bonusJanHealth;
+extern	vmCvar_t		cg_enableRandNpcHealth;
 
 #define	NSF_DROP_TO_FLOOR	16
 
@@ -164,15 +177,220 @@ touchFunc_t NPC_TouchFunc( gentity_t *ent )
 	return touchF_NPC_Touch;
 }
 
+extern void G_CreateG2AttachedWeaponModel(gentity_t* ent, const char* weaponModel);
+//Easier to break this into another function as I refactored a bit to make it cleaner
+void NPC_SetMiscDefaultDataRandomizer(gentity_t* ent)
+{
+	//Set sleep behaviour state for two starting stormtroopers so other enemies spawned in their place don't instantly aggro
+	if (cg_enableRandomizerEnhancements.integer && cg_enableSafeStart.integer && !Q_stricmp(level.mapname, "kejim_post") && ent->targetname && !Q_strncmp(ent->targetname, "st_guard", 8)) {
+		ent->NPC->behaviorState = BS_SLEEP;
+	}
+
+	if (ent->spawnflags & SFB_CINEMATIC)
+	{//if a cinematic guy, default us to wait bState
+		ent->NPC->behaviorState = BS_CINEMATIC;
+	}
+	switch (ent->client->playerTeam) {
+	case TEAM_PLAYER:
+		ent->client->enemyTeam = TEAM_ENEMY;
+		break;
+	case TEAM_ENEMY:
+		ent->client->enemyTeam = TEAM_PLAYER;
+		break;
+	default: //TODO: AMBER Figure out how to handle this properly
+		ent->client->enemyTeam = TEAM_FREE;
+	}
+	//***I'm not sure whether I should leave this as a TEAM_ switch, I think NPC_class may be more appropriate - dmv
+	//Amber - whoever dmv is they're right, this should be based on class
+	switch (ent->client->NPC_class) {
+	case CLASS_SEEKER:
+		ent->NPC->defaultBehavior = BS_DEFAULT;
+		ent->client->ps.gravity = 0;
+		ent->svFlags |= SVF_CUSTOM_GRAVITY;
+		ent->NPC->stats.moveType = MT_FLYSWIM;
+		ent->count = 30; // SEEKER shot ammo count
+		return;
+	case CLASS_PROBE:
+	case CLASS_REMOTE:
+	case CLASS_INTERROGATOR:
+	case CLASS_SENTRY:
+		ent->NPC->defaultBehavior = BS_DEFAULT;
+		ent->client->ps.gravity = 0;
+		ent->svFlags |= SVF_CUSTOM_GRAVITY;
+		ent->NPC->stats.moveType = MT_FLYSWIM;
+		break;
+	case CLASS_JEDI:
+	case CLASS_LUKE:
+	case CLASS_TAVION:
+	case CLASS_REBORN:
+	case CLASS_DESANN:
+	case CLASS_SHADOWTROOPER:
+		//All saber wielders
+		ent->client->ps.saberActive = qfalse;
+		ent->client->ps.saberLength = 0;
+		WP_SaberInitBladeData(ent);
+		G_CreateG2AttachedWeaponModel(ent, ent->client->ps.saberModel);
+		//ent->client->enemyTeam = TEAM_ENEMY;
+		WP_InitForcePowers(ent);
+		Jedi_ClearTimers(ent);
+		if (ent->spawnflags & JSF_AMBUSH)
+		{//ambusher
+			ent->NPC->scriptFlags |= SCF_IGNORE_ALERTS;
+			ent->client->noclip = qtrue;//hang
+		}
+		break;
+	case CLASS_GONK:
+		// I guess we generically make them player usable
+		ent->svFlags |= SVF_PLAYER_USABLE;
+
+		// Not even sure if we want to give different levels of batteries?  ...Or even that these are the values we'd want to use.
+		switch (g_spskill->integer)
+		{
+		case 0:	//	EASY
+			ent->client->ps.batteryCharge = MAX_BATTERIES * 0.8f;
+			break;
+		case 1:	//	MEDIUM
+			ent->client->ps.batteryCharge = MAX_BATTERIES * 0.75f;
+			break;
+		default:
+		case 2:	//	HARD
+			ent->client->ps.batteryCharge = MAX_BATTERIES * 0.5f;
+			break;
+		}
+		break;
+	case CLASS_R2D2: // No weapons for astromech droids please
+	case CLASS_R5D2:
+		break;
+	default:
+		if (ent->client->ps.weapon != WP_NONE)
+		{
+			G_CreateG2AttachedWeaponModel(ent, weaponData[ent->client->ps.weapon].weaponMdl);
+		}
+		if (RandomizerUtils::GetClassTeamByClass(ent->client->NPC_class) == TEAM_PLAYER) //Any other NPCs which would normally be friendsly
+		{
+			switch (ent->client->ps.weapon)
+			{
+			case WP_BRYAR_PISTOL://FIXME: new weapon: imp blaster pistol
+			case WP_BLASTER_PISTOL:
+			case WP_DISRUPTOR:
+			case WP_BOWCASTER:
+			case WP_REPEATER:
+			case WP_DEMP2:
+			case WP_FLECHETTE:
+			case WP_ROCKET_LAUNCHER:
+			default:
+				break;
+			case WP_THERMAL:
+			case WP_BLASTER:
+				//FIXME: health in NPCs.cfg, and not all blaster users are stormtroopers
+				//ent->health = 25;
+				//FIXME: not necc. a ST
+				ST_ClearTimers(ent);
+				if (ent->NPC->rank >= RANK_LT || ent->client->ps.weapon == WP_THERMAL)
+				{//officers, grenade-throwers use alt-fire
+					//ent->health = 50;
+					ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+				}
+				break;
+			}
+		}
+		else if (RandomizerUtils::GetClassTeamByClass(ent->client->NPC_class) == TEAM_ENEMY) { //Any other NPCs which would normally be enemies
+			{
+				ent->NPC->defaultBehavior = BS_DEFAULT;
+				if (ent->client->NPC_class == CLASS_SHADOWTROOPER)
+				{//FIXME: a spawnflag?
+					Jedi_Cloak(ent);
+				}
+
+				G_CreateG2AttachedWeaponModel(ent, weaponData[ent->client->ps.weapon].weaponMdl);
+				switch (ent->client->ps.weapon)
+				{
+				case WP_BRYAR_PISTOL:
+					break;
+				case WP_BLASTER_PISTOL:
+					break;
+				case WP_DISRUPTOR:
+					//Sniper
+					ent->NPC->scriptFlags |= SCF_ALT_FIRE;//FIXME: use primary fire sometimes?  Up close?  Different class of NPC?
+					break;
+				case WP_BOWCASTER:
+					break;
+				case WP_REPEATER:
+					//machine-gunner
+					break;
+				case WP_DEMP2:
+					break;
+				case WP_FLECHETTE:
+					//shotgunner
+					if (!Q_stricmp("stofficeralt", ent->NPC_type))
+					{
+						ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+					}
+					break;
+				case WP_ROCKET_LAUNCHER:
+					break;
+				case WP_THERMAL:
+					//Gran, use main, bouncy fire
+//					ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+					break;
+				case WP_MELEE:
+					break;
+				default:
+				case WP_BLASTER:
+					//FIXME: health in NPCs.cfg, and not all blaster users are stormtroopers
+					//FIXME: not necc. a ST
+					ST_ClearTimers(ent);
+					if (ent->NPC->rank >= RANK_COMMANDER)
+					{//commanders use alt-fire
+						ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+					}
+					if (!Q_stricmp("rodian2", ent->NPC_type))
+					{
+						ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+					}
+					break;
+				}
+				if (!Q_stricmp("galak_mech", ent->NPC_type))
+				{//starts with armor
+					NPC_GalakMech_Init(ent);
+				}
+			}
+
+		}
+
+		//Extra stuff for cinematic chars and behaviour set for friendly NPCS
+		if (ent->client->NPC_class == CLASS_KYLE || (ent->spawnflags & SFB_CINEMATIC))
+		{
+			ent->NPC->defaultBehavior = BS_CINEMATIC;
+		}
+		else if (ent->client->playerTeam == TEAM_PLAYER)
+		{
+			ent->NPC->defaultBehavior = BS_FOLLOW_LEADER;
+			ent->client->leader = &g_entities[0];
+		}
+
+		//Shields for ATSTs/Mark1s
+		if (ent->client->NPC_class == CLASS_ATST || ent->client->NPC_class == CLASS_MARK1) // chris/steve/kevin requested that the mark1 be shielded also
+		{
+			ent->flags |= (FL_SHIELDED | FL_NO_KNOCKBACK);
+		}
+	}
+}
+
 /*
 -------------------------
 NPC_SetMiscDefaultData
 -------------------------
 */
 
-extern void G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *weaponModel );
-void NPC_SetMiscDefaultData( gentity_t *ent )
+void NPC_SetMiscDefaultData(gentity_t* ent)
 {
+	if (cg_enableRandomizer.integer)
+	{
+		NPC_SetMiscDefaultDataRandomizer(ent);
+		return;
+	}
+
 	if ( ent->spawnflags & SFB_CINEMATIC )
 	{//if a cinematic guy, default us to wait bState
 		ent->NPC->behaviorState = BS_CINEMATIC;
@@ -274,104 +492,104 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 		break;
 
 	case TEAM_ENEMY:
+	{
+		ent->NPC->defaultBehavior = BS_DEFAULT;
+		if (ent->client->NPC_class == CLASS_SHADOWTROOPER)
+		{//FIXME: a spawnflag?
+			Jedi_Cloak(ent);
+		}
+		if (ent->client->NPC_class == CLASS_TAVION ||
+			ent->client->NPC_class == CLASS_REBORN ||
+			ent->client->NPC_class == CLASS_DESANN ||
+			ent->client->NPC_class == CLASS_SHADOWTROOPER)
 		{
-			ent->NPC->defaultBehavior = BS_DEFAULT;
-			if ( ent->client->NPC_class == CLASS_SHADOWTROOPER )
-			{//FIXME: a spawnflag?
-				Jedi_Cloak( ent );
-			}
-		 	if( ent->client->NPC_class == CLASS_TAVION ||
-				ent->client->NPC_class == CLASS_REBORN ||
-				ent->client->NPC_class == CLASS_DESANN ||
-				ent->client->NPC_class == CLASS_SHADOWTROOPER )
-			{
-				ent->client->ps.saberActive = qfalse;
-				ent->client->ps.saberLength = 0;
-				WP_SaberInitBladeData( ent );
-				G_CreateG2AttachedWeaponModel( ent, ent->client->ps.saberModel );
-				WP_InitForcePowers( ent );
-				ent->client->enemyTeam = TEAM_PLAYER;
-				Jedi_ClearTimers( ent );
-				if ( ent->spawnflags & JSF_AMBUSH )
-				{//ambusher
-					ent->NPC->scriptFlags |= SCF_IGNORE_ALERTS;
-					ent->client->noclip = qtrue;//hang
-				}
-			}
-			else if( ent->client->NPC_class == CLASS_PROBE || ent->client->NPC_class == CLASS_REMOTE ||
-						ent->client->NPC_class == CLASS_INTERROGATOR || ent->client->NPC_class == CLASS_SENTRY)
-			{		
-				ent->NPC->defaultBehavior = BS_DEFAULT;
-				ent->client->ps.gravity = 0;
-				ent->svFlags |= SVF_CUSTOM_GRAVITY;
-				ent->NPC->stats.moveType = MT_FLYSWIM;
-			}
-			else 
-			{
-				G_CreateG2AttachedWeaponModel( ent, weaponData[ent->client->ps.weapon].weaponMdl );
-				switch ( ent->client->ps.weapon )
-				{
-				case WP_BRYAR_PISTOL:
-					break;
-				case WP_BLASTER_PISTOL:
-					break;
-				case WP_DISRUPTOR:
-					//Sniper
-					ent->NPC->scriptFlags |= SCF_ALT_FIRE;//FIXME: use primary fire sometimes?  Up close?  Different class of NPC?
-					break;
-				case WP_BOWCASTER:
-					break;
-				case WP_REPEATER:
-					//machine-gunner
-					break;
-				case WP_DEMP2:
-					break;
-				case WP_FLECHETTE:
-					//shotgunner
-					if ( !Q_stricmp( "stofficeralt", ent->NPC_type ) )
-					{
-						ent->NPC->scriptFlags |= SCF_ALT_FIRE;
-					}
-					break;
-				case WP_ROCKET_LAUNCHER:
-					break;
-				case WP_THERMAL:
-					//Gran, use main, bouncy fire
-//					ent->NPC->scriptFlags |= SCF_ALT_FIRE;
-					break;
-				case WP_MELEE:
-					break;
-				default:
-				case WP_BLASTER:
-					//FIXME: health in NPCs.cfg, and not all blaster users are stormtroopers
-					//FIXME: not necc. a ST
-					ST_ClearTimers( ent );
-					if ( ent->NPC->rank >= RANK_COMMANDER )
-					{//commanders use alt-fire
-						ent->NPC->scriptFlags |= SCF_ALT_FIRE;
-					}
-					if ( !Q_stricmp( "rodian2", ent->NPC_type ) )
-					{
-						ent->NPC->scriptFlags |= SCF_ALT_FIRE;
-					}
-					break;
-				}
-				if ( !Q_stricmp( "galak_mech", ent->NPC_type ) )
-				{//starts with armor
-					NPC_GalakMech_Init( ent );
-				}
+			ent->client->ps.saberActive = qfalse;
+			ent->client->ps.saberLength = 0;
+			WP_SaberInitBladeData(ent);
+			G_CreateG2AttachedWeaponModel(ent, ent->client->ps.saberModel);
+			WP_InitForcePowers(ent);
+			ent->client->enemyTeam = TEAM_PLAYER;
+			Jedi_ClearTimers(ent);
+			if (ent->spawnflags & JSF_AMBUSH)
+			{//ambusher
+				ent->NPC->scriptFlags |= SCF_IGNORE_ALERTS;
+				ent->client->noclip = qtrue;//hang
 			}
 		}
-		break;
+		else if (ent->client->NPC_class == CLASS_PROBE || ent->client->NPC_class == CLASS_REMOTE ||
+			ent->client->NPC_class == CLASS_INTERROGATOR || ent->client->NPC_class == CLASS_SENTRY)
+		{
+			ent->NPC->defaultBehavior = BS_DEFAULT;
+			ent->client->ps.gravity = 0;
+			ent->svFlags |= SVF_CUSTOM_GRAVITY;
+			ent->NPC->stats.moveType = MT_FLYSWIM;
+		}
+		else
+		{
+			G_CreateG2AttachedWeaponModel(ent, weaponData[ent->client->ps.weapon].weaponMdl);
+			switch (ent->client->ps.weapon)
+			{
+			case WP_BRYAR_PISTOL:
+				break;
+			case WP_BLASTER_PISTOL:
+				break;
+			case WP_DISRUPTOR:
+				//Sniper
+				ent->NPC->scriptFlags |= SCF_ALT_FIRE;//FIXME: use primary fire sometimes?  Up close?  Different class of NPC?
+				break;
+			case WP_BOWCASTER:
+				break;
+			case WP_REPEATER:
+				//machine-gunner
+				break;
+			case WP_DEMP2:
+				break;
+			case WP_FLECHETTE:
+				//shotgunner
+				if (!Q_stricmp("stofficeralt", ent->NPC_type))
+				{
+					ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+				}
+				break;
+			case WP_ROCKET_LAUNCHER:
+				break;
+			case WP_THERMAL:
+				//Gran, use main, bouncy fire
+//					ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+				break;
+			case WP_MELEE:
+				break;
+			default:
+			case WP_BLASTER:
+				//FIXME: health in NPCs.cfg, and not all blaster users are stormtroopers
+				//FIXME: not necc. a ST
+				ST_ClearTimers(ent);
+				if (ent->NPC->rank >= RANK_COMMANDER)
+				{//commanders use alt-fire
+					ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+				}
+				if (!Q_stricmp("rodian2", ent->NPC_type))
+				{
+					ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+				}
+				break;
+			}
+			if (!Q_stricmp("galak_mech", ent->NPC_type))
+			{//starts with armor
+				NPC_GalakMech_Init(ent);
+			}
+		}
+	}
+	break;
 
 	default:
 		break;
 	}
 
 
-	if ( ent->client->NPC_class == CLASS_ATST || ent->client->NPC_class == CLASS_MARK1 ) // chris/steve/kevin requested that the mark1 be shielded also
+	if (ent->client->NPC_class == CLASS_ATST || ent->client->NPC_class == CLASS_MARK1) // chris/steve/kevin requested that the mark1 be shielded also
 	{
-		ent->flags |= (FL_SHIELDED|FL_NO_KNOCKBACK);
+		ent->flags |= (FL_SHIELDED | FL_NO_KNOCKBACK);
 	}
 }
 
@@ -380,9 +598,198 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 NPC_WeaponsForTeam
 -------------------------
 */
+int NPC_WeaponsForTeamRandomizer(team_t team, int spawnflags, const char* NPC_type)
+{
+	//*** not sure how to handle this, should I pass in class instead of team and go from there? - dmv
+	//Amber - damn this dmv person was onto things
+
+	//TODO: Game has these exceptions built in for when certain NPCs are neutral - how to handle? Preserved for now
+	if (team == TEAM_NEUTRAL)
+	{
+		if (Q_stricmp("mark1", NPC_type) == 0)
+		{
+			return WP_NONE;
+		}
+		if (Q_stricmp("mark2", NPC_type) == 0)
+		{
+			return WP_NONE;
+		}
+		if (Q_strncmp("ugnaught", NPC_type, 8) == 0)
+		{
+			return WP_NONE;
+		}
+		if (Q_stricmp("bartender", NPC_type) == 0)
+		{
+			return WP_NONE;
+		}
+		if (Q_stricmp("morgankatarn", NPC_type) == 0)
+		{
+			return WP_NONE;
+		}
+	}
+
+	//All Saber Wielders
+	if (Q_stricmp("tavion", NPC_type) == 0 ||
+		Q_strncmp("reborn", NPC_type, 6) == 0 ||
+		Q_stricmp("desann", NPC_type) == 0 ||
+		Q_strncmp("shadowtrooper", NPC_type, 13) == 0 ||
+		Q_strncmp("jedi", NPC_type, 4) == 0 ||
+		Q_stricmp("luke", NPC_type) == 0)
+		return (1 << WP_SABER);
+
+	/*
+	* Okay decision time here. If we ever spawn a non-neutral NPC with no weapon, it will try to set up a saber for them and the game will crash.
+	* For now, commented out all blocks here with WP_NONE so they fall into the default blaster block. We can have it just not try to set up
+	* a weapon for NPCs with weapon none if we want to give up being shot at by ugnaughts, droids etc. We could also assign random weapons
+	* (personally I wanna see someone get shotgunned down by C3PO)
+	*/
+	if (Q_strncmp("stofficer", NPC_type, 9) == 0)
+	{
+		return (1 << WP_FLECHETTE);
+	}
+	if (Q_stricmp("stcommander", NPC_type) == 0)
+	{
+		return (1 << WP_REPEATER);
+	}
+	if (Q_stricmp("swamptrooper", NPC_type) == 0)
+	{
+		return (1 << WP_FLECHETTE);
+	}
+	if (Q_stricmp("swamptrooper2", NPC_type) == 0)
+	{
+		return (1 << WP_REPEATER);
+	}
+	if (Q_stricmp("rockettrooper", NPC_type) == 0)
+	{
+		return (1 << WP_ROCKET_LAUNCHER);
+	}
+	if (Q_strncmp("shadowtrooper", NPC_type, 13) == 0)
+	{
+		return (1 << WP_SABER);//|( 1 << WP_RAPID_CONCUSSION)?
+	}
+	if (Q_stricmp("imperial", NPC_type) == 0)
+	{
+		return (1 << WP_BLASTER_PISTOL);
+	}
+	if (Q_strncmp("impworker", NPC_type, 9) == 0)
+	{
+		return (1 << WP_BLASTER_PISTOL);
+	}
+	if (Q_stricmp("stormpilot", NPC_type) == 0)
+	{
+		return (1 << WP_BLASTER_PISTOL);
+	}
+	if (Q_stricmp("galak", NPC_type) == 0)
+	{
+		return (1 << WP_BLASTER);
+	}
+	if (Q_stricmp("galak_mech", NPC_type) == 0)
+	{
+		return (1 << WP_REPEATER);
+	}
+	//if (Q_strncmp("ugnaught", NPC_type, 8) == 0)
+	//{
+	//	return WP_NONE;
+	//}
+	if (Q_stricmp("granshooter", NPC_type) == 0)
+	{
+		return (1 << WP_BLASTER);
+	}
+	if (Q_stricmp("granboxer", NPC_type) == 0)
+	{
+		return (1 << WP_MELEE);
+	}
+	if (Q_strncmp("gran", NPC_type, 4) == 0)
+	{
+		return ((1 << WP_THERMAL) | (1 << WP_MELEE));
+	}
+	if (Q_stricmp("rodian", NPC_type) == 0)
+	{
+		return (1 << WP_DISRUPTOR);
+	}
+	if (Q_stricmp("rodian2", NPC_type) == 0)
+	{
+		return (1 << WP_BLASTER);
+	}
+	if ((Q_stricmp("interrogator", NPC_type) == 0) || (Q_stricmp("sentry", NPC_type) == 0))
+	{
+		return WP_NONE;
+	}
+	if (Q_strncmp("weequay", NPC_type, 7) == 0)
+	{
+		return (1 << WP_BOWCASTER);//|( 1 << WP_STAFF )(FIXME: new weap?)
+	}
+	if (Q_stricmp("impofficer", NPC_type) == 0)
+	{
+		return (1 << WP_BLASTER);
+	}
+	if (Q_stricmp("impcommander", NPC_type) == 0)
+	{
+		return (1 << WP_BLASTER);
+	}
+	if ((Q_stricmp("probe", NPC_type) == 0) || (Q_stricmp("seeker", NPC_type) == 0))
+	{
+		return (1 << WP_BOT_LASER);
+	}
+	if (Q_stricmp("remote", NPC_type) == 0)
+	{
+		return (1 << WP_BOT_LASER);
+	}
+	if (Q_stricmp("trandoshan", NPC_type) == 0)
+	{
+		return (1 << WP_REPEATER);
+	}
+	if (Q_stricmp("atst", NPC_type) == 0)
+	{
+		return ((1 << WP_ATST_MAIN) | (1 << WP_ATST_SIDE));
+	}
+	if (Q_stricmp("mark1", NPC_type) == 0)
+	{
+		return (1 << WP_BOT_LASER);
+	}
+	if (Q_stricmp("mark2", NPC_type) == 0)
+	{
+		return (1 << WP_BOT_LASER);
+	}
+	if (Q_stricmp("minemonster", NPC_type) == 0)
+	{
+		return ((1 << WP_MELEE));
+	}
+	if (Q_stricmp("howler", NPC_type) == 0)
+	{
+		return ((1 << WP_MELEE));
+	}
+	//if (Q_strncmp("prisoner", NPC_type, 8) == 0)
+	//{
+	//	return WP_NONE;
+	//}
+	if (Q_strncmp("bespincop", NPC_type, 9) == 0)
+	{
+		return (1 << WP_BLASTER_PISTOL);
+	}
+	//if (Q_stricmp("MonMothma", NPC_type) == 0)
+	//{
+	//	return WP_NONE;
+	//}
+	if (!Q_stricmp("protocol", NPC_type)) {
+		return 1 << WP_STUN_BATON;
+	}
+	if (spawnflags & SFB_RIFLEMAN)
+		return (1 << WP_REPEATER);
+
+	if (spawnflags & SFB_PHASER)
+		return (1 << WP_BLASTER_PISTOL);
+
+	//Still default to blaster if we're not explicitly set (Stormtroopers, rebels)
+	return (1 << WP_BLASTER); //We might be giving droids (R2, R4, Protocol) blasters here, should we keep?
+}
 
 int NPC_WeaponsForTeam( team_t team, int spawnflags, const char *NPC_type )
 {
+	if (cg_enableRandomizer.integer)
+	{
+		return NPC_WeaponsForTeamRandomizer(team, spawnflags, NPC_type);
+	}
 	//*** not sure how to handle this, should I pass in class instead of team and go from there? - dmv
 	switch(team)
 	{
@@ -1014,6 +1421,26 @@ void NPC_Begin (gentity_t *ent)
 	ent->nextthink = level.time + FRAMETIME + Q_irand(0, 100);
 
 	NPC_SetMiscDefaultData( ent );
+	// Bump up Jan's max health a little - give her random health for her too, with higher base pool it will be more leniant
+	if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer && cg_bonusJanHealth.integer && !Q_stricmp(level.mapname, "kejim_post") && ent->targetname && !Q_stricmp(ent->targetname, "jan")) {
+		ent->max_health += 50;
+	}
+	if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer && cg_enableRandNpcHealth.integer) // Encapsulate max hp changes
+	{
+		if (ent->max_health) {
+			uniform_real_distribution<float> NPC_HP_Dist(25, 400);
+			float rng = NPC_HP_Dist(rngRandoEnhancements) / 100; //Get a multiplier value between 0.25 and 4
+			ent->max_health = (int)((float)ent->max_health * rng); //Result gets rounded when converted back to int so nothing explodes
+		}
+	}
+	if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer && cg_enableRandNPCSpeed.integer)
+	{
+		uniform_real_distribution<float> NPC_Speed_Dist(33, 300);
+		float rng = NPC_Speed_Dist(rngRandoEnhancements) / 100; //Get a multiplier value between 0.33 and 3
+		ent->NPC->stats.runSpeed = (int)((float)ent->NPC->stats.runSpeed * rng);
+		ent->NPC->stats.walkSpeed = (int)((float)ent->NPC->stats.walkSpeed * rng);
+		ent->NPC->stats.yawSpeed = (int)((float)ent->NPC->stats.yawSpeed * rng);
+	}
 	if ( ent->health <= 0 )
 	{
 		//ORIGINAL ID: health will count down towards max_health
@@ -1292,6 +1719,14 @@ void NPC_Spawn_Go( gentity_t *ent )
 			newent->NPC->defaultBehavior = newent->NPC->behaviorState = BS_WAIT;
 			newent->classname = "NPC";
 	//		newent->svFlags |= SVF_NOPUSH;
+		}
+		else if (cg_enableRandomizer.integer) {
+			if (!Q_stricmp("protocol_imp", ent->NPC_type)) {
+				//Imperial protocol droids share a class with C3PO but should be enemy team
+				newent->client->playerTeam = TEAM_ENEMY;
+			} else {
+				newent->client->playerTeam = RandomizerUtils::GetClassTeamByClassname(ent->classname);
+			}
 		}
 	}
 //=====================================================================
@@ -2636,9 +3071,15 @@ Seeker Droid - floating round droids that shadow troopers spawn
 */
 void SP_NPC_Droid_Seeker( gentity_t *self)
 {
+	//Just spawn the other kind if it should be an enemy
+	if (cg_enableRandomizer.integer && RandomizerUtils::GetClassTeamByClassname(self->classname) == TEAM_ENEMY) {
+		SP_NPC_Droid_Remote(self);
+		return;
+	}
+
 	self->NPC_type = "seeker";
 
-	SP_NPC_spawner( self );
+	SP_NPC_spawner(self);
 
 	NPC_Seeker_Precache();
 }
@@ -2783,384 +3224,1097 @@ void SP_NPC_Droid_Protocol( gentity_t *self)
 	NPC_Protocol_Precache();
 }
 
-// The Posto is for faster search so I know what I edited
+// Randomizer
+// The 'Posto' is for faster search so I know what I edited
+const short tabSize = 50;
+short tabLockedInNPC[tabSize] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+								  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+								  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+								  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+								  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+short currentTabPosition = 0;
+char lastKnownMap[32] = "first_iteration";
+
+void MapChanged()
+{
+	//Reset NPCs when changing maps
+	for (int i = 0; i < tabSize; i++)
+	{
+		tabLockedInNPC[i] = -1;
+	}
+	currentTabPosition = 0;
+}
+
+void CheckIfMapChanged()
+{
+	if (strcmp(lastKnownMap, level.mapname) != 0)
+	{
+		strcpy(lastKnownMap, level.mapname);
+		MapChanged();
+	}
+}
+bool IsRNGInTab(int source)
+{
+	for (int i = 0; i < tabSize; i++)
+	{
+		if (tabLockedInNPC[i] == source) return 1;
+	}
+	return 0;
+}
+bool IsThereDuplicateInTab(int source)
+{
+	for (int i = 0; i < tabSize; i++)
+	{
+		if (tabLockedInNPC[i] == source) return 1;
+	}
+	return 0;
+}
+void PopulateNPCTab(int source)
+{
+	if (!IsThereDuplicateInTab(source)) // Safe measure to not corrupt lastKnownMap
+	{
+		tabLockedInNPC[currentTabPosition] = source;
+		currentTabPosition++;
+	}
+}
+char* GetNPCNames(int source)
+{
+	switch (source)
+	{
+	case 0:
+		return "Kyle";
+	case 1:
+		return "Lando";
+	case 2:
+		return "Jan";
+	case 3:
+		return "Luke";
+	case 4:
+		return "MonMothma";
+	case 5:
+		return "Tavion";
+	case 6:
+		return "Reelo";
+	case 7:
+		return "Galak";
+	case 8:
+		return "Desann";
+	case 9:
+		return "Bartender";
+	case 10:
+		return "Morgan";
+	case 11:
+		return "Jedi";
+	case 12:
+		return "Prisoner";
+	case 13:
+		return "Rebel";
+	case 14:
+		return "StormTrooper";
+	case 15:
+		return "StormTrooperOfficier";
+	case 16:
+		return "TiePilot";
+	case 17:
+		return "Ugnaught";
+	case 18:
+		return "Gran";
+	case 19:
+		return "Rodian";
+	case 20:
+		return "Weequay";
+	case 21:
+		return "Trandoshan";
+	case 22:
+		return "SwampTrooper";
+	case 23:
+		return "Imperial";
+	case 24:
+		return "ImpWorker";
+	case 25:
+		return "BespinCop";
+	case 26:
+		return "Reborn";
+	case 27:
+		return "ShadowTrooper";
+	case 28: // This entity doesn't work, retry
+		return "UNKNOWN";
+	case 29: // This entity doesn't work, retry
+		return "UNKNOWN";
+	case 30: // This entity doesn't work, retry
+		return "UNKNOWN";
+	case 31:
+		return "MineMonster";
+	case 32: // This entity doesn't work, retry
+		return "UNKNOWN";
+	case 33: // This entity doesn't work, retry
+		return "UNKNOWN";
+	case 34: // This entity doesn't work, retry
+		return "UNKNOWN";
+	case 35: // This entity doesn't work, retry
+		return "UNKNOWN";
+	case 36: // This entity doesn't work, retry
+		return "UNKNOWN";
+	case 37:
+		return "DroidInterrogator";
+	case 38:
+		return "DroidProbe";
+	case 39:
+		return "DroidMark1"; // Chicken Robot
+	case 40:
+		return "DroidMark2"; // Small bot (found in comms)
+	case 41: // Attention
+		return "ATST";
+	case 42:
+		return "DroidSeeker";
+	case 43:
+		return "DroidRemote";
+	case 44:
+		return "DroidSentry";
+	case 45:
+		return "DroidGonk";
+	case 46:
+		return "DroidMouse";
+	case 47:
+		return "DroidR2D2";
+	case 48:
+		return "DroidR5D2";
+	case 49:
+		return "DroidProtocol";
+		break;
+	default: // Secours
+		return "UNKONWN";
+	}
+}
+
 void SP_NPC_Spawn_Random(gentity_t* self)
 {
-	// Pas besoin de srand puisqu'il ets call déjà sur g_main.cpp (???????)
-	// Modulo de 49 car il y a 49 entités si j'ai bien compté. +1 pour skip Kyle, même si avoir 2 Kyle n'est potentiellement pas un problème.
-	int who = rand() % 50 ;
-	switch (who)
+	// Pas besoin de srand puisqu'il est call déjà sur g_main.cpp (???????)
+	uniform_int_distribution<int> NPCDist(0, 49);
+	int rng = NPCDist(rngRandoBase);
+	//int rng = rand() % 50 ;
+
+	// Idée d'Amber : limiter le nombre de NPC plutôt que de modifier d'autres valeurs in game qui peuvent potentiellement faire crash le jeu.
+	// Du coup, tableau de 10 emplacements déclaré plus haut afin de faire mes tests.
+
+	//string messageToWrite = "Random NPC Spawn, number generated is : "+std::to_string(rng)+"\n";
+	//gi.Printf(S_COLOR_YELLOW,messageToWrite.c_str()); // We can't catch that, too much logging between that and the moment we have access to the console.
+
+	// Case : We have a duplicate in our locking NPC array, and we want to have different NPCs
+	// This can be commented if in the future we find a way to have any kind of NPC to spawn without restiction
+	while (IsThereDuplicateInTab(rng) && currentTabPosition!=tabSize && tabSize!=50)
+	{
+		int rng = NPCDist(rngRandoBase);
+	}
+
+	// Let's suppose we find a way to have any kind of NPC, we can authorize anything in our big array, so that we don't have to change "much" of the code.
+	if (tabSize == 50)
+	{
+		for (int i = 0; i < tabSize; i++) tabLockedInNPC[i] = i;
+	}
+	
+
+	// Case : We already have 10 NPC loaded, so we want to roll one of them. This can take time, but only during a map load.
+	while ((currentTabPosition == tabSize && !IsRNGInTab(rng)))
+	{
+		int rng = NPCDist(rngRandoBase);
+	}
+
+ 	switch (rng)
 	{
 	case 0:
 		SP_NPC_Kyle(self);
+		PopulateNPCTab(rng);
 		break;
 	case 1:
 		SP_NPC_Lando(self);
+		PopulateNPCTab(rng);
 		break;
 	case 2:
 		SP_NPC_Jan(self);
+		PopulateNPCTab(rng);
 		break;
 	case 3:
 		SP_NPC_Luke(self);
+		PopulateNPCTab(rng);
 		break;
 	case 4: // Elle a une IA au moins ?
 		SP_NPC_MonMothma(self);
+		PopulateNPCTab(rng);
 		break;
-	case 5:
+	case 5: // Desann and Tavion are too hard to handle, but they should behave now
 		SP_NPC_Tavion(self);
+		PopulateNPCTab(rng);
+		//SP_NPC_Spawn_Random(self);
 		break;
 	case 6: // Il a une IA au moins ?
 		SP_NPC_Reelo(self);
+		PopulateNPCTab(rng);
 		break;
 	case 7:
 		SP_NPC_Galak(self);
+		PopulateNPCTab(rng);
 		break;
-	case 8: 
+	case 8: // Desann and Tavion are too hard to handle, but they should behave now
 		SP_NPC_Desann(self);
+		PopulateNPCTab(rng);
+		//SP_NPC_Spawn_Random(self);
 		break;
 	case 9: // Il a une IA au moins ?
 		SP_NPC_Bartender(self);
+		PopulateNPCTab(rng);
 		break;
 	case 10:
 		SP_NPC_MorganKatarn(self);
+		PopulateNPCTab(rng);
 		break;
 	case 11:
 		SP_NPC_Jedi(self);
+		PopulateNPCTab(rng);
 		break;
 	case 12:
 		SP_NPC_Prisoner(self);
+		PopulateNPCTab(rng);
 		break;
 	case 13:
 		SP_NPC_Rebel(self);
+		PopulateNPCTab(rng);
 		break;
 	case 14: // Le classique
 		SP_NPC_Stormtrooper(self);
+		PopulateNPCTab(rng);
 		break;
 	case 15:
 		SP_NPC_StormtrooperOfficer(self);
+		PopulateNPCTab(rng);
 		break;
 	case 16:
 		SP_NPC_Tie_Pilot(self);
+		PopulateNPCTab(rng);
 		break;
 	case 17: // C'est qui ?
 		SP_NPC_Ugnaught(self);
+		PopulateNPCTab(rng);
 		break;
 	case 18: // C'est qui ?
 		SP_NPC_Gran(self);
+		PopulateNPCTab(rng);
 		break;
 	case 19:
 		SP_NPC_Rodian(self);
+		PopulateNPCTab(rng);
 		break;
 	case 20:
 		SP_NPC_Weequay(self);
+		PopulateNPCTab(rng);
 		break;
 	case 21:
 		SP_NPC_Trandoshan(self);
+		PopulateNPCTab(rng);
 		break;
 	case 22:
 		SP_NPC_SwampTrooper(self);
+		PopulateNPCTab(rng);
 		break;
 	case 23:
 		SP_NPC_Imperial(self);
+		PopulateNPCTab(rng);
 		break;
 	case 24:
 		SP_NPC_ImpWorker(self);
+		PopulateNPCTab(rng);
 		break;
 	case 25:
 		SP_NPC_BespinCop(self);
+		PopulateNPCTab(rng);
 		break;
 	case 26:
 		SP_NPC_Reborn(self);
+		PopulateNPCTab(rng);
 		break;
 	case 27:
 		SP_NPC_ShadowTrooper(self);
+		PopulateNPCTab(rng);
 		break;
-	case 28: // Attention
-		SP_NPC_Monster_Murjj(self);
+	case 28: // This entity doesn't work, retry
+		//SP_NPC_Monster_Murjj(self);
 		//SP_NPC_Stormtrooper(self);
+		SP_NPC_Spawn_Random(self);
 		break;
-	case 29: // Attention
-		SP_NPC_Monster_Swamp(self);
+	case 29: // This entity doesn't work, retry
+		//SP_NPC_Monster_Swamp(self);
 		//SP_NPC_Stormtrooper(self);
+		SP_NPC_Spawn_Random(self);
 		break;
-	case 30: // Attention
-		SP_NPC_Monster_Howler(self);
+	case 30: // This entity doesn't work, retry
+		//SP_NPC_Monster_Howler(self);
 		//SP_NPC_Stormtrooper(self);
+		SP_NPC_Spawn_Random(self);
 		break;
 	case 31:
 		SP_NPC_MineMonster(self);
+		PopulateNPCTab(rng);
 		break;
-	case 32: // Attention
-		SP_NPC_Monster_Claw(self);
+	case 32: // This entity doesn't work, retry
+		//SP_NPC_Monster_Claw(self);
 		//SP_NPC_Stormtrooper(self);
+		SP_NPC_Spawn_Random(self);
 		break;
-	case 33: // Attention
-		SP_NPC_Monster_Glider(self);
+	case 33: // This entity doesn't work, retry
+		//SP_NPC_Monster_Glider(self);
 		//SP_NPC_Stormtrooper(self);
+		SP_NPC_Spawn_Random(self);
 		break;
-	case 34: // Attention
-		SP_NPC_Monster_Flier2(self);
+	case 34: // This entity doesn't work, retry
+		//SP_NPC_Monster_Flier2(self);
 		//SP_NPC_Stormtrooper(self);
+		SP_NPC_Spawn_Random(self);
 		break;
-	case 35: // Attention
-		SP_NPC_Monster_Lizard(self);
+	case 35: // This entity doesn't work, retry
+		//SP_NPC_Monster_Lizard(self);
 		//SP_NPC_Stormtrooper(self);
+		SP_NPC_Spawn_Random(self);
 		break;
-	case 36: // Attention
-		SP_NPC_Monster_Fish(self);
+	case 36: // This entity doesn't work, retry
+		//SP_NPC_Monster_Fish(self);
 		//SP_NPC_Stormtrooper(self);
+		SP_NPC_Spawn_Random(self);
 		break;
 	case 37:
 		SP_NPC_Droid_Interrogator(self);
+		PopulateNPCTab(rng);
 		break;
 	case 38:
 		SP_NPC_Droid_Probe(self);
+		PopulateNPCTab(rng);
 		break;
-	case 39:
-		SP_NPC_Droid_Mark1(self);
+	case 39: // Chicken robot are way too big, let's keep them out
+		//SP_NPC_Droid_Mark1(self);
+		//PopulateNPCTab(rng);
+		SP_NPC_Spawn_Random(self);
 		break;
-	case 40:
-		SP_NPC_Droid_Mark2(self);
+	case 40: // Chicken robot are way too big, let's keep them out
+		//SP_NPC_Droid_Mark2(self);
+		//PopulateNPCTab(rng);
+		SP_NPC_Spawn_Random(self);
 		break;
-	case 41: // Attention
-		SP_NPC_Droid_ATST(self);
+	case 41: // ATST are very buggy, let's keep them out for the moment
+		//SP_NPC_Droid_ATST(self);
+		//PopulateNPCTab(rng);
 		//SP_NPC_Stormtrooper(self);
+		SP_NPC_Spawn_Random(self);
 		break;
 	case 42:
 		SP_NPC_Droid_Seeker(self);
+		PopulateNPCTab(rng);
 		break;
 	case 43:
 		SP_NPC_Droid_Remote(self);
+		PopulateNPCTab(rng);
 		break;
 	case 44:
 		SP_NPC_Droid_Sentry(self);
+		PopulateNPCTab(rng);
 		break;
 	case 45:
 		SP_NPC_Droid_Gonk(self);
+		PopulateNPCTab(rng);
 		break;
 	case 46:
 		SP_NPC_Droid_Mouse(self);
+		PopulateNPCTab(rng);
 		break;
 	case 47:
 		SP_NPC_Droid_R2D2(self);
+		PopulateNPCTab(rng);
 		break;
-	case 48:
+	case 48: // Spawning this droid on kejim_base is making the game crash ????
 		SP_NPC_Droid_R5D2(self);
+		PopulateNPCTab(rng);
 		break;
 	case 49:
 		SP_NPC_Droid_Protocol(self);
+		PopulateNPCTab(rng);
 		break;
 	default: // Secours
-		SP_NPC_Stormtrooper(self);
+		//SP_NPC_Stormtrooper(self);
+		SP_NPC_Spawn_Random(self);
 		break;
 	}
 }
+
+// Used for Lando, Jan, and other NPCs that have to be humanoid due to their size (door in artus_detention is too small for Desann for example)
+void SP_NPC_Spawn_Random_Humanoid(gentity_t* self)
+{
+	//int numberOfHumanoid = 25;
+	uniform_int_distribution<int> NPC_H_Dist(0, 24);
+	int rng = NPC_H_Dist(rngRandoBase);
+
+	// Amber found a way to have any kind of NPC.
+	if (tabSize == 50)
+	{
+		for (int i = 0; i < tabSize; i++) tabLockedInNPC[i] = i;
+	}
+
+	switch (rng)
+	{
+	case 0:
+		SP_NPC_Lando(self);
+		break;
+	case 1:
+		SP_NPC_Jan(self);
+		break;
+	case 2:
+		SP_NPC_Luke(self);
+		break;
+	case 3:
+		SP_NPC_MonMothma(self);
+		break;
+	case 4:
+		SP_NPC_Tavion(self);
+		break;
+	case 5:
+		SP_NPC_Reelo(self);
+		break;
+	case 6:
+		SP_NPC_Bartender(self);
+		break;
+	case 7:
+		SP_NPC_MorganKatarn(self);
+		break;
+	case 8:
+		SP_NPC_Jedi(self);
+		break;
+	case 9:
+		SP_NPC_Prisoner(self);
+		break;
+	case 10:
+		SP_NPC_Rebel(self);
+		break;
+	case 11:
+		SP_NPC_Stormtrooper(self);
+		break;
+	case 12:
+		SP_NPC_StormtrooperOfficer(self);
+		break;
+	case 13:
+		SP_NPC_Tie_Pilot(self);
+		break;
+	case 14:
+		SP_NPC_Ugnaught(self);
+		break;
+	case 15:
+		SP_NPC_Gran(self);
+		break;
+	case 16:
+		SP_NPC_Rodian(self);
+		break;
+	case 17:
+		SP_NPC_Weequay(self);
+		break;
+	case 18:
+		SP_NPC_Trandoshan(self);
+		break;
+	case 19:
+		SP_NPC_SwampTrooper(self);
+		break;
+	case 20:
+		SP_NPC_Imperial(self);
+		break;
+	case 21:
+		SP_NPC_ImpWorker(self);
+		break;
+	case 22:
+		SP_NPC_BespinCop(self);
+		break;
+	case 23:
+		SP_NPC_Reborn(self);
+		break;
+	case 24:
+		SP_NPC_ShadowTrooper(self);
+		break;
+	default: // Secours
+		SP_NPC_Stormtrooper(self);
+		//SP_NPC_Spawn_Random(self);
+		break;
+	}
+}
+
+// If the Randomizer is disabled, just a bit of process time is added at every check, but at least it should be comptable with the standard SpeedOutcast since time is paused during load
 void SP_NPC_Kyle_Random(gentity_t* self) // Kyle should always spawn as Kyle
 {
-	string mapname = level.mapname; // It works, just need to do a list of NPC to lock and everything
-	SP_NPC_Kyle(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Kyle(self);
+	}
+	else SP_NPC_Kyle(self);
 }
 void SP_NPC_Lando_Random(gentity_t* self) // Lando should always spawn as Lando
 {
-	SP_NPC_Lando(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		//SP_NPC_Spawn_Random(self);
+		//SP_NPC_Lando(self);
+		SP_NPC_Spawn_Random_Humanoid(self);
+	}
+	else SP_NPC_Lando(self);
 }
 void SP_NPC_Jan_Random(gentity_t* self) // Jan should always spawn as Jan
 {
-	SP_NPC_Jan(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		//SP_NPC_Spawn_Random(self);
+		SP_NPC_Spawn_Random_Humanoid(self);
+	}
+	else SP_NPC_Jan(self);
 }
 void SP_NPC_Luke_Random(gentity_t* self) // Luke should always spawn as Luke
 {
-	SP_NPC_Luke(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		//SP_NPC_Spawn_Random(self);
+		SP_NPC_Spawn_Random_Humanoid(self);
+	}
+	else SP_NPC_Luke(self);
 }
 void SP_NPC_MonMothma_Random(gentity_t* self) // MonMothma should always spawn as MonMothma
 {
-	SP_NPC_MonMothma(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		//SP_NPC_Spawn_Random(self);
+		SP_NPC_Spawn_Random_Humanoid(self);
+	}
+	else SP_NPC_MonMothma(self);
 }
 void SP_NPC_Tavion_Random(gentity_t* self) // Tavion should always spawn as Tavion
 {
-	SP_NPC_Tavion(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+		//SP_NPC_Tavion(self);
+	}
+	else SP_NPC_Tavion(self);
 }
 void SP_NPC_Reelo_Random(gentity_t* self) // Reelo should always spawn as Reelo
 {
-	SP_NPC_Reelo(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		//SP_NPC_Spawn_Random(self);
+		SP_NPC_Spawn_Random_Humanoid(self);
+	}
+	else SP_NPC_Reelo(self);
 }
 void SP_NPC_Galak_Random(gentity_t* self) // Galak should always spawn as Galak
 {
-	SP_NPC_Galak(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Galak(self);
 }
 void SP_NPC_Desann_Random(gentity_t* self) // Desann should always spawn as Desann
 {
-	SP_NPC_Desann(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		//SP_NPC_Spawn_Random(self);
+		SP_NPC_Spawn_Random_Humanoid(self); // As a droid, the cutscene before the final 'fight' might be infinite
+	}
+	else SP_NPC_Desann(self);
 }
 void SP_NPC_Bartender_Random(gentity_t* self) // Bartender should always spawn as Bartender
 {
-	SP_NPC_Bartender(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Bartender(self);
 }
 void SP_NPC_MorganKatarn_Random(gentity_t* self) // Morgarn should always spawn as Morgarn
 {
-	SP_NPC_MorganKatarn(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_MorganKatarn(self);
 }
 void SP_NPC_Jedi_Random(gentity_t* self)
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Jedi(self);
 }
 void SP_NPC_Prisoner_Random(gentity_t* self) // Prisoners should spawn as themselves
 {
-	SP_NPC_Prisoner(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Prisoner(self);
 }
 void SP_NPC_Rebel_Random(gentity_t* self)
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Rebel(self);
 }
 void SP_NPC_Stormtrooper_Random(gentity_t* self)
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		// In case of "normal" gameplay ie not doing the turret skip, you need to be able to kill them (and not get stuck in doors)
+		if (strcmp(lastKnownMap, "artus_topside") == 0)
+		{
+			if (self->behaviorSet[0]) // Check for NULL
+			{
+				if (strcmp(self->behaviorSet[0], "artus_topside/shoot_prisoners") == 0)
+				{
+					SP_NPC_Spawn_Random_Humanoid(self);
+					return;
+				}
+				if (strcmp(self->behaviorSet[0], "artus_topside/shoot_prisoners_crouch") == 0)
+				{
+					SP_NPC_Spawn_Random_Humanoid(self);
+					return;
+				}
+			}
+		}
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Stormtrooper(self);
 }
 void SP_NPC_StormtrooperOfficer_Random(gentity_t* self)
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_StormtrooperOfficer(self);
 }
 void SP_NPC_Tie_Pilot_Random(gentity_t* self)
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Tie_Pilot(self);
 }
 void SP_NPC_Ugnaught_Random(gentity_t* self) // Ugnaught should spawn as Ugnaught
 {
-	SP_NPC_Ugnaught(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		//SP_NPC_Spawn_Random(self);
+		// For size, they may not hit triggers otherwise
+		SP_NPC_Spawn_Random_Humanoid(self);
+	}
+	else SP_NPC_Ugnaught(self);
 }
-void SP_NPC_Gran_Random(gentity_t* self) // Who is that ?
+void SP_NPC_Gran_Random(gentity_t* self) // Who is that ? It's the TD guys
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		if (strcmp(lastKnownMap, "ns_starpad") == 0)
+		{
+			if (self->targetname)
+			{
+				if (!strcmp(self->targetname, "back_squad1")
+					|| !strcmp(self->targetname, "back_squad2")
+					|| !strcmp(self->targetname, "back_squad3")
+					|| !strcmp(self->targetname, "back_squad4")
+					|| !strcmp(self->targetname, "front_squad1")
+					|| !strcmp(self->targetname, "front_squad2")
+					|| !strcmp(self->targetname, "front_squad3")
+					|| !strcmp(self->targetname, "front_squad4")
+					|| !strcmp(self->targetname, "reelo_thug")
+					|| !strcmp(self->targetname, "end_thug")
+					|| !strcmp(self->targetname, "bea"))
+				{
+					SP_NPC_Spawn_Random_Humanoid(self);
+					return;
+				}
+			}
+		}
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Gran(self);
 }
 void SP_NPC_Rodian_Random(gentity_t* self)
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		if (strcmp(lastKnownMap, "ns_starpad") == 0)
+		{
+			if (self->targetname)
+			{
+				if (!strcmp(self->targetname, "back_squad1")
+					|| !strcmp(self->targetname, "back_squad2")
+					|| !strcmp(self->targetname, "back_squad3")
+					|| !strcmp(self->targetname, "back_squad4")
+					|| !strcmp(self->targetname, "front_squad1")
+					|| !strcmp(self->targetname, "front_squad2")
+					|| !strcmp(self->targetname, "front_squad3")
+					|| !strcmp(self->targetname, "front_squad4")
+					|| !strcmp(self->targetname, "reelo_thug")
+					|| !strcmp(self->targetname, "end_thug")
+					|| !strcmp(self->targetname, "bea"))
+				{
+					SP_NPC_Spawn_Random_Humanoid(self);
+					return;
+				}
+			}
+		}
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Rodian(self);
 }
 void SP_NPC_Weequay_Random(gentity_t* self)
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		if (strcmp(lastKnownMap, "ns_starpad") == 0)
+		{
+			if (self->targetname)
+			{
+				if (!strcmp(self->targetname, "back_squad1")
+					|| !strcmp(self->targetname, "back_squad2")
+					|| !strcmp(self->targetname, "back_squad3")
+					|| !strcmp(self->targetname, "back_squad4")
+					|| !strcmp(self->targetname, "front_squad1")
+					|| !strcmp(self->targetname, "front_squad2")
+					|| !strcmp(self->targetname, "front_squad3")
+					|| !strcmp(self->targetname, "front_squad4")
+					|| !strcmp(self->targetname, "reelo_thug")
+					|| !strcmp(self->targetname, "end_thug")
+					|| !strcmp(self->targetname, "bea"))
+				{
+					SP_NPC_Spawn_Random_Humanoid(self);
+					return;
+				}
+			}
+		}
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Weequay(self);
 }
 void SP_NPC_Trandoshan_Random(gentity_t* self)
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Trandoshan(self);
 }
 void SP_NPC_SwampTrooper_Random(gentity_t* self)
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_SwampTrooper(self);
 }
 void SP_NPC_Imperial_Random(gentity_t* self)
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		if (strcmp(lastKnownMap, "artus_detention") == 0) // The warden that we have hostage
+		{
+			if (self->NPC_targetname)
+			{
+				if (!strcmp(self->NPC_targetname, "warden"))
+				{
+					SP_NPC_Spawn_Random_Humanoid(self);
+					return;
+				}
+			}
+		}
+		if (strcmp(lastKnownMap, "cairn_assembly") == 0) // The officer we have to mindtrick
+		{
+			if (self->behaviorSet[0]) // Check for NULL
+			{
+				if (strcmp(self->behaviorSet[0], "cairn_assembly/silent_stand") == 0)
+				{
+					SP_NPC_Spawn_Random_Humanoid(self);
+					return;
+				}
+			}
+		}
+		if (strcmp(lastKnownMap, "doom_detention") == 0) // The jailer of Jan
+		{
+			if (self->NPC_targetname)
+			{
+				if (!strcmp(self->NPC_targetname, "jailer"))
+				{
+					SP_NPC_Spawn_Random_Humanoid(self);
+					return;
+				}
+			}
+		}
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Imperial(self);
 }
 void SP_NPC_ImpWorker_Random(gentity_t* self)
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_ImpWorker(self);
 }
 void SP_NPC_BespinCop_Random(gentity_t* self)
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_BespinCop(self);
 }
 void SP_NPC_Reborn_Random(gentity_t* self)
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Reborn(self);
 }
 void SP_NPC_ShadowTrooper_Random(gentity_t* self)
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_ShadowTrooper(self);
 }
 void SP_NPC_Monster_Murjj_Random(gentity_t* self) // Who is that ?
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Monster_Murjj(self);
 }
 void SP_NPC_Monster_Swamp_Random(gentity_t* self) // Who is that ?
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Monster_Swamp(self);
 }
 void SP_NPC_Monster_Howler_Random(gentity_t* self) // Who is that ?
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Monster_Howler(self);
 }
 void SP_NPC_Monster_Claw_Random(gentity_t* self) // Who is that ?
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Monster_Claw(self);
 }
 void SP_NPC_Monster_Glider_Random(gentity_t* self) // Who is that ?
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Monster_Glider(self);
 }
 void SP_NPC_Monster_Flier2_Random(gentity_t* self) // Who is that ?
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Monster_Flier2(self);
 }
 void SP_NPC_Monster_Lizard_Random(gentity_t* self) // Who is that ?
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Monster_Lizard(self);
 }
 void SP_NPC_Monster_Fish_Random(gentity_t* self) // Who is that ?
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Monster_Fish(self);
 }
 void SP_NPC_MineMonster_Random(gentity_t* self) // Who is that ?
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_MineMonster(self);
 }
 void SP_NPC_Droid_Interrogator_Random(gentity_t* self)
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Droid_Interrogator(self);
 }
 void SP_NPC_Droid_Probe_Random(gentity_t* self) // Who is that ?
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Droid_Probe(self);
 }
-void SP_NPC_Droid_Mark1_Random(gentity_t* self) // Who is that ?
+void SP_NPC_Droid_Mark1_Random(gentity_t* self) // Chicken robot, make then static and not in the random pool (they are big). Wait, two chicken robot entities ?
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Droid_Mark1(self);
+	}
+	else SP_NPC_Droid_Mark1(self);
 }
-void SP_NPC_Droid_Mark2_Random(gentity_t* self) // Who is that ?
+void SP_NPC_Droid_Mark2_Random(gentity_t* self) // Chicken robot, make then static and not in the random pool (they are big). Wait, two chicken robot entities ?
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Droid_Mark2(self);
+	}
+	else SP_NPC_Droid_Mark2(self);
 }
-void SP_NPC_Droid_ATST_Random(gentity_t* self)
+void SP_NPC_Droid_ATST_Random(gentity_t* self) // Since they are buggy, let's keep the one existing intact.
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Droid_ATST(self);
+	}
+	else SP_NPC_Droid_ATST(self);
 }
 void SP_NPC_Droid_Seeker_Random(gentity_t* self) // Seekers should always be seekers, at least in speedruns
 {
-	SP_NPC_Droid_Seeker(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Droid_Seeker(self);
+	}
+	else SP_NPC_Droid_Seeker(self);
 }
 void SP_NPC_Droid_Remote_Random(gentity_t* self) // Who is that ?
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Droid_Remote(self);
 }
 void SP_NPC_Droid_Sentry_Random(gentity_t* self) // Who is that ?
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Droid_Sentry(self);
 }
 void SP_NPC_Droid_Gonk_Random(gentity_t* self)
 {
-	SP_NPC_Spawn_Random(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Droid_Gonk(self);
 }
-void SP_NPC_Droid_Mouse_Random(gentity_t* self) // Mouse should spawn as Mouse
+void SP_NPC_Droid_Mouse_Random(gentity_t* self) // Mouse should spawn as Mouse because of size in kejim
 {
-	SP_NPC_Droid_Mouse(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Droid_Mouse(self);
+	}
+	else SP_NPC_Droid_Mouse(self);
 }
 void SP_NPC_Droid_R2D2_Random(gentity_t* self) // R2D2 should spawn as self
 {
-	SP_NPC_Droid_R2D2(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Droid_R2D2(self);
 }
-void SP_NPC_Droid_R5D2_Random(gentity_t* self)
+void SP_NPC_Droid_R5D2_Random(gentity_t* self) // R5D2 should spawn as self, because of size in bespin
 {
-	SP_NPC_Droid_R5D2(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		//SP_NPC_Spawn_Random(self);
+		SP_NPC_Droid_R5D2(self);
+	}
+	else SP_NPC_Droid_R5D2(self);
 }
 void SP_NPC_Droid_Protocol_Random(gentity_t* self)
 {
-	SP_NPC_Droid_Protocol(self);
+	if (cg_enableRandomizer.integer)
+	{
+		CheckIfMapChanged();
+		SP_NPC_Spawn_Random(self);
+	}
+	else SP_NPC_Droid_Protocol(self);
 }
-
-
-
-
-
 
 
 

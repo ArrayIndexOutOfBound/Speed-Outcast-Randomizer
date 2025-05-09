@@ -16,6 +16,7 @@ extern qboolean PM_SaberInIdle( int move );
 extern qboolean PM_SaberInAttack( int move );
 extern qboolean PM_SaberInTransitionAny( int move );
 extern qboolean PM_SaberInSpecialAttack( int anim );
+extern vmCvar_t			cg_enableRandomizer;
 
 //-------------------------------------------------------------------------
 #ifdef _IMMERSION
@@ -42,6 +43,22 @@ void G_MissileBounceEffect( gentity_t *ent, vec3_t org, vec3_t dir )
 		G_PlayEffect( "blaster/deflect", ent->currentOrigin, dir );
 #endif // _IMMERSION
 		break;
+		//Amber this should be a temp fix, we really need to figure out how to up GENTITYNUM_BITS value safely
+	case WP_REPEATER: //Reduce missile spam created by repeaters to reduce risk of going over entity limit
+		// Sure, we can keep rand for this, don't want an rng engine just for this.
+		if (rand() % 2 == 0) {
+			gentity_t* tent = G_TempEntity(org, EV_GRENADE_BOUNCE);
+			VectorCopy(dir, tent->pos1);
+			tent->s.weapon = ent->s.weapon;
+#ifdef _IMMERSION
+			if (hitEntNum != -1)
+			{
+				tent->s.saberActive = 1;
+				tent->s.otherEntityNum = hitEntNum;
+			}
+		}
+		break;
+#endif // _IMMERSION
 	default:
 		{
 			gentity_t *tent = G_TempEntity( org, EV_GRENADE_BOUNCE );
@@ -562,6 +579,10 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace, int hitLoc=HL_NONE )
 	other = &g_entities[trace->entityNum];
 	if ( other == ent )
 	{
+		//Debug convenience, this doesn't change anything in FinalBuild but prevents popups when debugging
+		if (cg_enableRandomizer.integer) {
+			return;
+		}
 		assert(0&&"missile hit itself!!!");
 		return;
 	}

@@ -390,6 +390,36 @@ vmCvar_t	cg_strafeHelperColorSpeedG;
 vmCvar_t	cg_strafeHelperColorSpeedB;
 vmCvar_t	cg_strafeHelperColorSpeedA;
 
+// Additions for Randomizer
+vmCvar_t	cg_enableRandomizer;
+vmCvar_t	cg_enableRandomizerEnhancements;
+vmCvar_t	cg_drawSeed;
+vmCvar_t	cg_useSetSeed;
+vmCvar_t	cg_setSeed;
+// Better rng for randomizer : uniform distribution.
+#include <random>
+mt19937 rngRandoBase;
+mt19937 rngRandoEnhancements;
+// Randomizer - evil mode
+vmCvar_t	cg_enableRandSaberStyle;
+vmCvar_t	cg_enableRandSaberLength;
+vmCvar_t	cg_enableRandSaberColor;
+vmCvar_t	cg_enableRandJumpHeight;
+vmCvar_t	cg_enableRandJumpStrength;
+vmCvar_t	cg_enableRandLanguageVoices;
+vmCvar_t	cg_enableRandTextures;
+vmCvar_t	cg_enableRandWeaponProjectile;
+vmCvar_t	cg_enableRandWeaponProjectileMode;
+vmCvar_t	cg_enableRandNPCSpeed;
+vmCvar_t	cg_enableSafeStart;
+vmCvar_t	cg_startWithPush;
+vmCvar_t	cg_bonusJanHealth;
+vmCvar_t	cg_enableRandNpcHealth;
+vmCvar_t	cg_enableRandKyleHealth;
+vmCvar_t	memorized_kyle_health;
+// Additions for Base Game fixes (ex : artus_mine crates to get all pickups)
+vmCvar_t	cg_baseGameFixes;
+
 typedef struct {
 	vmCvar_t	*vmCvar;
 	char		*cvarName;
@@ -573,6 +603,34 @@ Ghoul2 Insert End
 	{ &cg_strafeHelperColorSpeedG, "cg_strafeHelperColorSpeedG", "1.0", CVAR_ARCHIVE },
 	{ &cg_strafeHelperColorSpeedB, "cg_strafeHelperColorSpeedB", "1.0", CVAR_ARCHIVE },
 	{ &cg_strafeHelperColorSpeedA, "cg_strafeHelperColorSpeedA", "0.9", CVAR_ARCHIVE },
+
+	// Additions for Randomizer
+	{ &cg_enableRandomizer, "cg_enableRandomizer", "0", CVAR_ARCHIVE }, // By default, it's disabled
+	{ &cg_enableRandomizerEnhancements, "cg_enableRandomizerEnhancements", "0", CVAR_ARCHIVE }, // By default, it's disabled
+	{ &cg_drawSeed, "cg_drawSeed", "0", CVAR_ARCHIVE },
+	{ &cg_useSetSeed, "cg_useSetSeed", "0", CVAR_ARCHIVE },
+	{ &cg_setSeed, "cg_setSeed", "", CVAR_ARCHIVE },
+	// Randomizer - evil mode
+	{ &cg_enableRandSaberStyle, "cg_enableRandSaberStyle", "0", CVAR_ARCHIVE },
+	{ &cg_enableRandSaberLength, "cg_enableRandSaberLength", "0", CVAR_ARCHIVE },
+	{ &cg_enableRandSaberColor, "cg_enableRandSaberColor", "0", CVAR_ARCHIVE },
+	{ &cg_enableRandJumpHeight, "cg_enableRandJumpHeight", "0", CVAR_ARCHIVE },
+	{ &cg_enableRandJumpStrength, "cg_enableRandJumpStrength", "0", CVAR_ARCHIVE },
+	{ &cg_enableRandLanguageVoices, "cg_enableRandLanguageVoices", "0", CVAR_ARCHIVE },
+	{ &cg_enableRandTextures, "cg_enableRandTextures", "0", CVAR_ARCHIVE },
+	{ &cg_enableRandWeaponProjectile, "cg_enableRandWeaponProjectile", "0", CVAR_ARCHIVE },
+	{ &cg_enableRandWeaponProjectileMode, "cg_enableRandWeaponProjectileMode", "0", CVAR_ARCHIVE },
+	{ &cg_enableRandNPCSpeed, "cg_enableRandNPCSpeed", "0", CVAR_ARCHIVE },
+	{ &cg_enableSafeStart, "cg_enableSafeStart", "0", CVAR_ARCHIVE },
+	{ &cg_startWithPush, "cg_startWithPush", "0", CVAR_ARCHIVE },
+	{ &cg_bonusJanHealth, "cg_bonusJanHealth", "0", CVAR_ARCHIVE },
+	{ &cg_enableRandKyleHealth, "cg_enableRandKyleHealth", "0", CVAR_ARCHIVE },
+	{ &cg_enableRandNpcHealth, "cg_enableRandNpcHealth", "0", CVAR_ARCHIVE },
+	// Randomizer : information holder
+	{ &memorized_kyle_health, "memorized_kyle_health", "0", CVAR_ARCHIVE },
+	
+	// Additions for BaseGame fixes
+	{ &cg_baseGameFixes, "cg_baseGameFixes", "0", CVAR_ARCHIVE }
 };
 
 int		cvarTableSize = sizeof( cvarTable ) / sizeof( cvarTable[0] );
@@ -1599,6 +1657,16 @@ static void CG_RegisterGraphics( void ) {
 	// only register the items that the server says we need
 	strcpy( items, CG_ConfigString( CS_ITEMS) );
 
+	//if in randomizer, register all the holocrons
+	if (cg_enableRandomizer.integer) {
+		for (i = 1; i < bg_numItems; i++) {
+			if (bg_itemlist[i].giType == IT_HOLOCRON) {
+				CG_LoadingString(bg_itemlist[i].classname);
+				CG_RegisterItemVisuals(i);
+			}
+		}
+	}
+
 	for ( i = 1 ; i < bg_numItems ; i++ ) {
 		if ( items[ i ] == '1' ) 
 		{
@@ -2034,6 +2102,8 @@ void CG_Init( int serverCommandSequence ) {
 	cgi_AddCommand ("kill");
 	cgi_AddCommand ("give");
 	cgi_AddCommand ("god");
+	// Posto : This is added when a map is loaded, not accessible before starting a game.
+	if (cg_enableRandomizer.integer) cgi_AddCommand ("randomizer_info");
 	cgi_AddCommand ("notarget");
 	cgi_AddCommand ("noclip");
 	cgi_AddCommand ("undying");

@@ -1,233 +1,131 @@
-# Speed Outcast
+# Speed Outcast - Randomizer
 
-Source port of the singleplayer of Star Wars Jedi Knight II: Jedi Outcast.
-Focuses on staying true to the original game to be used for speedrun purposes.
+Fork of SpeedOutcast, a source port of the singleplayer of Star Wars Jedi Knight II: Jedi Outcast.
+Focuses on staying true to the original game and SpeedOutcast / speedrun.com rules to be used for speedrun purposes.
 See the [speedrun.com leaderboard](https://www.speedrun.com/jk2) for more information.
 
-Based on the original source code released by Raven, see README.txt.
+Based on the original source code released by Raven, see `README.txt`.
+Based on the source port of Star Wars Jedi Knight II: Jedi Outcast named SpeedOucast, see `README - SpeedOutcast.md`.
+
 
 ## New Console Variables
 
-### Input
+### Randomizer
 
-#### `in_mouse_raw` (0 or 1)
+#### `cg_enableRandomizer` (0 or 1)
 
-Use raw mouse input. Only applies after an `in_restart` (or after restarting the game).
-Default: `1`.
+Enable or disable the NPC and items randomizer.
+Only this was designed to be predictable.
+Default: `0`.
+
+#### `cg_enableRandomizerEnhancements` (0 or 1)
+
+Enable or disable the other more 'exotic' randomized elements in the game.
+Check `List of addition for the 'exotic' Randomizer` below for more details.
+Need `cg_enableRandomizer` to be 1 to work.
+This was not designed to be predictable but doesn't interfere with the RNG used in the 'base' randomizer.
+Default: `0`.
+
+#### `cg_setSeed` 10 digits string
+
+Variable that store the current seed. Can be edited before starting a run and used if `cg_useSetSeed` is equal to 1.
+Default: `EmptyString`.
+
+#### `cg_useSetSeed` (0 or 1)
+
+If 0, generate a random seed during the start of a new game.
+If 1, will use the seed stored in `cg_setSeed`.
+Default: `0`.
 
 ### HUD
 
-#### `cg_drawOverbounceInfo` (0 or 1)
+#### `cg_drawSeed` (0 or 1)
 
-Draw overbounce probabilities, G is for Go, J is for Jump.
+Draw the seed used during a run. Will draw "No Rand" is `cg_enableRandomizer` is 0.
 Default: `0`.
 
-#### `cg_drawSecrets` (0 or 1)
+## About Force Holocrons
+Holocron items, like the one you can find on the map yavin_trial, are available as collectible items.
+Here are how they work :
+- When an holocron is rolled during the randomized process, they only have a 33% to 'stay'. If you hit the 66% remaining, the item will be rerolled.
+- They have a slightly higher hitbox, so they may be picked from a bit father than what their 3D model indicate.
+- When picked up, if you didn't had the force power, you will unlock it and a "New Force Power" popup will appear.
+- When picked up, if you already had a force power, it will be incremented by 1.
+- When pickup up, if you already had this specific force power at level 3, nothing will happen. You also won't see the "New Force Power" popup.
+- The Force powers will still increment as they should between missions.
 
-Show a tracker for found versus total number of secrets on the current level.
-Default `0`.
+## List of addition for the base Randomizer
 
-#### `cg_drawServerFPS` (0 or 1)
+#### Gameplay
 
-Show current value of `sv_fps`.
-For verification of speedruns for the leaderboards.
-Default: `1`.
+- Every NPC will be randomized during spawn, with exceptions listed below.
+- NPC health will be randomized between 25% and 400% of base health.
+- Every items spawned on the map such as items on the ground or in gun racks will be randomized.
+- The lightsaber can be obtained early and you will receive a random saber style on pickup.
+- Every Force powers (except Saber attack and Saber defense) can be obtained via holocrons.
+- NPCs replacing NPCs with keys or special trigger for script will inherit said keys and/or script.
+- NPCs replacing normal NPCs will inherit their AI as best as possible (droids can't pathfind exactly like a humanoid).
+- Easter egg NPC called `The Death Wiggle`.
+- The NPC you kill at the end of `yavin_trial` will trigger the end of the timer like in SpeedOutcast.
 
-#### `cg_drawSpeedrunTotalTimer` (0-3)
+#### Exceptions
 
-Draw a total run timer.
-Higher values show more decimals.
-Default: `0`.
+- Lando, Jan, Luke, MonMothman, Reelo, Desann and Ugnaught will always spawn as humanoids.
+- ATSTs, Seekers, MouseDroids, R5D2 (bespin) and 'Chicken Robots' will always spawn as themselves.
+- The warden in `artus_detention` will always be an humanoid.
+- The stormtrooper shooting at the prisoners in `artus_topside` will always be humanoids.
+- Rodian, Gran, Weequay at the end of `ns_starpad` (with Reelo) and the waves when Lando will go inside the Lady Luck will always be humanoids.
+- The two Imperial Officers in `cairn_assembly` and `doom_detention` we have to mindtrick will always be humanoids.
+- Kyle as in player controlled Kyle will always be Kyle. And randomly spawned Kyle will always be considered allies.
 
-#### `cg_drawSpeedrunLevelTimer` (0-3)
+### List of addition for the 'exotic' Randomizer
 
-Draw a current level timer.
-Higher values show more decimals.
-Default: `0`.
+#### `cg_enableRandSaberStyle` (0 or 1)
+Random saber style at pickup. That means you will always get a change to get any saber style, so go for a qs/ql if you want something specific.
 
-#### `cg_drawJumpHelper` (0 or 1)
+#### `cg_enableRandSaberLength` (0 or 1)
+Random saber lenght every time the saber is chosen. From 25% to 400% the saber lenght.
 
-Draw a helper for correctly timing jump release and crouch jumping.
+#### `cg_enableRandSaberColor` (0 or 1)
+Random saber color every time the saber is chosen. Blue, Green, Yeelow, Orange, Purple and Red. RGB might be possible but that needs investigation.
 
-#### `cg_jumpHelperX` (#)
+#### `cg_enableRandJumpHeight` (0 or 1)
+Random jump height with every jump. From 1/3 the normal jump without force to double the height with jump force 3.
 
-Horizontal position of the jump helper.
-Default: `0.0` (center of the screen).
+#### `cg_enableRandJumpStrength` (0 or 1)
+Random jump strength with every jump. From the normal jump without force to quadruple the Z velocity with jump force 3.
 
-#### `cg_jumpHelperY` (#)
+#### `cg_enableRandLanguageVoices` (0 or 1)
+Random language for each voice line (randomized when loaded on map init).
 
-Vertical position of the jump helper.
-Default: `0.0` (center of the screen).
+#### `cg_enableRandWeaponProjectile` (0 or 1)
+Random weapon projectile per shot. Only applies if the weapon is a blaster of some sort.
 
-#### `cg_jumpHelperWidth` (#)
+#### `cg_enableRandTextures` (0 or 1)
+Random texture assigned to each surface per map. No vid_restart required to toggle.
 
-Width of the jump helper.
-Note that this becomes height when using the vertical jump helper (`cg_jumpHelperHorizontal 0`).
-Default: `300`.
+#### `cg_enableRandNPCSpeed` (0 or 1)
+Random walking, running and turning speed for NPCs. Range of 33% to 300%.
 
-#### `cg_jumpHelperHeight` (#)
+#### `cg_enableSafeStart` (0 or 1)
+Prevents starting two enemies from attacking unless provoked.
 
-Height of the jump helper.
-Note that this becomes width when using the vertical jump helper (`cg_jumpHelperHorizontal 0`).
-Default: `20`.
+#### `cg_startWithPush` (0 or 1)
+Start game with force push 1.
 
-#### `cg_jumpHelperHorizontal` (-1, 0 or 1)
+#### `cg_bonusJanHealth` (0 or 1)
+Applies a flat +50 to Jan's health on kejim_post. This applies before random NPC health.
 
-Whether to draw the jump helper horizontally left-to-right (`1`), horizontally right-to-left (`-1`) or vertically bottom-to-top (`0`).
-Default: `1`.
+#### `cg_enableRandNPCHealth` (0 or 1)
+Random health for NPCs. Range of 25% to 400%.
 
-#### `cg_jumpHelperMirror` (0 or 1)
+#### `cg_enableRandKyleHealth` (0 or 1)
+Random health for Kyle as the player. Range of 33% to 300%.
 
-Whether to mirror the jump helper.
-Mirrors horizontally when drawing horizontally, vertically otherwise.
-Default: `1`.
 
-#### `cg_jumpHelperAutoScale` (0 or 1)
+### Todos
+- Get approved for a possible speedrun randomizer leaderboard
+- Random codes for doom_comm (if possible)
+- Random codes for kejim_post (if possible)
 
-Whether to rescale the jump helper to the same size for each force level.
-Default: `0`.
 
-#### `cg_jumpHelperCrouch` (0 or 1)
-
-Show an additional height section for crouch jumping, appended to normal jump height.
-Default: `1`.
-
-#### `cg_jumpHelperCurrentScale` (#)
-
-Scale of the indicator for the current height within the jump helper.
-Negative values draw from top to bottom, positive values from bottom to top.
-Default: `0.5`.
-
-#### `cg_drawSpeed` (0 or 1)
-
-Draw the current player speed.
-Default: `0`.
-
-#### `cg_speedScale` (#)
-
-Scale of the text for speed display.
-Default: `0.9`.
-
-#### `cg_speedX` (#)
-
-Horizontal offset for drawing speed text, relative to the center of the screen.
-Default: `0.0` (center of the screen).
-
-#### `cg_speedY` (#)
-
-Vertical offset for drawing speed text, relative to the center of the screen.
-Default: `75.0` (Slightly below center of the screen).
-
-#### `cg_drawStrafeHelper` (0 or 1)
-
-Draw a strafe helper.
-Default: `0`.
-
-#### `cg_strafeHelperCenter` (0 or 1)
-
-Put the strafe helper in the center of the screen.
-Default: `1`.
-
-#### `cg_strafeHelperCenterMarker` (0 or 1)
-
-Draw a marker in the center of the strafe helper.
-Default: `1`.
-
-#### `cg_strafeHelperHeight` (#)
-
-Height of strafe helper bar.
-Default: `20.0`.
-
-#### `cg_strafeHelperScale` (#)
-
-Horizontal scale of the strafe helper.
-Angles correspond directly to the field of view if this scale is set to `360/cg_fov`.
-Default: `4.0`.
-
-#### `cg_strafeHelperSpeedScale` (#)
-
-Scale of the text for speed display tied to strafe helper.
-Note that this shows the speed after friction but prior to acceleration, as this is what is relevant for optimal strafing.
-It is not the intuitive current player speed.
-For that, see `cg_drawSpeed`.
-Default: `0.9`.
-
-#### `cg_strafeHelperSpeedX` (#)
-
-Horizontal offset of the text for speed display, relative to the center of the screen.
-Default: `0.0` (center of the screen).
-
-#### `cg_strafeHelperSpeedY` (#)
-
-Vertical offset of the text for speed display, relative to the strafe helper.
-Default: `0.0` (directly under the strafe helper).
-
-#### `cg_strafeHelperY` (#)
-
-Vertical position of the strafe helper.
-Default: `50.0`.
-
-#### `cg_strafeHelperColor[...]` (0.0 - 1.0)
-
-Color components (red, green, blue, alpha) for different strafe helper elements.
-These are `Accelerating`, `Optimal`, `CenterMarker` and `Speed`.
-Colors can be set more conveniently with the corresponding commands.
-
-### Cosmetics
-
-#### `g_saber_color` (color)
-
-Set saber color.
-Valid colors: "red", "orange", "yellow", "green", "blue", and "purple".
-Default: "blue"
-
-### Gameplay
-
-#### `g_speedFactorLanding` (0 or 1)
-
-To play with factors to multiply speed by on landing.
-A value of `0.5` will obtain Jedi Academy behaviour, `1.0` is the original behaviour in Jedi Outcast.
-**Cheat protected**.
-Default: `1`.
-
-#### `g_selfKnockback` (0 or 1)
-
-Allow players to damage boost themselves with explosive weapons.
-**Cheat protected**.
-Default: `0`.
-
-#### `sv_speedrunModeIL` (0 or 1)
-
-Individual-level run mode.
-When set to `1`, ingame timer will reset every time an autosave is loaded.
-When set to `0`, ingame timer will reset only when `kejim_post` is loaded.
-Default: `0`.
-
-#### `sv_speedrunModeCheckpoint` (0 or 1)
-
-Mode for running from quicksave to a specified checkpoint on a map.
-Coordinates can be set with the command `settimedcheckpoint x1 y1 z1 x2 y2 z2`.
-When the player enters the box spanned by the two points `(x1 y1 z1)` and `(x2 y2 z2)` the run is finished.
-If `x2`, `y2` and `z2` are omitted, a checkpoint of reasonable size will be created at `(x1 y1 z1)`.
-Default: `0`.
-
-#### `sv_speedrunModeCheckpointSave` (0 or 1)
-
-Create an automatic save when a checkpoint is reached in checkpoint mode.
-Default: `0`.
-
-## New Commands
-
-### HUD
-
-#### `jumpHelperColor[...] <r> <g> <b> <a>` (components in range 0.0 to 1.0)
-
-Sets the color for one of the jump helper elements `Background`, `Crouch`, `CrouchExtend`, `Extend`, `Optimal`, `Current` or `Cancel` to the given red, green, blue and alpha values.
-
-#### `speedColor <r> <g> <b> <a>` (components in range 0.0 to 1.0)
-
-Sets the color for the speed display to the given red, green, blue and alpha values.
-
-#### `strafeHelperColor[...] <r> <g> <b> <a>` (components in range 0.0 to 1.0)
-
-Sets the color for one of the strafe helper elements `Accelerating`, `Optimal`, `CenterMarker` or `Speed` to the given red, green, blue and alpha values.

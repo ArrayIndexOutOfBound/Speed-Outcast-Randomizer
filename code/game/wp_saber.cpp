@@ -27,6 +27,9 @@ static int		numVictims = 0;
 
 #define SABER_PITCH_HACK 90
 
+// Randomizer : proper uniform numbers
+#include <random>
+extern mt19937 rngRandoEnhancements;
 
 extern cvar_t	*g_timescale;
 extern cvar_t	*g_dismemberment;
@@ -98,6 +101,12 @@ void WP_ForcePowerDrain( gentity_t *self, forcePowers_t forcePower, int override
 
 extern cvar_t	*g_saberAutoBlocking;
 extern cvar_t	*g_saberRealisticCombat;
+extern vmCvar_t cg_enableRandomizer;
+extern vmCvar_t cg_enableRandomizerEnhancements;
+extern vmCvar_t	cg_enableRandSaberStyle;
+extern vmCvar_t	cg_enableRandSaberLength;
+extern vmCvar_t	cg_enableRandSaberColor;
+extern vmCvar_t	cg_startWithPush;
 extern int g_crosshairEntNum;
 
 int		g_saberFlashTime = 0;
@@ -271,16 +280,39 @@ void G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *psWeaponModel )
 	{
 		return;
 	}
-	// give us a sabre model
-	ent->weaponModel = gi.G2API_InitGhoul2Model(ent->ghoul2, weaponModel, G_ModelIndex( weaponModel ), NULL, NULL, 0, 0);
-	if ( ent->weaponModel != -1 )
-	{
-		// attach it to the hand
-		gi.G2API_AttachG2Model(&ent->ghoul2[ent->weaponModel], &ent->ghoul2[ent->playerModel], 
+	// give us a sabre model	
+	ent->weaponModel = gi.G2API_InitGhoul2Model(ent->ghoul2, weaponModel, G_ModelIndex(weaponModel), NULL, NULL, 0, 0);
+	
+	if (cg_enableRandomizer.integer && Q_stricmp(ent->classname, "player"))
+	{//Randomizer safe version
+		//We have a weapon and a model to attach it to and a bolt point on the model
+		if (weaponModel && ent->playerModel != -1 && ent->ghoul2[ent->playerModel].mBltlist.size() > 0)
+		{
+			//We have a hand to bolt it to
+			if (ent->handRBolt != -1)
+			{
+				// attach it to the hand
+				gi.G2API_AttachG2Model(&ent->ghoul2[ent->weaponModel], &ent->ghoul2[ent->playerModel],
 					ent->handRBolt, ent->playerModel);
+			}
+			else
+			{
+				//If not just put it wherever lol
+				gi.G2API_AttachG2Model(&ent->ghoul2[ent->weaponModel], &ent->ghoul2[ent->playerModel],
+					1, ent->playerModel);
+			}
+			// set up a bolt on the end so we can get where the sabre muzzle is - we can assume this is always bolt 0
+			gi.G2API_AddBolt(&ent->ghoul2[ent->weaponModel], "*flash");
+		}
+	}
+	else
+	{//Vanilla version & Kyle
+		// attach it to the hand
+		gi.G2API_AttachG2Model(&ent->ghoul2[ent->weaponModel], &ent->ghoul2[ent->playerModel],
+			ent->handRBolt, ent->playerModel);
 		// set up a bolt on the end so we can get where the sabre muzzle is - we can assume this is always bolt 0
 		gi.G2API_AddBolt(&ent->ghoul2[ent->weaponModel], "*flash");
-	  	//gi.G2API_SetLodBias( &ent->ghoul2[ent->weaponModel], 0 );
+		//gi.G2API_SetLodBias( &ent->ghoul2[ent->weaponModel], 0 );
 	}
 }
 
@@ -437,7 +469,15 @@ void WP_SaberInitBladeData( gentity_t *ent )
 		{
 			if ( !ent->client->ps.saberAnimLevel )
 			{//initialize, but don't reset
-				ent->client->ps.saberAnimLevel = FORCE_LEVEL_2;
+				// Random saber style at pickup, but I need to NOT call rand() to keep NPC spawn consistent.
+				if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer && cg_enableRandSaberStyle.integer) 
+				{
+					ent->client->ps.saberAnimLevel = (level.framenum) % 3 + 1;
+				}
+				else // Normal gameplay (and yes, there is a glitch to get fast style in trial)
+				{
+					ent->client->ps.saberAnimLevel = FORCE_LEVEL_2;
+				}
 			}
 			cg.saberAnimLevelPending = ent->client->ps.saberAnimLevel;
 			if ( ent->client->sess.missionStats.weaponUsed[WP_SABER] <= 0 )
@@ -449,14 +489,75 @@ void WP_SaberInitBladeData( gentity_t *ent )
 		if ( ent->client->NPC_class == CLASS_DESANN )
 		{//longer saber
 			ent->client->ps.saberLengthMax = 48;
+			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer)
+			{
+				if (cg_enableRandSaberLength.integer)
+				{
+					uniform_int_distribution<int> lengthDist(1, 180);
+					int rng = lengthDist(rngRandoEnhancements);
+					ent->client->ps.saberLengthMax = rng + 12; // Range of 25% to 400% of initial value
+				}
+				
+				if (cg_enableRandSaberColor.integer)
+				{
+					uniform_int_distribution<int> colorDist(0, 5);
+					int rng = colorDist(rngRandoEnhancements);
+					ent->client->ps.saberColor = (saber_colors_t)rng;
+				}
+			}
 		}
 		else if ( ent->client->NPC_class == CLASS_REBORN )
 		{//shorter saber
 			ent->client->ps.saberLengthMax = 32;
+			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer)
+			{
+				if (cg_enableRandSaberLength.integer)
+				{
+					uniform_int_distribution<int> lengthDist(1, 120);
+					int rng = lengthDist(rngRandoEnhancements);
+					ent->client->ps.saberLengthMax = rng + 8; // Range of 25% to 400% of initial value
+				}
+
+				if (cg_enableRandSaberColor.integer)
+				{
+					uniform_int_distribution<int> colorDist(0, 5);
+					int rng = colorDist(rngRandoEnhancements);
+					ent->client->ps.saberColor = (saber_colors_t)rng;
+				}
+			}
 		}
 		else
 		{//standard saber length
-			ent->client->ps.saberLengthMax = 40;
+			ent->client->ps.saberLengthMax = 40; // Default
+			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer)
+			{
+				if (ent->client->NPC_class != CLASS_KYLE) // Since it's at map load, and all npc are generated here, we may use rand()
+				{
+					if (cg_enableRandSaberLength.integer)
+					{
+						uniform_int_distribution<int> lengthDist(1, 150);
+						int rng = lengthDist(rngRandoEnhancements);
+						ent->client->ps.saberLengthMax = rng + 10; // Range of 25% to 400% of initial value
+					}
+
+					if (cg_enableRandSaberColor.integer)
+					{
+						uniform_int_distribution<int> colorDist(0, 5);
+						int rng = colorDist(rngRandoEnhancements);
+						ent->client->ps.saberColor = (saber_colors_t)rng;
+					}
+				}
+				else // That's Kyle, when drawing the saber might as well use the current time for the saber lenght
+				{
+					if (cg_enableRandSaberLength.integer) ent->client->ps.saberLengthMax = level.framenum % 151 + 10; // Range of 25% to 400% of initial value
+					if (cg_enableRandSaberColor.integer)
+					{
+						uniform_int_distribution<int> colorDist(0, 5);
+						int rng = colorDist(rngRandoEnhancements);
+						ent->client->ps.saberColor = (saber_colors_t)rng;
+					}
+				}
+			}
 		}
 
 		if ( ent->client->ps.saberEntityNum <= 0 || ent->client->ps.saberEntityNum >= ENTITYNUM_WORLD )
@@ -4866,6 +4967,24 @@ void WP_SaberStartMissileBlockCheck( gentity_t *self, usercmd_t *ucmd  )
 	trace_t		trace;
 	vec3_t		traceTo, entDir;
 
+	//I am one of the end guys on ns_starpad and have to be killed with a turret, so if I block the game is softlocked
+	if (cg_enableRandomizer.integer && !Q_stricmp(level.mapname, "ns_starpad")
+		&& self->targetname && !Q_strncmp(self->targetname, "end_thug", 8)
+		|| cg_enableRandomizer.integer && !Q_stricmp(level.mapname, "ns_starpad")
+		&& self->targetname && !Q_strncmp(self->targetname, "reelo_thug", 10)
+		|| cg_enableRandomizer.integer && !Q_stricmp(level.mapname, "ns_starpad")
+		&& self->targetname && !Q_strncmp(self->targetname, "bea", 3)) {
+		// Excessive, but disable saber defense at each check
+		self->client->ps.forcePowersKnown &= ~(1 << FP_SABER_DEFENSE); // Remove the bit
+		self->client->ps.forcePowerLevel[FP_SABER_DEFENSE] = FORCE_LEVEL_0;
+		return;
+	}
+	if (cg_enableRandomizer.integer && !Q_stricmp(level.mapname, "artus_topside") && self->targetname && !Q_strncmp(self->targetname, "cinematic9_desann", 17))
+	{
+		// Excessive, but give this NPC saber defense 3 at each check
+		self->client->ps.forcePowersKnown |= (1 << FP_SABER_DEFENSE);
+		self->client->ps.forcePowerLevel[FP_SABER_DEFENSE] = FORCE_LEVEL_3;
+	}
 
 	if ( self->client->ps.weapon != WP_SABER )
 	{
@@ -8598,24 +8717,45 @@ void WP_InitForcePowers( gentity_t *ent )
 	}
 	else
 	{//player
-		ent->client->ps.forcePowersKnown = ( 1 << FP_HEAL )|( 1 << FP_LEVITATION )|( 1 << FP_SPEED )|( 1 << FP_PUSH )|( 1 << FP_PULL )|( 1 << FP_TELEPATHY )|( 1 << FP_GRIP )|( 1 << FP_LIGHTNING)|( 1 << FP_SABERTHROW)|( 1 << FP_SABER_DEFENSE )|( 1 << FP_SABER_OFFENSE );
-		ent->client->ps.forcePower = ent->client->ps.forcePowerMax = FORCE_POWER_MAX;
-		ent->client->ps.forcePowerRegenDebounceTime = 0;
-		ent->client->ps.forcePowerLevel[FP_HEAL] = FORCE_LEVEL_2;
-		ent->client->ps.forcePowerLevel[FP_LEVITATION] = FORCE_LEVEL_2;
-		ent->client->ps.forcePowerLevel[FP_PUSH] = FORCE_LEVEL_1;
-		ent->client->ps.forcePowerLevel[FP_PULL] = FORCE_LEVEL_1;
-		ent->client->ps.forcePowerLevel[FP_SABERTHROW] = FORCE_LEVEL_2;
-		ent->client->ps.forcePowerLevel[FP_SPEED] = FORCE_LEVEL_2;
-		ent->client->ps.forcePowerLevel[FP_LIGHTNING] = FORCE_LEVEL_1;
-		ent->client->ps.forcePowerLevel[FP_TELEPATHY] = FORCE_LEVEL_2;
-		ent->client->ps.forcePowerLevel[FP_SABER_DEFENSE] = FORCE_LEVEL_3;
-		ent->client->ps.forcePowerLevel[FP_SABER_OFFENSE] = FORCE_LEVEL_3;
+		//Don't initialise us with a random set of force powers please
+		if (cg_enableRandomizer.integer) {
+			//Clear all force powers
+			for (int i = 0; i < NUM_FORCE_POWERS; i++) {
+				ent->client->ps.forcePowerLevel[i] = 0;
+			}
+			//If using easy start, apply force push
+			if (cg_enableRandomizerEnhancements.integer && cg_startWithPush.integer && !Q_stricmp(level.mapname, "kejim_post")) {
+				ent->client->ps.forcePowersKnown = (0 << FP_HEAL) | (0 << FP_LEVITATION) | (0 << FP_SPEED) | (1 << FP_PUSH) | (0 << FP_PULL) | (0 << FP_TELEPATHY) | (0 << FP_GRIP) | (0 << FP_LIGHTNING) | (0 << FP_SABERTHROW) | (0 << FP_SABER_DEFENSE) | (0 << FP_SABER_OFFENSE);
+				ent->client->ps.forcePowerLevel[FP_PUSH] = 1;
+				ent->client->ps.forcePower = FORCE_POWER_MAX;
+			}
+			else {
+				//Don't need to worry about overwriting force powers from save here as they are applied later
+				ent->client->ps.forcePowersKnown = (0 << FP_HEAL) | (0 << FP_LEVITATION) | (0 << FP_SPEED) | (0 << FP_PUSH) | (0 << FP_PULL) | (0 << FP_TELEPATHY) | (0 << FP_GRIP) | (0 << FP_LIGHTNING) | (0 << FP_SABERTHROW) | (0 << FP_SABER_DEFENSE) | (0 << FP_SABER_OFFENSE);
+			}
+			ent->client->ps.forcePowerMax = FORCE_POWER_MAX;
+			ent->client->ps.forcePowerRegenDebounceTime = 0;
+		}
+		else {
+			ent->client->ps.forcePowersKnown = (1 << FP_HEAL) | (1 << FP_LEVITATION) | (1 << FP_SPEED) | (1 << FP_PUSH) | (1 << FP_PULL) | (1 << FP_TELEPATHY) | (1 << FP_GRIP) | (1 << FP_LIGHTNING) | (1 << FP_SABERTHROW) | (1 << FP_SABER_DEFENSE) | (1 << FP_SABER_OFFENSE);
+			ent->client->ps.forcePower = ent->client->ps.forcePowerMax = FORCE_POWER_MAX;
+			ent->client->ps.forcePowerRegenDebounceTime = 0;
+			ent->client->ps.forcePowerLevel[FP_HEAL] = FORCE_LEVEL_2;
+			ent->client->ps.forcePowerLevel[FP_LEVITATION] = FORCE_LEVEL_2;
+			ent->client->ps.forcePowerLevel[FP_PUSH] = FORCE_LEVEL_1;
+			ent->client->ps.forcePowerLevel[FP_PULL] = FORCE_LEVEL_1;
+			ent->client->ps.forcePowerLevel[FP_SABERTHROW] = FORCE_LEVEL_2;
+			ent->client->ps.forcePowerLevel[FP_SPEED] = FORCE_LEVEL_2;
+			ent->client->ps.forcePowerLevel[FP_LIGHTNING] = FORCE_LEVEL_1;
+			ent->client->ps.forcePowerLevel[FP_TELEPATHY] = FORCE_LEVEL_2;
+			ent->client->ps.forcePowerLevel[FP_SABER_DEFENSE] = FORCE_LEVEL_3;
+			ent->client->ps.forcePowerLevel[FP_SABER_OFFENSE] = FORCE_LEVEL_3;
+		}
 		if ( ent->NPC )
 		{//???
 			ent->client->ps.forcePowerLevel[FP_GRIP] = FORCE_LEVEL_3;
 		}
-		else
+		else if (!cg_enableRandomizer.integer)
 		{
 			ent->client->ps.forcePowerLevel[FP_GRIP] = FORCE_LEVEL_2;
 		}

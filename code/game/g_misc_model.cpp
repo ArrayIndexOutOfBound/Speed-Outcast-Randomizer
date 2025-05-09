@@ -8,6 +8,11 @@
 
 extern cvar_t *g_spskill;
 
+// Randomizer / Posto : funcitons
+extern int GetRandomizedWeapon();
+extern int GetRandomizedAmmo();
+extern vmCvar_t	cg_enableRandomizer;
+
 //
 // Helper functions
 //
@@ -627,6 +632,11 @@ void spawn_rack_goods( gentity_t *ent )
 			//	the gun so we don't put the pack on the same spot..so pick either the left or right side
 			pos = ( random() > .5 ) ? -1 : 1;
 
+			// Posto : Randomize the weapon here
+			if (cg_enableRandomizer.integer)
+			{
+				//it = FindItemForWeapon((weapon_t)GetRandomizedWeapon());
+			}
 			GunRackAddItem( it, ent->s.origin, ent->s.angles, crandom() * 2, ( random() * 6 + 4 ) * pos, v_off );
 		}
 	}
@@ -645,6 +655,7 @@ void spawn_rack_goods( gentity_t *ent )
 			pos *= -1;
 		}
 
+		// Posto : we should leave health as is, it would make the game too hard without any garanted health
 		GunRackAddItem( health, ent->s.origin, ent->s.angles, crandom() * 0.5f, ( random() * 4 + 4 ) * pos, 24 );
 	}
 

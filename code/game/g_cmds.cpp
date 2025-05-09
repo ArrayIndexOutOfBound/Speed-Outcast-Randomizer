@@ -1030,8 +1030,10 @@ void ClientCommand( int clientNum ) {
 		return;
 	}
 	
-	if (Q_stricmp (cmd, "give") == 0)
-		Cmd_Give_f (ent);
+	// Posto : maybe adding a command is here ? No, this is called later
+	if (Q_stricmp(cmd, "give") == 0)
+		Cmd_Give_f(ent);
+	
 	else if (Q_stricmp (cmd, "god") == 0)
 		Cmd_God_f (ent);
 	else if (Q_stricmp (cmd, "undying") == 0)

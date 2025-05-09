@@ -693,6 +693,33 @@ extern	vmCvar_t		cg_strafeHelperColorSpeedG;
 extern	vmCvar_t		cg_strafeHelperColorSpeedB;
 extern	vmCvar_t		cg_strafeHelperColorSpeedA;
 
+// Additions for Randomizer
+extern vmCvar_t			cg_enableRandomizer;
+extern vmCvar_t			cg_enableRandomizerEnhancements;
+extern vmCvar_t			cg_drawSeed;
+extern vmCvar_t			cg_setSeed;
+// Better rng for randomizer : uniform distribution.
+#include <random>
+extern mt19937 rngRandoBase;
+extern mt19937 rngRandoEnhancements;
+extern uniform_int_distribution<int> distItems;
+extern uniform_int_distribution<int> distNPC;
+extern uniform_int_distribution<int> distNPC_H;
+// Randomizer - evil mode
+extern vmCvar_t			cg_enableRandSaberStyle;
+extern vmCvar_t			cg_enableRandSaberLength;
+extern vmCvar_t			cg_enableRandSaberColor;
+extern vmCvar_t			cg_enableRandJumpHeight;
+extern vmCvar_t			cg_enableRandJumpStrength;
+extern vmCvar_t			cg_enableRandLanguageVoices;
+extern vmCvar_t			cg_enableRandTextures;
+extern vmCvar_t			cg_enableRandWeaponProjectile;
+extern vmCvar_t			cg_enableSafeStart;
+extern vmCvar_t			cg_startWithPush;
+extern vmCvar_t			cg_bonusJanHealth;
+// Additions for Base Game fixes (ex : artus_mine crates to get all pickups)
+extern vmCvar_t			cg_baseGameFixes;
+
 void CG_NewClientinfo( int clientNum );
 //
 // cg_main.c

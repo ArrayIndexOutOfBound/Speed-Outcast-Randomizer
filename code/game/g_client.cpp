@@ -14,6 +14,17 @@ extern void G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *weaponMod
 extern qboolean	CheatsOk( gentity_t *ent );
 extern vmCvar_t	cg_thirdPersonAlpha;
 
+//  Randomizer
+#include <random>
+extern int GetRandomizedWeapon();
+extern vmCvar_t	cg_enableRandomizer;
+extern vmCvar_t	cg_enableRandomizerEnhancements;
+extern vmCvar_t	cg_startWithPush;
+extern vmCvar_t	cg_enableRandKyleHealth;
+extern mt19937 rngRandoEnhancements;
+extern SavedGameJustLoaded_e g_eSavedGameJustLoaded;
+extern vmCvar_t memorized_kyle_health;
+
 // g_client.c -- client functions that don't happen every frame
 
 float DEFAULT_MINS_0 = -16;
@@ -433,11 +444,43 @@ void ClientUserinfoChanged( int clientNum ) {
 		}
 	}
 
-	// set max health
-	client->pers.maxHealth = atoi( Info_ValueForKey( userinfo, "handicap" ) );
-	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > 100 ) {
-		client->pers.maxHealth = 100;
+	// Randomizer : max health changes for Kyle / player
+	if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer && cg_enableRandKyleHealth.integer)
+	{
+		// Set it only during kejim_post, eNo and eReset are valid
+		if (!strcmp(level.mapname, "kejim_post") && (g_eSavedGameJustLoaded == eNO || g_eSavedGameJustLoaded == eRESET))
+		{
+			int base_health = 100;
+			uniform_real_distribution<float> NPC_Speed_Dist(33, 300);
+			float rng = NPC_Speed_Dist(rngRandoEnhancements) / 100; //Get a multiplier value between 0.33 and 3
+			client->pers.maxHealth = (int)((float)base_health * rng);
+			ent->max_health = client->pers.maxHealth;
+			memorized_kyle_health.integer = client->pers.maxHealth;
+			memorized_kyle_health.value = client->pers.maxHealth;
+			string buffer = to_string(client->pers.maxHealth);
+			for (int i = 0 ; i < buffer.size() ; i++)
+			{
+				memorized_kyle_health.string[i] = buffer[i];
+			}
+			memorized_kyle_health.string[buffer.size()] = '\0';
+			memorized_kyle_health.modificationCount++;
+			extern void	cgi_Cvar_Set(const char* var_name, const char* value);
+			cgi_Cvar_Set("memorized_kyle_health", memorized_kyle_health.string);
+		}
+		else
+		{
+			client->pers.maxHealth = memorized_kyle_health.integer;
+		}
 	}
+	else // Normal game, non randomizer
+	{
+		// set max health
+		client->pers.maxHealth = atoi(Info_ValueForKey(userinfo, "handicap"));
+		if (client->pers.maxHealth < 1 || client->pers.maxHealth > 100) {
+			client->pers.maxHealth = 100;
+		}
+	}
+
 	client->ps.stats[STAT_MAX_HEALTH] = client->pers.maxHealth;
 
 	// sounds
@@ -646,7 +689,7 @@ Player_RestoreFromPrevLevel
   Argument		: gentity_t *ent
 ============
 */
-void Player_RestoreFromPrevLevel(gentity_t *ent)
+void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eSaveGameJustLoaded)
 {
 	gclient_t	*client = ent->client;
 	int			i;
@@ -679,7 +722,27 @@ void Player_RestoreFromPrevLevel(gentity_t *ent)
 								&client->ps.saberLockEnemy,
 								&client->ps.saberLockTime
 					);
-			ent->health = client->ps.stats[STAT_HEALTH];
+			// Randomizer : max health changes for Kyle / player
+			if (cg_enableRandomizer.integer && cg_enableRandomizerEnhancements.integer && cg_enableRandKyleHealth.integer)
+			{
+				// Set it only during kejim_post, eNo and eReset are valid
+				// If you do a eReset during post, for some reason maxhealth is not cleared properly
+				if (!strcmp(level.mapname, "kejim_post") && (g_eSavedGameJustLoaded == eNO || g_eSavedGameJustLoaded == eRESET))
+				{
+					ent->max_health = client->ps.stats[STAT_MAX_HEALTH];
+					client->pers.maxHealth = client->ps.stats[STAT_MAX_HEALTH];
+				}
+				else // We good, it's not a reset in kejim_post
+				{
+					ent->health = client->ps.stats[STAT_HEALTH];
+				}
+
+			} // Base game
+			else
+			{
+				ent->health = client->ps.stats[STAT_HEALTH];
+			}
+			
 
 // slight issue with ths for the moment in that although it'll correctly restore angles it doesn't take into account
 //	the overall map orientation, so (eg) exiting east to enter south will be out by 90 degrees, best keep spawn angles for now
@@ -728,6 +791,25 @@ void Player_RestoreFromPrevLevel(gentity_t *ent)
 			  var = strtok( NULL, " " );
 			}
 			assert (i==NUM_FORCE_POWERS);
+
+			//On resetting by loading auto_kejim_post
+			if (cg_enableRandomizer.integer && eSaveGameJustLoaded == eRESET) {
+				//If start with push enabled then apply - have to handle it here so it applies without having to go to menu
+				if (cg_enableRandomizerEnhancements.integer && cg_startWithPush.integer) {
+					client->ps.forcePowerLevel[FP_PUSH] = 1;
+					client->ps.forcePowersKnown = (0 << FP_HEAL) | (0 << FP_LEVITATION) | (0 << FP_SPEED) | (1 << FP_PUSH) | (0 << FP_PULL) | (0 << FP_TELEPATHY) | (0 << FP_GRIP) | (0 << FP_LIGHTNING) | (0 << FP_SABERTHROW) | (0 << FP_SABER_DEFENSE) | (0 << FP_SABER_OFFENSE);
+					client->ps.forcePower = FORCE_POWER_MAX;
+				}
+				else if (client->ps.forcePowerLevel[FP_PUSH] > 0)
+				{
+					//Clear all force powers - necessary because the initial apply for startWithPush sets it on auto_kejim_post so we have to handle it here
+					for (int i = 0; i < NUM_FORCE_POWERS; i++) {
+						ent->client->ps.forcePowerLevel[i] = 0;
+					}
+					client->ps.forcePowersKnown = (0 << FP_HEAL) | (0 << FP_LEVITATION) | (0 << FP_SPEED) | (0 << FP_PUSH) | (0 << FP_PULL) | (0 << FP_TELEPATHY) | (0 << FP_GRIP) | (0 << FP_LIGHTNING) | (0 << FP_SABERTHROW) | (0 << FP_SABER_DEFENSE) | (0 << FP_SABER_OFFENSE);
+				}
+			}
+			
 
 			client->ps.forcePowerMax = FORCE_POWER_MAX;
 			client->ps.forceGripEntityNum = ENTITYNUM_NONE;
@@ -1519,6 +1601,7 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 		else
 		{
 			G_LoadAnimFileSet( ent, "kyle" );
+			// Posto : maybe it's here that we can 'randomize' how we look like ? Not being Kyle could be funny
 			G_SetSkin( ent, "kyle", NULL );
 		}
 	}
@@ -1597,7 +1680,17 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 
 		// give default weapons
 		client->ps.stats[STAT_WEAPONS] = ( 1 << WP_NONE );
-		client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_BRYAR_PISTOL );	//these are precached in g_items, ClearRegisteredItems()
+		// Posto : Hey, we can randomize our first weapon !
+		if (cg_enableRandomizer.integer)
+		{
+			// Inconsistent seed with that
+			// client->ps.stats[STAT_WEAPONS] |= (1 << (weapon_t)(GetRandomizedWeapon()));
+			client->ps.stats[STAT_WEAPONS] |= (1 << WP_BRYAR_PISTOL);	//these are precached in g_items, ClearRegisteredItems()
+		}
+		else
+		{
+			client->ps.stats[STAT_WEAPONS] |= (1 << WP_BRYAR_PISTOL);	//these are precached in g_items, ClearRegisteredItems()
+		}
 		client->ps.inventory[INV_ELECTROBINOCULARS] = 1;
 
 		// always give the bryar pistol, but we have to give EITHER the saber or the stun baton..never both
@@ -1645,6 +1738,7 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 			G_KillBox( ent );
 			gi.linkentity (ent);
 			// force the base weapon up
+			// Posto : here's why we are loading kejim_base with the Bryal Pistol, might want to work on that
 			client->ps.weapon = WP_BRYAR_PISTOL;
 			client->ps.weaponstate = WEAPON_READY;
 		}
@@ -1667,7 +1761,7 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 			(spawnPoint->spawnflags&1) ||		// KEEP_PREV
 			g_qbLoadTransition == qtrue )
 		{
-			Player_RestoreFromPrevLevel(ent);
+			Player_RestoreFromPrevLevel(ent, eSavedGameJustLoaded);
 		}
 		
 		
@@ -1678,6 +1772,7 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 		if (eSavedGameJustLoaded == eNO)
 		{
 			ent->weaponModel = -1;
+			// Posto : maybe it's here that we can 'randomize' how we look like ? Not being Kyle could be funny
 			G_SetG2PlayerModel( ent, "kyle", NULL, NULL, NULL );
 		}
 		else
@@ -1690,7 +1785,10 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 			else
 			{
 				G_LoadAnimFileSet( ent, "kyle" );
+				//G_LoadAnimFileSet(ent, "jan");
+				// Posto : maybe it's here that we can 'randomize' how we look like ? Not being Kyle could be funny
 				G_SetSkin( ent, "kyle", NULL );
+				//G_SetSkin(ent, "jan", NULL);
 			}
 		}
 		/*
@@ -1717,7 +1815,7 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 		ICARUS_FreeEnt( ent );	//FIXME: This shouldn't need to be done...?
 		ICARUS_InitEnt( ent );
 
-		if ( spawnPoint->spawnflags & 64 )
+		if ( spawnPoint->spawnflags & 64 ) // Posto : this is the case in yavin_temple
 		{//player starts with absolutely no weapons
 			ent->client->ps.stats[STAT_WEAPONS] = ( 1 << WP_NONE );
 			ent->client->ps.ammo[weaponData[WP_NONE].ammoIndex] = 32000;	// checkme	

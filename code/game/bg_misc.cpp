@@ -183,6 +183,8 @@ FindItemForWeapon
 ===============
 */
 gitem_t	*FindItemForWeapon( weapon_t weapon ) {
+	// Posto : this is called during map load, to know what kind of weapon is on the ground (ex : cairn_dock1).
+	
 	int		i;
 
 	for ( i = 1 ; i < bg_numItems ; i++ ) {
@@ -198,6 +200,7 @@ gitem_t	*FindItemForWeapon( weapon_t weapon ) {
 //----------------------------------------------
 gitem_t	*FindItemForInventory( int inv ) 
 {
+	// Posto : when called in kejim_post, only bacta and binocular is returned; while on cairndock_1, a lot of things is returned (sentry, seeker).
 	int		i;
 	gitem_t	*it;
 
@@ -252,7 +255,9 @@ gitem_t	*FindItem( const char *className ) {
 
 	for ( i = 1 ; i < bg_numItems ; i++ ) {
 		if ( !Q_stricmp( bg_itemlist[i].classname, className ) )
+		{
 			return &bg_itemlist[i];
+		}
 	}
 
 	return NULL;

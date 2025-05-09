@@ -15,6 +15,9 @@
 #include "objectives.h"
 #include "../cgame/cg_local.h"	// yeah I know this is naughty, but we're shipping soon...
 
+#include <string>
+#include "../randomizer/RandomizerUtils.h"
+
 extern CNavigator		navigator;
 static int				navCalcPathTime = 0;
 int		eventClearTime = 0;
@@ -476,6 +479,8 @@ void G_FindTeams( void ) {
 			continue;
 		if (e->flags & FL_TEAMSLAVE)
 			continue;
+		if (e->spawnflags & SFB_CINEMATIC) //Ignore cinematic NPCs
+			continue;
 		e->teammaster = e;
 		c++;
 		c2++;
@@ -567,6 +572,7 @@ void G_InitCvars( void ) {
 	g_iscensored = gi.cvar( "ui_iscensored", "0", CVAR_ARCHIVE|CVAR_ROM|CVAR_INIT|CVAR_CHEAT|CVAR_NORESTART );
 }
 
+
 /*
 ============
 InitGame
@@ -587,6 +593,18 @@ void InitGame(  const char *mapname, const char *spawntarget, int checkSum, cons
 {
 	int		i;
 
+	//Reset randomiser seed on new load of kejim_post
+
+	if (cg_enableRandomizer.integer)
+	{
+		if ( (!Q_stricmp(mapname, "kejim_post") && eSavedGameJustLoaded == eNO) || eSavedGameJustLoaded == eRESET) {
+			RandomizerUtils::RegenerateSeed();
+		}
+		char	seed[MAX_STRING_CHARS];
+		gi.Cvar_VariableStringBuffer("cg_setSeed", seed, sizeof(seed));
+		RandomizerUtils::seedRandomizer(seed, mapname);
+	}
+	
 	giMapChecksum = checkSum;
 	g_eSavedGameJustLoaded = eSavedGameJustLoaded;
 	g_qbLoadTransition = qbLoadTransition;
@@ -595,7 +613,8 @@ void InitGame(  const char *mapname, const char *spawntarget, int checkSum, cons
 	gi.Printf ("gamename: %s\n", GAMEVERSION);
 	gi.Printf ("gamedate: %s\n", __DATE__);
 
-	srand( randomSeed );
+	// Randomizer should control seeding, in normal game it's the same code
+	if(!cg_enableRandomizer.integer) srand( randomSeed ); 
 
 	G_InitCvars();
 
@@ -670,12 +689,16 @@ void InitGame(  const char *mapname, const char *spawntarget, int checkSum, cons
 
 	gi.Printf ("-----------------------------------\n");
 
+	//Removed below so as not to interfere with consistent randomizer results
 	//randomize the rand functions
-	byte num_calls = (byte)timeGetTime();
-
-	for(i = 0; i < (int)num_calls; i++)
+	if (!cg_enableRandomizer.integer)
 	{
-		rand();
+		byte num_calls = (byte)timeGetTime();
+
+		for (i = 0; i < (int)num_calls; i++)
+		{
+			rand();
+		}
 	}
 
 	if ( navCalculatePaths )
@@ -962,7 +985,7 @@ void G_RunThink (gentity_t *ent)
 	{
 		goto runicarus;
 	}
-	
+
 	ent->nextthink = 0;
 	if ( ent->e_ThinkFunc == thinkF_NULL )	// actually you don't need this if I check for it in the next function -slc
 	{
@@ -1272,7 +1295,7 @@ void G_RunFrame( int levelTime ) {
 			continue;
 		
 		ent = &g_entities[i];
-	
+
 		if ( ent->waypoint != WAYPOINT_NONE 
 			&& ent->noWaypointTime < level.time )
 		{

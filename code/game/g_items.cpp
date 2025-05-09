@@ -8,6 +8,10 @@
 #include "g_items.h"
 #include "wp_saber.h"
 
+// Randomizer : proper uniform numbers
+#include <random>
+extern mt19937 rngRandoBase;
+
 extern qboolean	missionInfo_Updated;
 
 extern void CrystalAmmoSettings(gentity_t *ent);
@@ -20,6 +24,11 @@ extern qboolean PM_InGetUp( playerState_t *ps );
 extern	cvar_t	*g_spskill;
 
 #define MAX_BACTA_HEAL_AMOUNT		25
+
+// Randomizer
+extern	vmCvar_t		cg_enableRandomizer;
+// Base game fixes
+extern	vmCvar_t		cg_baseGameFixes;
 
 /*
 
@@ -264,6 +273,38 @@ int Pickup_Weapon (gentity_t *ent, gentity_t *other)
 	if ( ent->item->giTag == WP_SABER && !hadWeapon )
 	{
 		WP_SaberInitBladeData( other );
+		if (cg_enableRandomizer.integer) // In case we get a saber before trial, get defense 1 and offense 1 so that the saber won't have bugged behavior.
+		{
+			if ((strcmp(level.mapname,"yavin_trial") != 0 )) 
+			{
+				// We are getting a saber before trial, but by doing that we lock on medium style
+				// The only way to bypass this is to act like get_saber script : actually getting the saber THEN giving the force power
+				other->client->ps.forcePowerLevel[FP_SABER_OFFENSE] = 1;
+				other->client->ps.forcePowerLevel[FP_SABER_DEFENSE] = 1;
+
+				other->client->ps.forcePowersKnown |= (1 << FP_SABER_OFFENSE);
+				other->client->ps.forcePowersKnown |= (1 << FP_SABER_DEFENSE);
+
+				missionInfo_Updated = qtrue;	// Activate flashing text
+
+				gi.cvar_set("cg_updatedDataPadForcePower1", va("%d", FP_SABER_OFFENSE + 1)); // The +1 is offset in the print routine. 
+				cg_updatedDataPadForcePower1.integer = FP_SABER_OFFENSE + 1;
+				gi.cvar_set("cg_updatedDataPadForcePower2", "0"); // The +1 is offset in the print routine. 
+				cg_updatedDataPadForcePower2.integer = 0;
+				gi.cvar_set("cg_updatedDataPadForcePower3", "0"); // The +1 is offset in the print routine. 
+				cg_updatedDataPadForcePower3.integer = 0;
+
+				gi.cvar_set("cg_updatedDataPadForcePower1", va("%d", FP_SABER_DEFENSE + 1)); // The +1 is offset in the print routine. 
+				cg_updatedDataPadForcePower1.integer = FP_SABER_DEFENSE + 1;
+				gi.cvar_set("cg_updatedDataPadForcePower2", "0"); // The +1 is offset in the print routine. 
+				cg_updatedDataPadForcePower2.integer = 0;
+				gi.cvar_set("cg_updatedDataPadForcePower3", "0"); // The +1 is offset in the print routine. 
+				cg_updatedDataPadForcePower3.integer = 0;
+
+
+
+			}
+		}
 	}
 
 	if ( other->s.number )
@@ -376,6 +417,11 @@ int Pickup_Holocron( gentity_t *ent, gentity_t *other )
 {
 	int forcePower = ent->item->giTag;
 	int forceLevel = ent->count;
+	//Always increment
+	if (cg_enableRandomizer.integer) {
+		if (other->client->ps.forcePowerLevel[forcePower] < 3)
+		forceLevel = other->client->ps.forcePowerLevel[forcePower] + 1;
+	}
 	// check if out of range
 	if( forceLevel < 0 || forceLevel >= NUM_FORCE_POWER_LEVELS )
 	{
@@ -766,6 +812,15 @@ void Use_Item( gentity_t *ent, gentity_t *other, gentity_t *activator )
 
 //======================================================================
 
+void updateItemMinsMaxs(gitem_t *item) {
+	item->mins[0] = item->mins[0] * 1.2;
+	item->mins[1] = item->mins[1] * 1.2;
+	item->mins[2] = item->mins[2] * 1.2;
+	item->maxs[0] = item->maxs[0] * 1.2;
+	item->maxs[1] = item->maxs[1] * 1.2;
+	item->maxs[2] = item->maxs[2] * 1.2;
+}
+
 /*
 ================
 FinishSpawningItem
@@ -777,6 +832,7 @@ free fall from their spawn points
 #ifndef FINAL_BUILD
 extern int delayedShutDown;
 #endif
+// Posto / Randomizer : might want to check when this is called, to randomize even items on the ground (shield and bacta are going here)
 void FinishSpawningItem( gentity_t *ent ) {
 	trace_t		tr;
 	vec3_t		dest;
@@ -790,6 +846,149 @@ void FinishSpawningItem( gentity_t *ent ) {
 		{
 			break;
 		}
+	}
+
+	// Base game fixe : in order to get all pickups in ns_starpad, we have to change the two metallic ammo to something else
+	if (cg_baseGameFixes.integer)
+	{
+		if ((strcmp(level.mapname, "ns_starpad")) == 0)
+		{
+			if (item->giTag == 4 && item->giType == 2) // Metal ammo
+			{
+				item = bg_itemlist + ITM_AMMO_POWERCELL_PICKUP;
+				//item = bg_itemlist + ITM_BRYAR_PISTOL_PICKUP;
+				ent->classname == item->classname;
+				ent->item = item;
+			}
+		}
+	}
+	
+
+	// Randomizer : after getting the item from bg_itemlist, we can finally randomize it here, because every items goes into this function and not only "gun rack"
+	gitem_t* itemNew;
+	gitem_t* itemOld; // So that we have a copy of this, for debugging purpose
+	if (cg_enableRandomizer.integer)
+	{
+		itemOld = item;
+		uniform_int_distribution<int> itemDist(1,53);
+		int rng = itemDist(rngRandoBase);
+		itemNew = bg_itemlist + rng;
+		// No baton, no strange items.
+		if ((strcmp(level.mapname, "yavin_trial")))
+		{
+			// No strange weapon, 'shield' and 'datapad'
+			while ((itemNew->giTag >= 13 && itemNew->giTag <= 22) || (itemNew->giTag == 43) || (itemNew->giTag == 45))
+			{
+				rng = itemDist(rngRandoBase);
+				itemNew = bg_itemlist + rng;
+			}
+			if (itemNew->giType == IT_HOLOCRON || (itemNew->giTag == WP_SABER && itemNew->giType == IT_WEAPON)) // In case we roll a saber or an holocron, we shall roll a 33/66 to keep the item or not
+			{
+				uniform_int_distribution<int> holocronDist(0, 2);
+				rng = holocronDist(rngRandoBase);
+				if (!rng) // We rolled a 0, reroll once
+				{
+					rng = itemDist(rngRandoBase);
+					// No strange weapon, 'shield' and 'datapad'
+					while ((itemNew->giTag >= 13 && itemNew->giTag <= 22) || (itemNew->giTag == 43) || (itemNew->giTag == 45))
+					{
+						rng = itemDist(rngRandoBase);
+						itemNew = bg_itemlist + rng;
+					}
+				}
+				// else, we rolled a >=1, we keep the saber/holocron
+
+				if (itemNew->giType == IT_HOLOCRON) ent->count = 0;
+				updateItemMinsMaxs(itemNew);
+			}
+			else
+			{
+				//Expand 'hitbox' of randomly spawned items a little so they can be picked up while partially clipped into geometry
+				//not for holocrons as their pickup range is pretty large already
+				// Posto Edit : I encountered holocron that were inside walls, so might as well update their hitbox too
+				updateItemMinsMaxs(itemNew);
+			}
+			item = itemNew;
+			ent->classname == item->classname;
+			ent->item = item;		
+		}
+		else // Don't do anything if we are in trial (or other exceptions), we CAN'T not get these force powers
+		{
+
+		}
+		
+		/*
+		IT_BAD,
+		IT_WEAPON,
+		IT_AMMO,
+		IT_ARMOR,
+		IT_HEALTH,
+		IT_HOLDABLE,
+		IT_BATTERY,
+		IT_HOLOCRON,
+		*/
+		/*ITM_NONE, // 0
+		ITM_SABER_PICKUP,
+		ITM_BRYAR_PISTOL_PICKUP,
+		ITM_BLASTER_PICKUP,
+		ITM_DISRUPTOR_PICKUP,
+		ITM_BOWCASTER_PICKUP,
+		ITM_REPEATER_PICKUP,
+		ITM_DEMP2_PICKUP,
+		ITM_FLECHETTE_PICKUP,
+		ITM_ROCKET_LAUNCHER_PICKUP,
+		ITM_THERMAL_DET_PICKUP,
+		ITM_TRIP_MINE_PICKUP,
+		ITM_DET_PACK_PICKUP,
+		ITM_STUN_BATON_PICKUP, // 13
+		
+		ITM_BOT_LASER_PICKUP,
+		ITM_EMPLACED_GUN_PICKUP,
+		ITM_TURRET_PICKUP,
+		ITM_MELEE,
+		ITM_ATST_MAIN_PICKUP,
+		ITM_ATST_SIDE_PICKUP,
+		ITM_TIE_FIGHTER_PICKUP,
+		ITM_RAPID_FIRE_CONC_PICKUP,
+		ITM_BLASTER_PISTOL_PICKUP, // 22
+		
+		ITM_AMMO_FORCE_PICKUP,
+		ITM_AMMO_BLASTER_PICKUP,
+		ITM_AMMO_POWERCELL_PICKUP,
+		ITM_AMMO_METAL_BOLTS_PICKUP,
+		ITM_AMMO_ROCKETS_PICKUP,
+		ITM_AMMO_EMPLACED_PICKUP,
+		ITM_AMMO_THERMAL_PICKUP,
+		ITM_AMMO_TRIPMINE_PICKUP,
+		ITM_AMMO_DETPACK_PICKUP, // 31
+		
+		ITM_FORCE_HEAL_PICKUP,
+		ITM_FORCE_LEVITATION_PICKUP,
+		ITM_FORCE_SPEED_PICKUP,
+		ITM_FORCE_PUSH_PICKUP,
+		ITM_FORCE_PULL_PICKUP,
+		ITM_FORCE_TELEPATHY_PICKUP,
+		ITM_FORCE_GRIP_PICKUP,
+		ITM_FORCE_LIGHTNING_PICKUP,
+		ITM_FORCE_SABERTHROW_PICKUP, // 40
+		
+		ITM_BATTERY_PICKUP,
+		ITM_SEEKER_PICKUP,
+		ITM_SHIELD_PICKUP,
+		ITM_BACTA_PICKUP,
+		ITM_DATAPAD_PICKUP,
+		ITM_BINOCULARS_PICKUP,
+		ITM_SENTRY_GUN_PICKUP,
+		ITM_LA_GOGGLES_PICKUP, // 48
+		
+		ITM_MEDPAK_PICKUP,
+		ITM_SHIELD_SM_PICKUP,
+		ITM_SHIELD_LRG_PICKUP,
+		ITM_GOODIE_KEY_PICKUP,
+		ITM_SECURITY_KEY_PICKUP, // 53
+		
+		ITM_NUM_ITEMS // 54
+		*/
 	}
 
 	// Set bounding box for item
@@ -853,24 +1052,27 @@ void FinishSpawningItem( gentity_t *ent ) {
 		// drop to floor
 		VectorSet( dest, ent->s.origin[0], ent->s.origin[1], MIN_WORLD_COORD );
 		gi.trace( &tr, ent->s.origin, ent->mins, ent->maxs, dest, ent->s.number, MASK_SOLID|CONTENTS_PLAYERCLIP, (EG2_Collision)0, 0 );
-		if ( tr.startsolid ) 
+		if (!cg_enableRandomizer.integer) // During normal gameplay, we have to keep this code to be as faithful to the base game
 		{
-			if ( &g_entities[tr.entityNum] != NULL )
+			if (tr.startsolid)
 			{
-				gi.Printf (S_COLOR_RED"FinishSpawningItem: removing %s startsolid at %s (in a %s)\n", ent->classname, vtos(ent->s.origin), g_entities[tr.entityNum].classname );
-			}
-			else
-			{
-				gi.Printf (S_COLOR_RED"FinishSpawningItem: removing %s startsolid at %s (in a %s)\n", ent->classname, vtos(ent->s.origin) );
-			}
-			assert( 0 && "item starting in solid");
+				if (&g_entities[tr.entityNum] != NULL)
+				{
+					gi.Printf(S_COLOR_RED"FinishSpawningItem: removing %s startsolid at %s (in a %s)\n", ent->classname, vtos(ent->s.origin), g_entities[tr.entityNum].classname);
+				}
+				else
+				{
+					gi.Printf(S_COLOR_RED"FinishSpawningItem: removing %s startsolid at %s (in a %s)\n", ent->classname, vtos(ent->s.origin));
+				}
+				assert( 0 && "item starting in solid");
 #ifndef FINAL_BUILD
 			if (!g_entities[ENTITYNUM_WORLD].s.radius){	//not a region
 				delayedShutDown = level.time + 100;
 			}
 #endif
-			G_FreeEntity( ent );
-			return;
+				G_FreeEntity(ent);
+				return;
+			}
 		}
 
 		// allow to ride movers

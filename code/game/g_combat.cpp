@@ -3431,8 +3431,27 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 
 		if ( self->NPC->tempGoal )
 		{
-			if ( self->client->NPC_class == CLASS_DESANN && !strcmp(level.mapname, "yavin_final") )
+			if ( (self->client->NPC_class == CLASS_DESANN ||
+				(cg_enableRandomizer.integer && self->script_targetname && !Q_stricmp("real_desann", self->script_targetname)))
+				&& !strcmp(level.mapname, "yavin_final"))
 			{
+				// Randomizer
+				if (cg_enableRandomizer.integer)
+				{
+					if (cg_enableRandomizerEnhancements.integer) // Another proof of the use of 'enhancements'
+					{
+						gi.Printf(S_COLOR_RED "=========================\n");
+						Com_Printf(S_COLOR_GREEN "Seed used (X): " S_COLOR_WHITE "%s\n", cg_setSeed.string);
+						gi.Printf(S_COLOR_RED "=========================\n");
+					}
+					else
+					{
+						gi.Printf(S_COLOR_RED "=========================\n");
+						Com_Printf(S_COLOR_GREEN "Seed used: " S_COLOR_WHITE "%s\n", cg_setSeed.string);
+						gi.Printf(S_COLOR_RED "=========================\n");
+					}
+				}
+
 				// final boss (desann) on final map is dead, speedrun is over
 				cgi_SpeedrunRunFinished();
 			}

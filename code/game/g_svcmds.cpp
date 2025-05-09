@@ -7,6 +7,9 @@
 #include "g_icarus.h"
 #include "wp_saber.h"
 
+//#include <..\game\NPC_spawn.cpp>
+extern void RandomizerInfoCommandCatcher(int page); // It's declared in NPC_spawn.cpp
+
 extern void Q3_SetViewEntity(int entID, const char *name);
 extern qboolean G_ClearViewEntity( gentity_t *ent );
 
@@ -922,6 +925,16 @@ qboolean	ConsoleCommand( void ) {
 	if ( Q_stricmp( cmd, "exitview" ) == 0 )
 	{
 		Svcmd_ExitView_f();
+	}
+
+	// Posto : This is caught first
+	if (Q_stricmp(cmd, "randomizer_info") == 0)
+	{
+		// After randomizer_info, we want to catch the first arg. If not set (page is a 0 size char array), send page -1 (equivalent to a help page)
+		// Does that mean that a page 0 exist ? No, if a page is not referenced, we print the help page.
+		char* page = gi.argv(1);
+		if (strlen(page)==0) RandomizerInfoCommandCatcher(-1); // Show the 'help page'
+		else RandomizerInfoCommandCatcher(atoi(page));
 	}
 	
 	return qfalse;

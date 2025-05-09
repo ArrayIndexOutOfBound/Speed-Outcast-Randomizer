@@ -38,6 +38,7 @@ extern sfxHandle_t AS_GetBModelSound( const char *name, int stage );
 extern void	AS_AddPrecacheEntry( const char *name );
 extern menuDef_t *Menus_FindByName(const char *p);
 
+extern void S_ReloadAllUsedSounds();
 /*
 ====================
 CL_GetGameState
@@ -860,6 +861,23 @@ void CL_InitCGame( void ) {
 	const char			*info;
 	const char			*mapname;
 	int		t1, t2;
+
+	/*
+	* Some sound effects stay loaded between levels e.g. Kyles jump noise
+	* To re-randomise on level change we need to clear the sound set here
+	*/
+	if (Cvar_VariableIntegerValue("cg_enableRandomizer") &&
+		Cvar_VariableIntegerValue("cg_enableRandomizerEnhancements") &&
+		Cvar_VariableIntegerValue("cg_enableRandLanguageVoices")) {
+		// Careful for memory leaks
+		S_Shutdown(); // This release the memory we were holding
+		S_Init();
+		extern qboolean	s_soundMuted;
+		s_soundMuted = qfalse;
+		S_RestartMusic();
+		S_ReloadAllUsedSounds();
+		AS_ParseSets();
+	}
 
 	t1 = Sys_Milliseconds();
 
