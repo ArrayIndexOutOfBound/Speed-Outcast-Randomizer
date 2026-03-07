@@ -49,6 +49,7 @@ void MSG_WriteByte (msg_t *sb, int c);
 void MSG_WriteShort (msg_t *sb, int c);
 void MSG_WriteLong (msg_t *sb, int c);
 void MSG_WriteString (msg_t *sb, const char *s);
+void MSG_WriteBigString(msg_t* sb, const char* s); // Demo Recording
 
 void	MSG_BeginReading (msg_t *sb);
 

@@ -1100,12 +1100,22 @@ void CL_FirstSnapshot( void ) {
 CL_SetCGameTime
 ==================
 */
+extern void CL_ReadDemoMessage(void);
 void CL_SetCGameTime( void ) {
 
 	// getting a valid frame message ends the connection process
 	if ( cls.state != CA_ACTIVE ) {
 		if ( cls.state != CA_PRIMED ) {
 			return;
+		}
+		if (clc.demoplaying) {
+			// we shouldn't get the first snapshot on the same frame
+			// as the gamestate, because it causes a bad time skip
+			if (!clc.firstDemoFrameSkipped) {
+				clc.firstDemoFrameSkipped = qtrue;
+				return;
+			}
+			CL_ReadDemoMessage();
 		}
 		if ( cl.newSnapshots ) {
 			cl.newSnapshots = qfalse;
@@ -1159,6 +1169,37 @@ void CL_SetCGameTime( void ) {
 	// make a huge adjustment
 	if ( cl.newSnapshots ) {
 		CL_AdjustTimeDelta();
+	}
+
+
+	// DEMO RECORDING
+	if (!clc.demoplaying) {
+		return;
+	}
+
+	// if we are playing a demo back, we can just keep reading
+	// messages from the demo file until the cgame definately
+	// has valid snapshots to interpolate between
+
+	// a timedemo will always use a deterministic set of time samples
+	// no matter what speed machine it is run on,
+	// while a normal demo may have different time samples
+	// each time it is played back
+	if (cl_timedemo->integer) {
+		if (!clc.timeDemoStart) {
+			clc.timeDemoStart = Sys_Milliseconds();
+		}
+		clc.timeDemoFrames++;
+		cl.serverTime = clc.timeDemoBaseTime + clc.timeDemoFrames * 50;
+	}
+
+	while (cl.serverTime >= cl.frame.serverTime) {
+		// feed another messag, which should change
+		// the contents of cl.snap
+		CL_ReadDemoMessage();
+		if (cls.state != CA_ACTIVE) {
+			return;		// end of demo
+		}
 	}
 }
 

@@ -140,6 +140,40 @@ typedef struct {
 
 	// big stuff at end of structure so most offsets are 15 bits or less
 	netchan_t	netchan;
+
+	///// ADDITION FOR DEMO RECORDING, from Quake3 source /////
+	//char		serverMessage[MAX_STRING_TOKENS];	// for display on connection dialog
+	//int			checksumFeed;				// from the server for checksum calculations
+	//char		reliableCommands[MAX_RELIABLE_COMMANDS][MAX_STRING_CHARS];
+
+	// server message (unreliable) and command (reliable) sequence
+	// numbers are NOT cleared at level changes, but continue to
+	// increase as long as the connection is valid
+	// message sequence is used by both the network layer and the
+	// delta compression layer
+	int			serverMessageSequence;
+
+	// reliable messages received from server
+	//int			serverCommandSequence;
+	int			lastExecutedServerCommand;		// last server command grabbed or executed with CL_GetServerCommand
+	//char		serverCommands[MAX_RELIABLE_COMMANDS][MAX_STRING_CHARS];
+
+	// demo information
+	char		demoName[MAX_QPATH];
+	qboolean	spDemoRecording;
+	qboolean	demorecording;
+	qboolean	demoplaying;
+	qboolean	demowaiting;	// don't record until a non-delta message is received
+	qboolean	firstDemoFrameSkipped;
+	fileHandle_t	demofile;
+#ifdef _DEBUG
+	fileHandle_t	demofileVerbose;
+#endif // _DEBUG
+	int			timeDemoFrames;		// counter of rendered frames
+	int			timeDemoStart;		// cls.realtime before first frame
+	int			timeDemoBaseTime;	// each frame will be at this time + frameNum * 50
+
+	///// ADDITION FOR DEMO RECORDING, from Quake3 source /////
 } clientConnection_t;
 
 extern	clientConnection_t clc;
@@ -284,6 +318,9 @@ extern	cvar_t	*m_side;
 extern	cvar_t	*m_filter;
 
 extern	cvar_t	*cl_activeAction;
+
+// Demo recording
+extern	cvar_t	*cl_timedemo;
 
 //=================================================
 

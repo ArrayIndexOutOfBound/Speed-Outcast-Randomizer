@@ -56,6 +56,9 @@ cvar_t	*m_forward;
 cvar_t	*m_side;
 cvar_t	*m_filter;
 
+// Demo recording
+cvar_t	*cl_timedemo;
+
 cvar_t	*cl_activeAction;
 
 cvar_t	*cl_updateInfoString;
@@ -77,6 +80,544 @@ void CL_CheckForResend( void );
 
 extern int*	 s_entityWavVol;
 extern int*	 s_entityWavVol_back;
+
+
+
+
+/*
+=======================================================================
+
+CLIENT SIDE DEMO RECORDING
+
+=======================================================================
+*/
+
+/*
+====================
+CL_WriteDemoMessage
+
+Dumps the current net message, prefixed by the length
+====================
+*/
+void CL_WriteDemoMessage(msg_t* msg, int headerBytes) {
+	int		len, swlen;
+
+	// write the packet sequence
+	len = clc.serverMessageSequence;
+	swlen = LittleLong(len);
+	FS_Write(&swlen, 4, clc.demofile);
+
+	// skip the packet sequencing information
+	len = msg->cursize - headerBytes;
+	swlen = LittleLong(len);
+	FS_Write(&swlen, 4, clc.demofile);
+	FS_Write(msg->data + headerBytes, len, clc.demofile);
+
+#ifdef _DEBUG
+	char buffer[256];
+	msg_t		bufVerbose;
+	byte		bufDataVerbose[MAX_MSGLEN];
+
+	sprintf(buffer, "%i : %s ||\n", cl.serverTime, (msg->data));
+
+	MSG_Init(&bufVerbose, bufDataVerbose, sizeof(bufDataVerbose));
+	MSG_WriteBigString(&bufVerbose, buffer);
+
+	//FS_Write(bufVerbose.data, bufVerbose.cursize, clc.demofileVerbose);
+#endif // _DEBUG
+
+}
+
+
+/*
+====================
+CL_StopRecording_f
+
+stop recording a demo
+====================
+*/
+void CL_StopRecord_f(void) {
+	int		len;
+
+	if (!clc.demorecording) {
+		Com_Printf("Not recording a demo.\n");
+		return;
+	}
+
+	// finish up
+	len = -1;
+	FS_Write(&len, 4, clc.demofile);
+	FS_Write(&len, 4, clc.demofile);
+	FS_FCloseFile(clc.demofile);
+#ifdef _DEBUG
+	FS_FCloseFile(clc.demofileVerbose);
+#endif // _DEBUG
+
+
+	clc.demofile = 0;
+	clc.demorecording = qfalse;
+	clc.spDemoRecording = qfalse;
+	Com_Printf("Stopped demo.\n");
+}
+
+/*
+==================
+CL_DemoFilename
+==================
+*/
+void CL_DemoFilename(int number, char* fileName) {
+	int		a, b, c, d;
+
+	if (number < 0 || number > 9999) {
+		Com_sprintf(fileName, MAX_OSPATH, "demo9999.tga");
+		return;
+	}
+
+	a = number / 1000;
+	number -= a * 1000;
+	b = number / 100;
+	number -= b * 100;
+	c = number / 10;
+	number -= c * 10;
+	d = number;
+
+	Com_sprintf(fileName, MAX_OSPATH, "demo%i%i%i%i"
+		, a, b, c, d);
+}
+
+/*
+====================
+CL_Record_f
+
+record <demoname>
+
+Begins recording a demo from the current position
+====================
+*/
+static char		demoName[MAX_QPATH];	// compiler bug workaround
+void CL_Record_f(void) {
+	char		name[MAX_OSPATH];
+	byte		bufData[MAX_MSGLEN];
+	msg_t		buf;
+	int			i;
+	int			len;
+	entityState_t* ent;
+	entityState_t	nullstate;
+	char* s;
+
+#ifdef _DEBUG
+	char		nameVerbose[MAX_OSPATH];
+	msg_t		bufVerbose;
+	char sV[4096]; // Can be quite big because it's verbose strings
+	byte		bufDataVerbose[MAX_MSGLEN];
+#endif // _DEBUG
+
+	if (Cmd_Argc() > 2) {
+		Com_Printf("record <demoname>\n");
+		return;
+	}
+
+	if (clc.demorecording) {
+		if (!clc.spDemoRecording) {
+			Com_Printf("Already recording.\n");
+		}
+		return;
+	}
+
+	if (cls.state != CA_ACTIVE) {
+		Com_Printf("You must be in a level to record.\n");
+		return;
+	}
+
+	// sync 0 doesn't prevent recording, so not forcing it off .. everyone does g_sync 1 ; record ; g_sync 0 ..
+	if (!Cvar_VariableValue("g_synchronousClients")) {
+		Com_Printf(S_COLOR_YELLOW "WARNING: You should set 'g_synchronousClients 1' for smoother demo recording\n");
+	}
+
+	if (Cmd_Argc() == 2) {
+		s = Cmd_Argv(1);
+		Q_strncpyz(demoName, s, sizeof(demoName));
+		Com_sprintf(name, sizeof(name), "demos/%s.jko_dem", demoName, PROTOCOL_VERSION);
+	}
+	else {
+		int		number;
+
+		// scan for a free demo name
+		for (number = 0; number <= 9999; number++) {
+			CL_DemoFilename(number, demoName);
+			Com_sprintf(name, sizeof(name), "demos/%s.jko_dem", demoName, PROTOCOL_VERSION);
+
+			len = FS_ReadFile(name, NULL);
+			if (len <= 0) {
+				break;	// file doesn't exist
+			}
+		}
+	}
+
+	// open the demo file
+
+	Com_Printf("recording to %s.\n", name);
+	clc.demofile = FS_FOpenFileWrite(name);
+	if (!clc.demofile) {
+		Com_Printf("ERROR: couldn't open.\n");
+		return;
+	}
+	clc.demorecording = qtrue;
+	if (Cvar_VariableValue("ui_recordSPDemo")) {
+		clc.spDemoRecording = qtrue;
+	}
+	else {
+		clc.spDemoRecording = qfalse;
+	}
+
+	Q_strncpyz(clc.demoName, demoName, sizeof(clc.demoName));
+
+	// don't start saving messages until a non-delta compressed message is received
+	clc.demowaiting = qtrue;
+
+	// write out the gamestate message
+	MSG_Init(&buf, bufData, sizeof(bufData));
+	//MSG_Bitstream(&buf); // This set oob (a boolean in msg_t) to qfalse in Quake3
+
+	// NOTE, MRE: all server->client messages now acknowledge
+	//MSG_WriteLong(&buf, clc.reliableSequence); // Maybe we want to start with gamestate
+
+	MSG_WriteByte(&buf, svc_gamestate);
+	MSG_WriteLong(&buf, clc.serverCommandSequence);
+
+	// configstrings
+	for (i = 0; i < MAX_CONFIGSTRINGS; i++) {
+		if (!cl.gameState.stringOffsets[i]) {
+			continue;
+		}
+		s = cl.gameState.stringData + cl.gameState.stringOffsets[i];
+		MSG_WriteByte(&buf, svc_configstring);
+		MSG_WriteShort(&buf, i);
+		//MSG_WriteBigString(&buf, s);
+		MSG_WriteString(&buf, s);
+	}
+
+	// baselines
+	Com_Memset(&nullstate, 0, sizeof(nullstate));
+	for (i = 0; i < MAX_GENTITIES; i++) {
+		ent = &cl.entityBaselines[i];
+		if (!ent->number) {
+			continue;
+		}
+		MSG_WriteByte(&buf, svc_baseline);
+		MSG_WriteDeltaEntity(&buf, &nullstate, ent, qtrue);
+	}
+
+	//MSG_WriteByte(&buf, svc_EOF); // This is to end the message, might not be needed but keep the line commented
+	MSG_WriteByte(&buf, 0); // IN JKO, they end a message with a simple 0, check cl_parse.cpp between Quake3 Arena and JKO
+
+	// finished writing the gamestate stuff
+
+	// Posto : don't care about those, they don't exist in JKA SP
+	// write the client num
+	//MSG_WriteLong(&buf, clc.clientNum);
+	// write the checksum feed
+	//MSG_WriteLong(&buf, clc.checksumFeed);
+
+	// finished writing the client packet
+	//MSG_WriteByte(&buf, svc_EOF);
+
+#ifdef _DEBUG
+	Com_sprintf(nameVerbose, sizeof(nameVerbose), "%s_verb", name, PROTOCOL_VERSION);
+	Com_Printf("recording verbosely to %s.\n", nameVerbose);
+	clc.demofileVerbose = FS_FOpenFileWrite(nameVerbose);
+	if (!clc.demofileVerbose) {
+		Com_Printf("ERROR: couldn't open verbose.\n");
+		return;
+	}
+	MSG_Init(&bufVerbose, bufDataVerbose, sizeof(bufDataVerbose)); // There MUST be a better way than init and do a lot of write, but it's adding zeros and piling up and up
+
+	sprintf(sV, "CL_Record_f : START\n");
+	sprintf(sV, "%sclc.reliableSequence : %i\n", sV, clc.reliableSequence);
+	sprintf(sV, "%ssvc_gamestate (2) : %i\n", sV, svc_gamestate);
+	sprintf(sV, "%sclc.serverCommandSequence : %i\n", sV, clc.serverCommandSequence);
+	
+	// configstrings
+	sprintf(sV, "%svc_configstring (3) : %i\n", sV, svc_configstring);
+	for (i = 0; i < MAX_CONFIGSTRINGS; i++) {
+		if (!cl.gameState.stringOffsets[i]) {
+			continue;
+		}
+		s = cl.gameState.stringData + cl.gameState.stringOffsets[i];
+		sprintf(sV, "%s%i:%s\n", sV, i, s);
+	}
+	MSG_WriteBigString(&bufVerbose, sV); // Reset
+	FS_Write(bufVerbose.data, bufVerbose.cursize, clc.demofileVerbose); // Reset
+
+	// baselines
+	MSG_Init(&bufVerbose, bufDataVerbose, sizeof(bufDataVerbose)); // Reset
+	sprintf(sV, ""); // Reset
+	sprintf(sV, "%ssvc_baseline (4) : %i\n", sV, svc_baseline);
+	for (i = 0; i < MAX_GENTITIES; i++) {
+		ent = &cl.entityBaselines[i];
+		if (!ent->number) {
+			continue;
+		}
+		//MSG_WriteByte(&buf, svc_baseline);
+		//MSG_WriteDeltaEntity(&buf, &nullstate, ent, qtrue);
+	}
+
+	sprintf(sV, "%sCL_Record_f : END\n", sV);
+
+	MSG_Init(&bufVerbose, bufDataVerbose, sizeof(bufDataVerbose));
+	MSG_WriteBigString(&bufVerbose, sV);
+	FS_Write(bufVerbose.data, bufVerbose.cursize, clc.demofileVerbose);
+
+	// Close the file here, just need the headers to debug as of now
+	//FS_Write(bufVerbose.data, bufVerbose.cursize, clc.demofileVerbose);
+	//FS_FCloseFile(clc.demofileVerbose);
+
+#endif // _DEBUG
+
+	// write it to the demo file
+	len = LittleLong(clc.serverMessageSequence - 1);
+	FS_Write(&len, 4, clc.demofile);
+
+	len = LittleLong(buf.cursize);
+	FS_Write(&len, 4, clc.demofile);
+	FS_Write(buf.data, buf.cursize, clc.demofile);
+
+	// the rest of the demo file will be copied from net messages
+}
+
+/*
+=======================================================================
+
+CLIENT SIDE DEMO PLAYBACK
+
+=======================================================================
+*/
+
+/*
+=================
+CL_DemoCompleted
+=================
+*/
+void CL_DemoCompleted(void) {
+	if (cl_timedemo && cl_timedemo->integer) {
+		int	time;
+
+		time = Sys_Milliseconds() - clc.timeDemoStart;
+		if (time > 0) {
+			Com_Printf("%i frames, %3.1f seconds: %3.1f fps\n", clc.timeDemoFrames,
+				time / 1000.0, clc.timeDemoFrames * 1000.0 / time);
+		}
+	}
+
+	CL_Disconnect();
+	CL_NextDemo();
+}
+
+/*
+=================
+CL_ReadDemoMessage
+=================
+*/
+void CL_ReadDemoMessage(void) {
+	int			r;
+	msg_t		buf;
+	byte		bufData[MAX_MSGLEN];
+	int			s;
+
+	if (!clc.demofile) {
+		CL_DemoCompleted();
+		return;
+	}
+
+	// get the sequence number
+	r = FS_Read(&s, 4, clc.demofile);
+	if (r != 4) {
+		CL_DemoCompleted();
+		return;
+	}
+	clc.serverMessageSequence = LittleLong(s);
+
+	// init the message
+	MSG_Init(&buf, bufData, sizeof(bufData));
+
+	// get the length
+	r = FS_Read(&buf.cursize, 4, clc.demofile);
+	if (r != 4) {
+		CL_DemoCompleted();
+		return;
+	}
+	buf.cursize = LittleLong(buf.cursize);
+	if (buf.cursize == -1) {
+		CL_DemoCompleted();
+		return;
+	}
+	if (buf.cursize > buf.maxsize) {
+		Com_Error(ERR_DROP, "CL_ReadDemoMessage: demoMsglen > MAX_MSGLEN");
+	}
+	r = FS_Read(buf.data, buf.cursize, clc.demofile);
+	if (r != buf.cursize) {
+		Com_Printf("Demo file was truncated.\n");
+		CL_DemoCompleted();
+		return;
+	}
+
+	clc.lastPacketTime = cls.realtime;
+	buf.readcount = 0;
+	CL_ParseServerMessage(&buf);
+}
+
+/*
+====================
+CL_WalkDemoExt
+====================
+*/
+/*
+static void CL_WalkDemoExt(char* arg, char* name, int* demofile)
+{
+	int i = 0;
+	*demofile = 0;
+	while (demo_protocols[i])
+	{
+		Com_sprintf(name, MAX_OSPATH, "demos/%s.dm_%d", arg, demo_protocols[i]);
+		FS_FOpenFileRead(name, demofile, qtrue);
+		if (*demofile)
+		{
+			Com_Printf("Demo file: %s\n", name);
+			break;
+		}
+		else
+			Com_Printf("Not found: %s\n", name);
+		i++;
+	}
+}
+*/
+
+/*
+====================
+CL_PlayDemo_f
+
+demo <demoname>
+
+====================
+*/
+void CL_PlayDemo_f(void) {
+	char		name[MAX_OSPATH];
+	char* arg, * ext_test;
+	int			protocol, i;
+	char		retry[MAX_OSPATH];
+
+	if (Cmd_Argc() != 2) {
+		Com_Printf("playdemo <demoname>\n");
+		return;
+	}
+
+	// make sure a local server is killed
+	Cvar_Set("sv_killserver", "1");
+
+	CL_Disconnect();
+
+	// open the demo file
+	arg = Cmd_Argv(1);
+
+	// check for an extension .dm_?? (?? is protocol)
+	/*
+	ext_test = arg + strlen(arg) - 6;
+	if ((strlen(arg) > 6) && (ext_test[0] == '.') && ((ext_test[1] == 'd') || (ext_test[1] == 'D')) && ((ext_test[2] == 'm') || (ext_test[2] == 'M')) && (ext_test[3] == '_'))
+	{
+		protocol = atoi(ext_test + 4);
+		i = 0;
+		while (demo_protocols[i])
+		{
+			if (demo_protocols[i] == protocol)
+				break;
+			i++;
+		}
+		if (demo_protocols[i])
+		{
+			Com_sprintf(name, sizeof(name), "demos/%s", arg);
+			FS_FOpenFileRead(name, &clc.demofile, qtrue);
+		}
+		else {
+			Com_Printf("Protocol %d not supported for demos\n", protocol);
+			Q_strncpyz(retry, arg, sizeof(retry));
+			retry[strlen(retry) - 6] = 0;
+			CL_WalkDemoExt(retry, name, &clc.demofile);
+		}
+	}
+	else {
+		CL_WalkDemoExt(arg, name, &clc.demofile);
+	}
+	*/
+
+	Com_sprintf(name, sizeof(name), "demos/%s.jko_dem", arg);
+	FS_FOpenFileRead(name, &clc.demofile, qtrue);
+
+	if (!clc.demofile) {
+		Com_Error(ERR_DROP, "couldn't open %s", name);
+		return;
+	}
+	Q_strncpyz(clc.demoName, Cmd_Argv(1), sizeof(clc.demoName));
+
+	Con_Close();
+
+	cls.state = CA_CONNECTED;
+	clc.demoplaying = qtrue;
+	Q_strncpyz(cls.servername, Cmd_Argv(1), sizeof(cls.servername));
+
+	// read demo messages until connected
+	while (cls.state >= CA_CONNECTED && cls.state < CA_PRIMED) {
+		CL_ReadDemoMessage();
+	}
+	// don't get the first snapshot this frame, to prevent the long
+	// time from the gamestate load from messing causing a time skip
+	clc.firstDemoFrameSkipped = qfalse;
+}
+
+
+/*
+====================
+CL_StartDemoLoop
+
+Closing the main menu will restart the demo loop
+====================
+*/
+void CL_StartDemoLoop(void) {
+	// start the demo loop again
+	Cbuf_AddText("d1\n");
+	cls.keyCatchers = 0;
+}
+
+/*
+==================
+CL_NextDemo
+
+Called when a demo or cinematic finishes
+If the "nextdemo" cvar is set, that command will be issued
+==================
+*/
+/*
+void CL_NextDemo(void) {
+	char	v[MAX_STRING_CHARS];
+
+	Q_strncpyz(v, Cvar_VariableString("nextdemo"), sizeof(v));
+	v[MAX_STRING_CHARS - 1] = 0;
+	Com_DPrintf("CL_NextDemo: %s\n", v);
+	if (!v[0]) {
+		return;
+	}
+
+	Cvar_Set("nextdemo", "");
+	Cbuf_AddText(v);
+	Cbuf_AddText("\n");
+	Cbuf_Execute();
+}
+*/
+
+
+//======================================================================
+
+
+
 
 /*
 =======================================================================
@@ -755,6 +1296,16 @@ void CL_PacketEvent( netadr_t from, msg_t *msg ) {
 
 	clc.lastPacketTime = cls.realtime;
 	CL_ParseServerMessage( msg );
+
+	// DEMO RECORDING, from Quake3
+	//
+	// we don't know if it is ok to save a demo message until
+	// after we have parsed the frame
+	//
+	if (clc.demorecording ){//&& !clc.demowaiting) {
+		CL_WriteDemoMessage(msg, headerBytes);
+	}
+
 }
 
 /*
@@ -1182,6 +1733,12 @@ void CL_Init( void ) {
 	cl_VidFadeUp	= Cvar_Get ("cl_VidFadeUp", "1", CVAR_TEMP);
 	cl_VidFadeDown	= Cvar_Get ("cl_VidFadeDown", "1", CVAR_TEMP);
 	cl_framerate	= Cvar_Get ("cl_framerate", "0", CVAR_TEMP);
+
+	// Demo recording
+	cl_timedemo = Cvar_Get("timedemo", "0", 0);
+	Cmd_AddCommand("record", CL_Record_f);
+	Cmd_AddCommand("demo", CL_PlayDemo_f);
+	Cmd_AddCommand("stoprecord", CL_StopRecord_f);
 
 	// init autoswitch so the ui will have it correctly even
 	// if the cgame hasn't been started

@@ -216,6 +216,7 @@ void CL_ParseSnapshot( msg_t *msg ) {
 	if ( newSnap.deltaNum <= 0 ) {
 		newSnap.valid = qtrue;		// uncompressed frame
 		old = NULL;
+		clc.demowaiting = qfalse;	// Demo Recording : we can start recording now
 	} else {
 		old = &cl.frames[newSnap.deltaNum & PACKET_MASK];
 		if ( !old->valid ) {
