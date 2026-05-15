@@ -11,6 +11,10 @@ VIRTUAL MACHINE
 */
 int	VM_Call( int callnum, ... )
 {
+	if (!cgvm.entryPoint) {
+		Com_Printf("VM_Call: cgvm.entryPoint is NULL, call %d ignored\n", callnum);
+		return 0;
+	}
 	return cgvm.entryPoint( (&callnum)[0], (&callnum)[1], (&callnum)[2], (&callnum)[3],
 		(&callnum)[4], (&callnum)[5], (&callnum)[6], (&callnum)[7],
 		(&callnum)[8],  (&callnum)[9] );
@@ -28,6 +32,10 @@ extern int CL_CgameSystemCalls( int *args );
 extern int CL_UISystemCalls( int *args );
 
 int VM_DllSyscall( int arg, ... ) {
-//	return cgvm->systemCall( &arg );
+	if (!cgvm.entryPoint) {
+		// If cgame isn't loaded, alarm in the console
+		Com_Printf("VM_DllSyscall: cgvm not loaded, forwarding to CL_CgameSystemCalls\n");
+		return CL_CgameSystemCalls( &arg );
+	}
 	return CL_CgameSystemCalls( &arg );
 }

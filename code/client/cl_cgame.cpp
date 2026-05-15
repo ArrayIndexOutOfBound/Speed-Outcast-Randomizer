@@ -887,6 +887,24 @@ void CL_InitCGame( void ) {
 	cls.state = CA_LOADING;
 
 	// init for this gamestate
+	// DEMO RECORDING
+	if (!cgvm.entryPoint) {
+		Com_Printf("CL_InitCGame: cgvm.entryPoint NULL, attempting VM_Create(\"cl\")\n");
+
+		SV_InitGameProgs();
+		extern void SV_CreateBaseline(void);
+		SV_CreateBaseline();
+		//ge = (game_export_t*)Sys_GetGameAPI(&import);
+
+		// VM_Create is declared in vmachine.h as an inline helper
+		//VM_Create("cl");
+		if (!cgvm.entryPoint) {
+			Com_Printf("CL_InitCGame: failed to load cgame VM, skipping CG_INIT to avoid crash\n");
+			// leave cls.state as CA_LOADING so caller can handle failure
+			return;
+		}
+	}
+
 	VM_Call( CG_INIT, clc.serverCommandSequence );
 
 	// we will send a usercmd this frame, which

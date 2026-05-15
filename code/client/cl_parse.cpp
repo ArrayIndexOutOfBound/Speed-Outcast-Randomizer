@@ -221,7 +221,7 @@ void CL_ParseSnapshot( msg_t *msg ) {
 		old = &cl.frames[newSnap.deltaNum & PACKET_MASK];
 		if ( !old->valid ) {
 			// should never happen
-			Com_Printf ("Delta from invalid frame (not supposed to happen!).\n");
+			//Com_Printf ("Delta from invalid frame (not supposed to happen!).\n");
 		} else if ( old->messageNum != newSnap.deltaNum ) {
 			// The frame that the server did the delta from
 			// is too old, so we can't reconstruct it properly.
@@ -414,6 +414,7 @@ void CL_ParseGamestate( msg_t *msg ) {
 	// let the client game init and load data
 	cls.state = CA_LOADING;
 
+	Com_Printf("CL_ParseGamestate: entering CL_StartHunkUsers to initialize client hunk users\n");
 	CL_StartHunkUsers();
 
 	// make sure the game starts

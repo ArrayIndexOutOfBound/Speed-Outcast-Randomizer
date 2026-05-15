@@ -123,7 +123,7 @@ void CL_WriteDemoMessage(msg_t* msg, int headerBytes) {
 	MSG_Init(&bufVerbose, bufDataVerbose, sizeof(bufDataVerbose));
 	MSG_WriteBigString(&bufVerbose, buffer);
 
-	//FS_Write(bufVerbose.data, bufVerbose.cursize, clc.demofileVerbose);
+	FS_Write(bufVerbose.data, bufVerbose.cursize, clc.demofileVerbose);
 #endif // _DEBUG
 
 }
