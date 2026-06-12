@@ -1308,6 +1308,8 @@ static void RE_LoadWorldMap_Actual( const char *name ) {
 	// only set tr.world now that we know the entire level has loaded properly
 	tr.world = &s_worldData;
 
+	// Build the portalized hull mesh for r_drawHull
+	R_BuildWorldHullMesh();
 
 	if (gpvCachedMapDiskImage)
 	{

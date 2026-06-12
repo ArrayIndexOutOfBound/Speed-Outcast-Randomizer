@@ -1199,6 +1199,31 @@ extern	cvar_t	*r_showMaxJumpHeight;
 extern	cvar_t	*r_showMaxJumpHeightR;
 extern	cvar_t	*r_showMaxJumpHeightG;
 extern	cvar_t	*r_showMaxJumpHeightB;
+extern	cvar_t	*r_drawHull;
+
+// tr_hullmesh.cpp / tr_drawhull.cpp
+typedef struct { vec3_t position; vec3_t normal; } hm_vertex_t;
+
+struct hullmesh_s {
+	hm_vertex_t* vertices;
+	int          num_vertices;
+	int* indices;
+	int          num_indices;
+	int          face_start;   // first element of GL_TRIANGLES run
+	int          face_count;
+	int          line_start;   // first element of GL_LINES run
+	int          line_count;
+	void* root;         // hm_node_t* — opaque outside tr_hullmesh.cpp
+	qboolean     valid;
+};
+
+typedef void (*hm_emit_cb_t)(const int*, int, int, const void*, void*);
+void R_BuildWorldHullMesh(void);
+void R_FreeWorldHullMesh(void);
+void R_DrawVisibleHullGeometry(hm_emit_cb_t tri_cb, hm_emit_cb_t line_cb, void* ctx);
+void R_DrawHullMesh(void);
+void R_InitHullDraw(void);
+
 //====================================================================
 
 float R_NoiseGet4f( float x, float y, float z, float t );

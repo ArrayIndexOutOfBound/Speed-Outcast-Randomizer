@@ -174,6 +174,7 @@ cvar_t	*r_showMaxJumpHeight;
 cvar_t	*r_showMaxJumpHeightR;
 cvar_t	*r_showMaxJumpHeightG;
 cvar_t	*r_showMaxJumpHeightB;
+//cvar_t	*r_draw_hull;
 
 
 void ( APIENTRY * qglMultiTexCoord2fARB )( GLenum texture, GLfloat s, GLfloat t );
@@ -1160,6 +1161,10 @@ extern qboolean Sys_LowPhysicalMemory();
 	r_showMaxJumpHeightR = Cvar_Get( "r_showMaxJumpHeightR", "0", CVAR_ARCHIVE );
 	r_showMaxJumpHeightG = Cvar_Get( "r_showMaxJumpHeightG", "0", CVAR_ARCHIVE );
 	r_showMaxJumpHeightB = Cvar_Get( "r_showMaxJumpHeightB", "255", CVAR_ARCHIVE );
+	// Which one is better ?
+	//r_drawHull = Cvar_Get("r_drawHull", "0", CVAR_ARCHIVE);
+	r_drawHull = ri.Cvar_Get("r_drawHull", "0", CVAR_ARCHIVE);
+	R_InitHullDraw();
 
 	// make sure all the commands added here are also
 	// removed in R_Shutdown
@@ -1304,6 +1309,9 @@ void RE_Shutdown( qboolean destroyWindow ) {
 	ri.Cmd_RemoveCommand ("imagecacheinfo");
 
 	ri.Cmd_RemoveCommand ("overbouncePredictionColor");
+
+	// tr_hullmesh.cpp / tr_drawhull.cpp
+	R_FreeWorldHullMesh();
 
 	R_ShutdownWorldEffects();
 	R_ShutdownFonts();

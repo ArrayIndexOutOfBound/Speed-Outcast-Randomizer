@@ -608,6 +608,12 @@
     <ClCompile Include="speedrun\overbounce_prediction\overbounce_prediction.cpp">
       <Filter>speedrun\overbounce_prediction</Filter>
     </ClCompile>
+    <ClCompile Include="renderer\tr_hullmesh.cpp">
+      <Filter>Renderer Source</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\tr_drawhull.cpp">
+      <Filter>Renderer Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\eax\eax.h">
@@ -1167,6 +1173,9 @@
     </ClInclude>
     <ClInclude Include="speedrun\overbounce_prediction\overbounce_prediction.hpp">
       <Filter>speedrun\overbounce_prediction</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\gl_hullmesh.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

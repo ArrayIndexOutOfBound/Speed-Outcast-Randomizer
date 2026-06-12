@@ -1554,16 +1554,37 @@ Visualization aid for movement clipping debugging
 ====================
 */
 void R_DebugGraphics( void ) {
+	/*
 	if ( !r_debugSurface->integer ) {
 		return;
 	}
+	*/
 
+	if (!r_debugSurface->integer && !(r_drawHull && r_drawHull->integer))
+		return;
+
+	/*
 	// the render thread can't make callbacks to the main thread
 	R_SyncRenderThread();
 
 	GL_Bind( tr.whiteImage);
 	GL_Cull( CT_FRONT_SIDED );
 	ri.CM_DrawDebugSurface( R_DebugPolygon );
+	*/
+
+	// The render thread can't make callbacks to the main thread
+	R_SyncRenderThread();
+
+	GL_Bind(tr.whiteImage);
+	GL_Cull(CT_FRONT_SIDED);
+
+	if (r_debugSurface->integer) {
+		ri.CM_DrawDebugSurface(R_DebugPolygon);
+	}
+
+	if (r_drawHull && r_drawHull->integer)
+		R_DrawHullMesh();
+
 }
 
 qboolean R_FogParmsMatch( int fog1, int fog2 )
